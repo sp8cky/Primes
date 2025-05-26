@@ -39,7 +39,7 @@ def optimized_lucas_test(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     for q in factorint(n-1):
-        for a in range (2, n):
+        for a in range(2, n):
             if pow(a, (n-1), n) == 1 and pow(a, (n-1) // q, n) != 1:
                 break
         else:

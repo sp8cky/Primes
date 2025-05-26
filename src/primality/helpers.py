@@ -1,3 +1,5 @@
+from math import gcd
+
 def divides(a: int, b: int) -> bool:
     if a == 0:
         raise ValueError("Division by 0.")
@@ -12,3 +14,11 @@ def is_real_potency(n: int):
         if a ** b == n:
             return True
     return False
+
+def order(n: int, r: int) -> int:
+    if gcd(n, r) != 1:
+        return 0
+    for k in range(1, r):
+        if pow(n, k, r) == 1:
+            return k
+    return 0

@@ -64,16 +64,23 @@ Folgende mathematische Kriterien wurden formal definiert und teilweise bereits i
 
 - **Fermat-Kriterium**  
 - **Wilson-Kriterium**  
-- **Lucas-Test (einfacher Vorläufer, keine vollständige Lucas-Reihe)**
+- **Lucas-Test (Vorläufer, Lucas-Test, Optimierung)**
 
 ---
 
 #### Deterministische Primzahltests
-
 Diese Tests wurden anhand der zugrundeliegenden Theorien erarbeitet:
 - **MSRT-Test** (Miller–Rabin–Solovay–Test in deterministischer Variante für kleine `n`)
 - **SST-Test** (Solovay–Strassen-Test)
 - **AKS-Test** (Agrawal–Kayal–Saxena, vollständig deterministisch)
+
+---
+### Tests
+Folgende Tests wurden mit pytest implementiert
+- für die 5 Kriterien
+- MSRT
+SST
+AKS
 
 ---
 

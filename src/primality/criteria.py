@@ -1,4 +1,4 @@
-import helpers
+import src.primality.helpers as helpers
 import math
 from math import gcd
 from sympy import isprime, factorint
@@ -47,3 +47,8 @@ def optimized_lucas_test(n: int) -> bool:
     return True
 
 # TODO: Satz 4.5 - 4.8
+print(fermat_criterion(2, 3))  # True
+print(wilson_criterion(5))  # True
+print(initial_lucas_test(2, 7))  # True
+print(lucas_test(2, 7))  # True
+print(optimized_lucas_test(7))  # True

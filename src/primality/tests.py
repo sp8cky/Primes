@@ -1,4 +1,4 @@
-import helpers
+import src.primality.helpers as helpers
 import random, math
 from math import gcd
 from sympy import jacobi_symbol, isprime, gcd, log, primerange, nextprime

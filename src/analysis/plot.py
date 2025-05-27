@@ -1,21 +1,15 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
+import pandas as pd
+from src.analysis import dataset
 
-def plot_runtime(data_dict, title="Laufzeitvergleich", xlabel="n", ylabel="Zeit (s)"):
-    """
-    data_dict: dict mit {Testname: [(n, zeit), (n, zeit), ...]}
-    """
-    sns.set_theme(style="whitegrid")
-    plt.figure(figsize=(10, 6))
-
-    for label, data in data_dict.items():
-        x = [n for n, t in data if t is not None]
-        y = [t for n, t in data if t is not None]
-        plt.plot(x, y, label=label, marker='o')
-
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+def plot_runtime(n_lists, time_lists, labels=None):
+    if labels is None:
+        labels = [None] * len(n_lists)
+    for n, t, label in zip(n_lists, time_lists, labels):
+        plt.plot(n, t, marker="o", label=label)
+    plt.xlabel("n")
+    plt.ylabel("Laufzeit (s)")
+    plt.title("Laufzeitverhalten der Kriterien")
     plt.legend()
-    plt.tight_layout()
+    plt.grid(True)
     plt.show()

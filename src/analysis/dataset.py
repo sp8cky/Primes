@@ -1,16 +1,15 @@
-import random
-from sympy import primerange
+import json
+import os
 
-def generate_random_integers(start, end, count):
-    return random.sample(range(start, end), count)
+DATA_DIR = "data"
 
-def generate_primes(start, end):
-    return list(primerange(start, end))
+def save_json(data, filename):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    path = os.path.join(DATA_DIR, filename)
+    with open(path, "w") as f:
+        json.dump(data, f)
 
-def generate_mixed_dataset(start, end, count):
-    """ Erzeugt eine Mischung aus Prim- und Nicht-Primzahlen """
-    values = set()
-    while len(values) < count:
-        n = random.randint(start, end)
-        values.add(n)
-    return list(values)
+def load_json(filename):
+    path = os.path.join(DATA_DIR, filename)
+    with open(path, "r") as f:
+        return json.load(f)

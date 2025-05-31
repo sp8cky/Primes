@@ -1,7 +1,7 @@
 import src.primality.helpers as helpers
 import math, random
 from math import gcd
-from sympy import isprime, factorint
+from sympy import factorint
 
 def fermat_criterion(n: int, k: int = 1) -> bool:
     if n <= 1:

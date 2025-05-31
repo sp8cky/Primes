@@ -1,29 +1,29 @@
 import time
 from typing import Callable, List, Dict
-from statistics import mean, stdev
 from src.analysis import dataset
+import statistics
 
-
-def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "", repeat: int = 3, verbose: bool = False) -> List[Dict]:
+def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "", repeat: int = 3) -> List[Dict]:
     results = []
     for n in inputs:
-        durations = []
+        times = []
         for _ in range(repeat):
             start = time.perf_counter()
             fn(n)
             end = time.perf_counter()
-            durations.append(end - start)
+            times.append(end - start)
 
-        avg = mean(durations)
-        std = stdev(durations) if repeat > 1 else 0.0
-
-        if verbose:
-            print(f"{label}: n={n} → {avg:.6f}s ± {std:.6f}s")
+        avg_time = statistics.mean(times)
+        std_dev = statistics.stdev(times) if len(times) > 1 else 0.0
+        best_time = min(times)
+        worst_time = max(times)
 
         results.append({
             "n": n,
-            "avg_time": avg,
-            "std_dev": std,
+            "avg_time": avg_time,
+            "std_dev": std_dev,
+            "best_time": best_time,
+            "worst_time": worst_time,
             "label": label
         })
 

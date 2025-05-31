@@ -23,7 +23,7 @@ def fermat_criterion(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
 def wilson_criterion(n: int) -> Tuple[bool, None]:
     if n <= 1: return (False, None)
     result = (math.factorial(n-1) % n) == n-1
-    return (result, None)  # Wilson verwendet kein a
+    return (result, None)
 
 def initial_lucas_test(n: int) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
@@ -76,7 +76,7 @@ def optimized_lucas_test(n: int) -> Tuple[bool, Dict[int, List[Tuple[int, bool]]
     return (True, details)
 
 # Testausführung mit Protokollierung
-def run_tests(numbers: List[int]):
+def criteria_protocoll(numbers: List[int]):
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")
         
@@ -116,4 +116,4 @@ def run_tests(numbers: List[int]):
 test_numbers = [100003, 100019, 100043, 100103, 100151]
 
 # Ausführung
-run_tests(test_numbers)
+criteria_protocoll(test_numbers)

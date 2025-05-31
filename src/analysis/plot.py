@@ -16,15 +16,3 @@ def plot_runtime(n_lists, time_lists, labels=None):
     plt.grid(True)
     plt.show()
 
-
-
-def plot_runtime_with_error_bars(stats_dict: Dict[str, List]):
-    plt.errorbar(
-        stats_dict["n"], 
-        stats_dict["avg"], 
-        yerr=np.std(stats_dict["times"], axis=1), 
-        marker="o",
-        capsize=5,
-        label=stats_dict["label"]
-    )
-    plt.legend()

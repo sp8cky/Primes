@@ -5,7 +5,8 @@ Repo for runtime analysis of prime tests.
 ## 01 – Einleitung und aktueller Stand
 
 In diesem Notebook wird der aktuelle Stand der Arbeit dokumentiert. Ziel ist es, die Implementierung und Analyse von Primzahlkriterien und Primzahltests im Kontext der Kryptographie vorzubereiten.
-
+pip-25.1.1
+Python 3.13.3
 ---
 
 ### ✅ Projektüberblick

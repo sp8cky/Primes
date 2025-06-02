@@ -1,17 +1,24 @@
 import src.primality.helpers as helpers
-import math, random
+from src.analysis.criteriaDictionary import *
+import random, math
 from math import gcd
 from sympy import factorint
+from statistics import mean
+
+
+
 
 def fermat_criterion(n: int, k: int = 1) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
-    if n == 2: return True
+    if n == 2: 
+        return True
+    
     for _ in range(k):
         a = random.randint(2, n-1)
         if gcd(a, n) != 1:
             return False
-        if pow(a, n - 1, n) != 1:
+        if pow(a, n-1, n) != 1:
             return False
     return True # wahrscheinlich prim
 
@@ -56,10 +63,3 @@ def optimized_lucas_test(n: int) -> bool:
         else:
             return False
     return True
-
-# TODO: Satz 4.5 - 4.8
-#print(fermat_criterion(7))  # True
-#print(wilson_criterion(5))  # True
-#print(initial_lucas_test(3))  # True
-#print(lucas_test(7))  # True
-#print(optimized_lucas_test(13))  # True

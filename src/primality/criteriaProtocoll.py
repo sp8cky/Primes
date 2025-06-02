@@ -92,7 +92,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
         print(f"Fermat: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
         print("  ", " | ".join([f"a={a}→{'✓' if res else '✗'}" for a, res in details]))
         if timings:
-            times = [d["avg_time"] for d in timings["Fermat (k=5)"] if d["n"] == n]
+            times = [d["avg_time"] for d in timings["Fermat"] if d["n"] == n]
             if times:
                 print("   ", format_timing(times))
 

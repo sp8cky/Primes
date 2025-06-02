@@ -25,7 +25,7 @@ def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 
         numbers = random.sample(p + c, min(n, len(p) + len(c)))
     return sorted(numbers)
 
-def run_prime_criteria_analysis(n_numbers: int = 100,num_type: str = 'g',start: int = 100_000,end: int = 1_000_000,fermat_k: int = 5,repeats: int = 5,save_results: bool = True,show_plot: bool = True) -> Dict[str, List[Dict]]:
+def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5,repeats: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]:
     """
     Führt komplette Primzahltest-Analyse durch (Generierung, Messung, Protokoll, Plot).
     Parameter:
@@ -42,7 +42,7 @@ def run_prime_criteria_analysis(n_numbers: int = 100,num_type: str = 'g',start: 
     
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
-    print(f"Generierte {len(numbers)} Testzahlen (Typ '{num_type}')")
+    print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
     # MEASURE
     print("Starte Laufzeitmessungen...")
@@ -56,21 +56,8 @@ def run_prime_criteria_analysis(n_numbers: int = 100,num_type: str = 'g',start: 
     
     # SAVE RESTULTS
     if save_results:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        os.makedirs("results", exist_ok=True)
-        # JSON
-        json_file = f"results/results_{timestamp}.json"
-        with open(json_file, 'w') as f:
-            json.dump(datasets, f, indent=4)
-        # CSV
-        csv_file = f"results/results_{timestamp}.csv"
-        with open(csv_file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(["Algorithm", "n", "avg_time", "std_dev", "best", "worst"])
-            for algo, data in datasets.items():
-                for entry in data:
-                    writer.writerow([algo,entry["n"],entry["avg_time"],entry["std_dev"],entry["best_time"],entry["worst_time"]])
-        print(f"Ergebnisse gespeichert in {json_file} und {csv_file}")
+        save_json(datasets, get_timestamped_filename("criteria", "json"))
+        export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
     
     # CALL PROTOCOL
     criteria_protocoll(numbers, datasets)
@@ -94,22 +81,58 @@ def run_prime_criteria_analysis(n_numbers: int = 100,num_type: str = 'g',start: 
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(10, 8)
+            figsize=(7, 5)
         )
     return datasets
 
 
+def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, msr_rounds: int = 5, ss_rounds: int = 5, repeats: int = 3, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]:
+
+    # GENERATION
+    numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
+    print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
+    
+    # MESSUNG
+    print("Starte Laufzeitmessungen für Primzahltests...")
+    datasets = {
+        "Miller–Rabin": measure_runtime(lambda n: miller_selfridge_rabin_test(n, msr_rounds),numbers,f"Miller–Rabin (r={msr_rounds})",repeat=repeats),
+        "Solovay–Strassen": measure_runtime(lambda n: solovay_strassen_test(n, ss_rounds), numbers,f"Solovay–Strassen (r={ss_rounds})",repeat=repeats),
+        "AKS": measure_runtime(aks_test, numbers,"AKS", repeat=repeats)
+    }
+    
+    # SPEICHERN
+    if save_results:
+        save_json(datasets, get_timestamped_filename("tests", "json"))
+        export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
+
+    # PLOTTING
+    if show_plot:
+        plot_data = {
+            "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
+            "avg_times": [[entry["avg_time"] for entry in data] for data in datasets.values()],
+            "std_devs": [[entry["std_dev"] for entry in data] for data in datasets.values()],
+            "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
+            "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
+            "labels": [data[0]["label"] for data in datasets.values()],
+            "colors": ["red", "blue", "green"]
+        }
+        plot_runtime(
+            n_lists=plot_data["n_values"],
+            time_lists=plot_data["avg_times"],
+            std_lists=plot_data["std_devs"],
+            best_lists=plot_data["best_times"],
+            worst_lists=plot_data["worst_times"],
+            labels=plot_data["labels"],
+            colors=plot_data["colors"],
+            figsize=(7, 5)
+        )
+    
+    return datasets
 
 
 ################################################
-# CALL ##
+# CALL Criteria ##
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
-    results = run_prime_criteria_analysis(
-        n_numbers=50,
-        num_type='p',
-        start=100_000,
-        end=200_000,
-        fermat_k=3,
-        repeats=3
-    )
+    #criteria = run_prime_criteria_analysis(n_numbers=5, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3)
+    tests = run_prime_test_analysis(n_numbers=5, num_type='p', start=1000, end=10000, repeats=3)

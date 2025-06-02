@@ -6,8 +6,7 @@ from sympy import factorint
 def fermat_criterion(n: int, k: int = 1) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
-    if n == 2:
-        return True
+    if n == 2: return True
     for _ in range(k):
         a = random.randint(2, n-1)
         if gcd(a, n) != 1:
@@ -22,11 +21,10 @@ def wilson_criterion(p: int) -> bool:
     return math.factorial(p - 1) % p == p - 1
 
 def initial_lucas_test(n: int) -> bool:
-    if n <= 1:
+    if n <= 1: 
         raise ValueError("n must be greater than 1")
-    if n == 2:
-        return True
-    a = random.randint(2, n-1)
+    if n == 2: return True
+    a = random.randint(2, n-2)
     if pow(a, (n-1), n) != 1:
         return False
     for m in range(1, n-1):
@@ -43,13 +41,14 @@ def lucas_test(n: int) -> bool:
     if pow(a, (n-1), n) != 1:
         return False
     for m in range(1, n):
-        if helpers.divides(m, n) and pow(a, m, n) == 1:
+        if helpers.divides(m, (n-1)) and pow(a, m, n) == 1:
             return False
     return True
 
 def optimized_lucas_test(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
+    if n == 2: return True
     for q in factorint(n-1):
         for a in range(2, n):
             if pow(a, (n-1), n) == 1 and pow(a, (n-1) // q, n) != 1:

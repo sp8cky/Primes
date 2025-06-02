@@ -21,9 +21,17 @@ def load_json(filename):
     with open(path, "r") as f:
         return json.load(f)
 
-def export_to_csv(data, filename):
+def export_to_csv(datasets, filename):
     path = os.path.join(DATA_DIR, filename)
+    all_rows = []
+    for method, results in datasets.items():
+        for row in results:
+            row_copy = row.copy()
+            row_copy["Methode"] = method
+            all_rows.append(row_copy)
+    if not all_rows:
+        return
     with open(path, mode="w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=data[0].keys())
+        writer = csv.DictWriter(f, fieldnames=all_rows[0].keys())
         writer.writeheader()
-        writer.writerows(data)
+        writer.writerows(all_rows)

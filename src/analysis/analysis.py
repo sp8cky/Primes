@@ -87,32 +87,59 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
         )
     return datasets
 
-
-def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, msr_rounds: int = 5, ss_rounds: int = 5, repeats: int = 3, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]:
-
+def run_prime_test_analysis(
+    n_numbers: int = 100,
+    num_type: str = 'g',
+    start: int = 100_000,
+    end: int = 1_000_000,
+    tests_to_run: str = "msa",  # m=Miller-Rabin, s=Solovay-Strassen, a=AKS
+    msr_rounds: int = 5,
+    ss_rounds: int = 5,
+    repeats: int = 3,
+    save_results: bool = True,
+    show_plot: bool = True,
+) -> Dict[str, List[Dict]]:
+    
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
-    # MEASURE
-    print("Starte Laufzeitmessungen für Primzahltests...")
-    datasets = {
-        "Miller–Rabin": measure_runtime(lambda n: miller_selfridge_rabin_test(n, msr_rounds),numbers,f"Miller–Rabin (r={msr_rounds})",repeat=repeats),
-        "Solovay–Strassen": measure_runtime(lambda n: solovay_strassen_test(n, ss_rounds), numbers,f"Solovay–Strassen (r={ss_rounds})",repeat=repeats),
-        "AKS": measure_runtime(aks_test, numbers,"AKS", repeat=repeats)
+    # MEASURE - Nur ausgewählte Tests durchführen
+    datasets = {}
+    test_mapping = {
+        'm': ("Miller–Rabin", lambda n: miller_selfridge_rabin_test(n, msr_rounds)),
+        's': ("Solovay–Strassen", lambda n: solovay_strassen_test(n, ss_rounds)),
+        'a': ("AKS", aks_test)
     }
+    
+    print("Starte Laufzeitmessungen für Primzahltests...")
+    for test_code in tests_to_run.lower():
+        if test_code in test_mapping:
+            test_name, test_func = test_mapping[test_code]
+            label = test_name
+            if test_code == 'm':
+                label += f" (r={msr_rounds})"
+            elif test_code == 's':
+                label += f" (r={ss_rounds})"
+                
+            datasets[test_name] = measure_runtime(
+                test_func,
+                numbers,
+                label,
+                repeat=repeats
+            )
     
     # SAVE RESULTS
     if save_results:
         save_json(datasets, get_timestamped_filename("tests", "json"))
         export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
 
-    # PROTOCOL
-    tests_protocoll(numbers, "ms", datasets)
+    # PROTOCOL - Nur ausgewählte Tests anzeigen
+    tests_protocoll(numbers, tests_to_run, datasets)
 
-
-    # PLOTTING
-    if show_plot:
+    # PLOTTING - Nur ausgewählte Tests plotten
+    if show_plot and datasets:
+        colors = ["red", "blue", "green"]
         plot_data = {
             "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
             "avg_times": [[entry["avg_time"] for entry in data] for data in datasets.values()],
@@ -120,8 +147,9 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
             "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
             "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
             "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": ["red", "blue", "green"]
+            "colors": colors[:len(datasets)]  # Nur benötigte Farben
         }
+        
         plot_runtime(
             n_lists=plot_data["n_values"],
             time_lists=plot_data["avg_times"],
@@ -130,15 +158,15 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(7, 5)
+            figsize=(10, 8)
         )
     
     return datasets
 
 
 ################################################
-# CALL Criteria ##
+# CALL
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
     #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=5, num_type='p', start=10, end=100, repeats=3, save_results=False, show_plot=True)
+    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)

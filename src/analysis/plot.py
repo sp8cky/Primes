@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+# Plotting function for runtime analysis of algorithms with error bars and best/worst case shading
 def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
                  labels=None, colors=None, figsize=(10, 6), use_log=True):
-    if labels is None:
-        labels = [None] * len(n_lists)
-    if colors is None:
-        colors = [None] * len(n_lists)
+    if labels is None: labels = [None] * len(n_lists)
+    if colors is None: colors = [None] * len(n_lists)
 
     plt.figure(figsize=figsize)
 

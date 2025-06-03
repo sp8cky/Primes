@@ -1,10 +1,12 @@
 from math import gcd
 
+# Helper functions for primality tests and number theory
 def divides(a: int, b: int) -> bool:
     if a == 0:
         raise ValueError("Division by 0.")
     return b % a == 0
 
+# Check if n is a real potency, i.e., n = a^b with a, b > 1
 def is_real_potency(n: int):
     """Check, if n is a real potency: n = a^b with a, b > 1. """
     if n <= 1:
@@ -15,6 +17,7 @@ def is_real_potency(n: int):
             return True
     return False
 
+# calculate the order of n modulo r
 def order(n: int, r: int) -> int:
     if gcd(n, r) != 1:
         return 0

@@ -1,11 +1,10 @@
 import src.primality.helpers as helpers
 import random, math
 from math import gcd
-from sympy import jacobi_symbol, isprime, gcd, log, primerange, nextprime
+from sympy import jacobi_symbol, gcd, log, primerange
 from sympy.abc import X
 from sympy.polys.domains import ZZ
-from sympy.polys.polytools import Poly, invert
-from sympy.ntheory.modular import crt
+from sympy.polys.polytools import Poly
 
 def miller_selfridge_rabin_test(n: int, rounds=5) -> bool:
     if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n):
@@ -78,13 +77,4 @@ def aks_test(n: int) -> bool:
             return False
 
     return True
-
-"""
-print(aks_test(7))     # True
-print(aks_test(11))    # True
-print(aks_test(13))    # True
-print(aks_test(14))    # False
-print(aks_test(15))    # False
-print(aks_test(97))    # True
-"""
 

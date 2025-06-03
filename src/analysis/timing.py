@@ -3,6 +3,7 @@ from typing import Callable, List, Dict
 from src.analysis import dataset
 import statistics
 
+# Function to measure the runtime of a given function with various inputs
 def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "", repeat: int = 3) -> List[Dict]:
     results = []
     for n in inputs:

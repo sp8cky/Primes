@@ -5,11 +5,12 @@ from src.primality.testsProtocoll import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
-import random, json, os, csv
+import random
 from sympy import isprime, primerange
 from typing import List, Dict
 from datetime import datetime
 
+# generates numbers in a given range, either primes, composites or mixed
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
     if num_type not in ['p', 'z', 'g']:
         raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
@@ -26,27 +27,13 @@ def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 
         numbers = random.sample(p + c, min(n, len(p) + len(c)))
     return sorted(numbers)
 
-def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5,repeats: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]:
-    """
-    Führt komplette Primzahltest-Analyse durch (Generierung, Messung, Protokoll, Plot).
-    Parameter:
-    - n_numbers: Anzahl der Testzahlen
-    - num_type: 'p' (Prim), 'z' (Zusammengesetzt), 'g' (gemischt)
-    - start/end: Zahlenbereich
-    - fermat_k: Iterationen für Fermat-Test
-    - repeats: Wiederholungen pro Messung
-    - save_results: Ob Ergebnisse gespeichert werden sollen
-    - show_plot: Ob Plot angezeigt werden soll
-    Returns:
-    - Dictionary mit allen Messdaten
-    """
-    
+# whole analysis function for prime criteria, calls generation, measurement, saving and plotting
+def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5,repeats: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]: 
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
     # MEASURE
-    print("Starte Laufzeitmessungen...")
     datasets = {
         "Fermat": measure_runtime(lambda n: fermat_criterion(n, fermat_k), numbers, f"Fermat (k={fermat_k})", repeat=repeats),
         "Wilson": measure_runtime(wilson_criterion, numbers, "Wilson", repeat=repeats),
@@ -62,7 +49,6 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     
     # CALL PROTOCOL
     criteria_protocoll(numbers, datasets)
-
     
     # CREATE DATASETS FOR PLOTTING
     if show_plot:
@@ -87,12 +73,13 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
         )
     return datasets
 
+# whole analysis function for prime tests, calls generation, measurement, saving and plotting
 def run_prime_test_analysis(
     n_numbers: int = 100,
     num_type: str = 'g',
     start: int = 100_000,
     end: int = 1_000_000,
-    tests_to_run: str = "msa",  # m=Miller-Rabin, s=Solovay-Strassen, a=AKS
+    tests_to_run: str = "msa",
     msr_rounds: int = 5,
     ss_rounds: int = 5,
     repeats: int = 3,
@@ -104,15 +91,14 @@ def run_prime_test_analysis(
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
-    # MEASURE - Nur ausgewählte Tests durchführen
+    # MEASURE
     datasets = {}
     test_mapping = {
         'm': ("Miller–Rabin", lambda n: miller_selfridge_rabin_test(n, msr_rounds)),
         's': ("Solovay–Strassen", lambda n: solovay_strassen_test(n, ss_rounds)),
         'a': ("AKS", aks_test)
     }
-    
-    print("Starte Laufzeitmessungen für Primzahltests...")
+    # repeat the tests based input
     for test_code in tests_to_run.lower():
         if test_code in test_mapping:
             test_name, test_func = test_mapping[test_code]
@@ -134,10 +120,10 @@ def run_prime_test_analysis(
         save_json(datasets, get_timestamped_filename("tests", "json"))
         export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
 
-    # PROTOCOL - Nur ausgewählte Tests anzeigen
+    # PROTOCOL
     tests_protocoll(numbers, tests_to_run, datasets)
 
-    # PLOTTING - Nur ausgewählte Tests plotten
+    # PLOTTING
     if show_plot and datasets:
         colors = ["red", "blue", "green"]
         plot_data = {
@@ -147,7 +133,7 @@ def run_prime_test_analysis(
             "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
             "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
             "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": colors[:len(datasets)]  # Nur benötigte Farben
+            "colors": colors[:len(datasets)]
         }
         
         plot_runtime(
@@ -158,7 +144,7 @@ def run_prime_test_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(10, 8)
+            figsize=(7, 5)
         )
     
     return datasets
@@ -168,5 +154,5 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
-    #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
     tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)

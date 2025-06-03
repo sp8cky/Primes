@@ -5,7 +5,9 @@ from sympy import factorint
 from statistics import mean
 from typing import Optional, List, Dict, Tuple
 
-# same criteria as in src.primality.criteria.py, but with detailed output for each step
+# same criteria as in src.primality.criteria.py, but with detailed output for each step ###
+
+
 def fermat_criterion_detail(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
     if n <= 1: return (False, details)
@@ -77,12 +79,11 @@ def optimized_lucas_test_detail(n: int) -> Tuple[bool, Dict[int, List[Tuple[int,
 
 
 
-### Call to format timing results for display #######################################################
-
+# Format timing results for output
 def format_timing(times: List[float]) -> str:
     return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
-
+# Main function to print the protocol for each criterion
 def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")

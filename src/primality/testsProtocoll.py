@@ -2,13 +2,13 @@ import src.primality.helpers as helpers
 import random, math
 from math import gcd
 from statistics import mean
-from sympy import jacobi_symbol, isprime, gcd, log, primerange, nextprime
+from sympy import jacobi_symbol, gcd, log, primerange
 from sympy.abc import X
 from sympy.polys.domains import ZZ
-from sympy.polys.polytools import Poly, invert
-from sympy.ntheory.modular import crt
+from sympy.polys.polytools import Poly
 from typing import Optional, List, Dict, Tuple
 
+# same tests as in src.primality.tests.py, but with detailed output for each step
 
 def miller_selfridge_rabin_test_detail(n: int, rounds=5) -> Tuple[bool, List[Tuple[str, bool]]]:
     details = []
@@ -110,20 +110,13 @@ def aks_test_detail(n: int) -> Tuple[bool, List[Tuple[str, bool]]]:
     return (True, details)
 
 
+# Utility function to format timing results
 def format_timing(times: List[float]) -> str:
     return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
 
-
+# function for running tests and logging results
 def tests_protocoll(numbers: List[int], tests_to_run: str = "msa", timings: Optional[Dict[str, List[Dict]]] = None):
-    """
-    Führt Primzahltests durch und protokolliert die Ergebnisse
-    
-    Args:
-        numbers: Liste der zu testenden Zahlen
-        tests_to_run: String mit Test-Kennungen (m=Miller-Rabin, s=Solovay-Strassen, a=AKS)
-        timings: Optionales Timing-Dictionary
-    """
     test_name_mapping = {
         'm': "Miller–Rabin",
         's': "Solovay–Strassen",

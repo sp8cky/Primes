@@ -9,14 +9,14 @@ from typing import Optional, List, Dict, Tuple
 
 
 def init_criteria_data(numbers: List[int]):
-    """Initialisiert das globale criteria_data-Dictionary mit allen Testzahlen."""
+
     global criteria_data
     criteria_data = {
         "Fermat": {n: {"a_values": [], "results": []} for n in numbers},
-        "Wilson": {n: None for n in numbers},  # Wilson speichert keine Testdaten
-        "Initial Lucas": {n: {"a": None, "condition1": None, "early_break": None} for n in numbers},
-        "Lucas": {n: {"a": None, "condition1": None, "early_break": None} for n in numbers},
-        "Optimized Lucas": {n: {"factors": factorint(n-1), "tests": {}} for n in numbers}
+        "Wilson": {n: {"result": None} for n in numbers},
+        "Initial Lucas": {n: {"a": None, "condition1": None, "early_break": None, "result": None} for n in numbers},
+        "Lucas": {n: {"a": None, "condition1": None, "early_break": None, "result": None} for n in numbers},
+        "Optimized Lucas": {n: {"factors": factorint(n-1), "tests": {}, "result": None} for n in numbers}
     }
 
 
@@ -45,12 +45,16 @@ def wilson_criterion(p: int) -> bool:
     print("WILSON AUFRuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuf")
     if p <= 1:
         raise ValueError("p must be greater than 1")
-    return math.factorial(p - 1) % p == p - 1
+
+    result = math.factorial(p - 1) % p == p - 1
+    criteria_data["Wilson"][p]["result"] = result
+    return result
 
 def initial_lucas_test(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
+        criteria_data["Initial Lucas"][n]["result"] = True
         return True
     
     a = random.randint(2, n-2)
@@ -59,19 +63,22 @@ def initial_lucas_test(n: int) -> bool:
     criteria_data["Initial Lucas"][n]["condition1"] = condition1
     
     if not condition1:
+        criteria_data["Initial Lucas"][n]["result"] = False
         return False
     
     for m in range(1, n-1):
         if pow(a, m, n) == 1:
             criteria_data["Initial Lucas"][n]["early_break"] = m
+            criteria_data["Initial Lucas"][n]["result"] = False
             return False
-    
+    criteria_data["Initial Lucas"][n]["result"] = True
     return True
 
 def lucas_test(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
+        criteria_data["Lucas"][n]["result"] = True
         return True
     
     a = random.randint(2, n-1)
@@ -80,18 +87,22 @@ def lucas_test(n: int) -> bool:
     criteria_data["Lucas"][n]["condition1"] = condition1
     
     if not condition1:
+        criteria_data["Lucas"][n]["result"] = False
         return False
     
     for m in range(1, n):
         if (n-1) % m == 0 and pow(a, m, n) == 1:
             criteria_data["Lucas"][n]["early_break"] = m
+            criteria_data["Lucas"][n]["result"] = False
             return False
+    criteria_data["Lucas"][n]["result"] = True
     return True
 
 def optimized_lucas_test(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
+        criteria_data["Optimized Lucas"][n]["result"] = True
         return True
     
     factors = criteria_data["Optimized Lucas"][n]["factors"]
@@ -107,8 +118,9 @@ def optimized_lucas_test(n: int) -> bool:
             if condition1 and condition2:
                 break
         else:
+            criteria_data["Optimized Lucas"][n]["result"] = False
             return False
-    
+    criteria_data["Optimized Lucas"][n]["result"] = True
     return True
 
 
@@ -133,16 +145,17 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
                 if times: print("    ", format_timing(times))
 
         # Wilson
-        print(f"Wilson: {'✅ Prim' if wilson_criterion(n) else '❌ Zusammengesetzt'} (keine Testparameter)")
-        if timings:
-            times = [d["avg_time"] for d in timings["Wilson"] if d["n"] == n]
-            if times: print("    ", format_timing(times))
+        if n in criteria_data["Wilson"]:
+            result = criteria_data["Wilson"][n]["result"]
+            print(f"Wilson: {'✅ Prim' if result else '❌ Zusammengesetzt'} (keine Testparameter)")
+            if timings:
+                times = [d["avg_time"] for d in timings["Wilson"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
 
         # Initial Lucas
         if n in criteria_data["Initial Lucas"]:
             data = criteria_data["Initial Lucas"][n]
-            result = initial_lucas_test(n)
-            print(f"Initial Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            print(f"Initial Lucas: {'✅ Prim' if data['result'] else '❌ Zusammengesetzt'}")
             print(f"   a={data['a']}: Bedingung 1 {'✓' if data['condition1'] else '✗'}")
             if "early_break" in data and data["early_break"]:
                 print(f"   ⚠️ Abbruch bei m={data['early_break']}")
@@ -153,8 +166,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
         # Lucas
         if n in criteria_data["Lucas"]:
             data = criteria_data["Lucas"][n]
-            result = lucas_test(n)
-            print(f"Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            print(f"Lucas: {'✅ Prim' if data['result'] else '❌ Zusammengesetzt'}")
             print(f"   a={data['a']}: Bedingung 1 {'✓' if data['condition1'] else '✗'}")
             if "early_break" in data and data["early_break"]:
                 print(f"   ⚠️ Abbruch bei m={data['early_break']}")
@@ -165,8 +177,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
         # Optimierter Lucas
         if n in criteria_data["Optimized Lucas"]:
             data = criteria_data["Optimized Lucas"][n]
-            result = optimized_lucas_test(n)
-            print(f"Optimierter Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            print(f"Optimierter Lucas: {'✅ Prim' if data['result'] else '❌ Zusammengesetzt'}")
             for q, tests in data["tests"].items():
                 print(f"   q={q}:", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in tests))
             if timings:

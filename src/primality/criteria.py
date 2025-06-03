@@ -5,7 +5,7 @@ from sympy import factorint
 from statistics import mean
 
 
-def fermat_criterion(n: int, k: int = 1) -> bool:
+def fermat_criterion4(n: int, k: int = 1) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2: 
@@ -19,12 +19,12 @@ def fermat_criterion(n: int, k: int = 1) -> bool:
             return False
     return True # wahrscheinlich prim
 
-def wilson_criterion(p: int) -> bool:
+def wilson_criterion4(p: int) -> bool:
     if p <= 1:
         raise ValueError("p must be greater than 1")
     return math.factorial(p - 1) % p == p - 1
 
-def initial_lucas_test(n: int) -> bool:
+def initial_lucas_test4(n: int) -> bool:
     if n <= 1: 
         raise ValueError("n must be greater than 1")
     if n == 2: return True
@@ -36,7 +36,7 @@ def initial_lucas_test(n: int) -> bool:
             return False
     return True
 
-def lucas_test(n: int) -> bool:
+def lucas_test4(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
@@ -49,7 +49,7 @@ def lucas_test(n: int) -> bool:
             return False
     return True
 
-def optimized_lucas_test(n: int) -> bool:
+def optimized_lucas_test4(n: int) -> bool:
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2: return True

@@ -4,7 +4,7 @@ from src.analysis import dataset
 import statistics, timeit
 from statistics import mean, stdev
 
-
+"""
 def measure_runtime(func: Callable, numbers: List[int], label: str, repeat: int = 5, precompute: bool = False) -> List[Dict]:
     results = []
     for n in numbers:
@@ -56,4 +56,4 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "
             "label": label
         })
 
-    return results"""
+    return results

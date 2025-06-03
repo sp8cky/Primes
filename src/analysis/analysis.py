@@ -158,5 +158,5 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=5, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
     #tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)

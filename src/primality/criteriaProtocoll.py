@@ -8,6 +8,96 @@ from typing import Optional, List, Dict, Tuple
 # same criteria as in src.primality.criteria.py, but with detailed output for each step ###
 
 
+def init_criteria_data(numbers: List[int]):
+    """Initialisiert das globale criteria_data-Dictionary mit allen Testzahlen."""
+    global criteria_data
+    criteria_data = {
+        "Fermat": {n: {"a_values": [], "results": []} for n in numbers},
+    }
+
+def fermat_criterion2(n: int, k: int = 1) -> bool:
+    if n <= 1:
+        raise ValueError("n must be greater than 1")
+    if n == 2:
+        return True
+    
+    for _ in range(k):
+        a = random.randint(2, n-1)
+        gcd_ok = gcd(a, n) == 1
+        test_ok = pow(a, n-1, n) == 1
+        
+        criteria_data["Fermat"][n]["a_values"].append(a)
+        criteria_data["Fermat"][n]["results"].append(gcd_ok and test_ok)
+        
+        if not gcd_ok:
+            return False
+        if not test_ok:
+            return False
+    
+    return True
+
+
+def format_timing2(times: List[float]) -> str:
+    return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
+
+def criteria_protocoll2(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
+    for n in numbers:
+        print(f"\n\033[1mTeste n = {n}\033[0m")
+        
+        # Fermat-Protokoll
+        if n in criteria_data["Fermat"]:
+            data = criteria_data["Fermat"][n]
+            print(f"Fermat: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
+            print("   ", " | ".join(
+                f"a={a}→{'✓' if res else '✗'}" 
+                for a, res in zip(data["a_values"], data["results"])
+            ))
+            
+            if timings:
+                times = [d["avg_time"] for d in timings["Fermat"] if d["n"] == n]
+                if times:
+                    print("    ", format_timing(times))
+
+def print_criteria_details():
+    """Gibt das globale criteria_data-Dictionary formatiert aus."""
+    if not criteria_data:
+        print("Keine Testdaten gespeichert.")
+        return
+    
+    print("\n\033[1mGespeicherte Testdaten:\033[0m")
+    for criterion, numbers in criteria_data.items():
+        print(f"\n🔹 {criterion}:")
+        for n, data in numbers.items():
+            print(f"  n = {n}:")
+            
+            if "a_values" in data and "results" in data:
+                # Format für Fermat/Lucas: a→result
+                details = " | ".join(
+                    f"a={a}→{'✓' if res else '✗'}" 
+                    for a, res in zip(data["a_values"], data["results"])
+                )
+                print(f"    Testwerte: {details}")
+            
+            elif "factors" in data:  # Für optimierten Lucas
+                print(f"    Faktoren: {data['factors']}")
+                for q, tests in data.get("tests", {}).items():
+                    print(f"    q={q}: " + " | ".join(
+                        f"a={a}→{'✓' if res else '✗'}" 
+                        for a, res in tests
+                    ))
+            
+            else:  # Wilson (keine Details)
+                print("    (Keine Testparameter)")
+
+
+
+
+
+
+
+
+
+
 def fermat_criterion_detail(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
     if n <= 1: return (False, details)

@@ -33,9 +33,12 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
+    # INITIALIZE DATA STRUCTURES
+    init_criteria_data(numbers)
+    
     # MEASURE
     datasets = {
-        "Fermat": measure_runtime(lambda n: fermat_criterion(n, fermat_k), numbers, f"Fermat (k={fermat_k})", repeat=repeats),
+        "Fermat": measure_runtime(lambda n: fermat_criterion2(n, fermat_k), numbers, f"Fermat (k={fermat_k})", repeat=repeats),
         "Wilson": measure_runtime(wilson_criterion, numbers, "Wilson", repeat=repeats),
         "Initial Lucas": measure_runtime(initial_lucas_test, numbers, "Initial Lucas", repeat=repeats),
         "Lucas": measure_runtime(lucas_test, numbers, "Lucas", repeat=repeats),
@@ -48,7 +51,8 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
         export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
     
     # CALL PROTOCOL
-    criteria_protocoll(numbers, datasets)
+    criteria_protocoll2(numbers, datasets)
+    print_criteria_details()
     
     # CREATE DATASETS FOR PLOTTING
     if show_plot:
@@ -154,5 +158,5 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)
+    criteria = run_prime_criteria_analysis(n_numbers=1, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    #tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)

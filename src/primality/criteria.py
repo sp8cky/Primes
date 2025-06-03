@@ -1,11 +1,8 @@
 import src.primality.helpers as helpers
-
 import random, math
 from math import gcd
 from sympy import factorint
 from statistics import mean
-
-
 
 
 def fermat_criterion(n: int, k: int = 1) -> bool:

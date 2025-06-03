@@ -89,9 +89,7 @@ def run_prime_test_analysis(
     num_type: str = 'g',
     start: int = 100_000,
     end: int = 1_000_000,
-    tests_to_run: str = "msa",
-    msr_rounds: int = 5,
-    ss_rounds: int = 5,
+    tests: str = "msa",
     repeats: int = 3,
     save_results: bool = True,
     show_plot: bool = True,
@@ -103,18 +101,27 @@ def run_prime_test_analysis(
 
     # INITIALIZE DATA STRUCTURES 
     init_tests_data(numbers)
+
+    # SELECT TESTS
+    test_functions = {}
+    test_colors = {}
+    
+    if 'm' in tests.lower():
+        test_functions["Miller-Rabin"] = lambda n: miller_selfridge_rabin_test(n, repeats)
+        test_colors["Miller-Rabin"] = "blue"
+    if 's' in tests.lower():
+        test_functions["Solovay-Strassen"] = lambda n: solovay_strassen_test(n, repeats)
+        test_colors["Solovay-Strassen"] = "green"
+    if 'a' in tests.lower():
+        test_functions["AKS"] = aks_test
+        test_colors["AKS"] = "red"
+    if not test_functions:
+        raise ValueError("Mindestens ein Test muss ausgewählt werden (m/s/a)")
     
     # MEASURE
-    miller_rabin = lambda n: miller_selfridge_rabin_test(n, repeats)
-    solovay_strassen = lambda n: solovay_strassen_test(n, repeats)
-    aks = aks_test
-    
-    # MEASURE RUNTIMES (separat von der Ausführung)
-    datasets = {
-        "Miller-Rabin": measure_runtime(miller_rabin, numbers, f"Miller-Rabin (k={repeats})"),
-        "Solovay-Strassen": measure_runtime(solovay_strassen, numbers, f"Solovay-Strassen (k={repeats})"),
-        "AKS": measure_runtime(aks, numbers, "AKS")
-    }
+    datasets = {}
+    for test_name, test_fn in test_functions.items():
+        datasets[test_name] = measure_runtime(test_fn, numbers, f"{test_name} (k={repeats})" if test_name != "AKS" else test_name)
     
     # SAVE RESULTS
     if save_results:
@@ -148,7 +155,12 @@ def run_prime_test_analysis(
             figsize=(7, 5)
         )
     
-    return datasets
+    return {
+        "test_data": tests_data,
+        "timing_data": datasets,
+        "numbers": numbers,
+        "selected_tests": list(datasets.keys())
+    }
 
 
 ################################################
@@ -156,5 +168,4 @@ def run_prime_test_analysis(
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
     #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, repeats=5, save_results=False, show_plot=True)
-    #tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)
+    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests="ms", repeats=5, save_results=False, show_plot=True)

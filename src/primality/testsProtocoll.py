@@ -17,7 +17,15 @@ def init_tests_data(numbers: List[int]):
     tests_data = {
         "Miller-Rabin": {n: {"rounds": [], "results": []} for n in numbers},
         "Solovay-Strassen": {n: {"rounds": [], "results": []} for n in numbers},
-        "AKS": {n: {"steps": {}, "result": None} for n in numbers}
+        "AKS": {n: {"steps": {
+                    "initial_check": None,
+                    "find_r": None,
+                    "prime_divisor_check": None,
+                    "polynomial_check": []
+                },
+                "result": None
+            } for n in numbers
+        }
     }
 
 def miller_selfridge_rabin_test(n: int, rounds=5) -> bool:
@@ -84,8 +92,11 @@ def solovay_strassen_test(n: int, rounds=5) -> bool:
 
 def aks_test(n: int) -> bool:
     if (n <= 1) or helpers.is_real_potency(n):
+        tests_data["AKS"][n]["steps"]["initial_check"] = False
+        tests_data["AKS"][n]["result"] = False
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
 
+    # Reset steps (falls der Test wiederholt wird)
     tests_data["AKS"][n]["steps"] = {
         "initial_check": True,
         "find_r": None,
@@ -138,6 +149,50 @@ def aks_test(n: int) -> bool:
 def format_timing(times: List[float]) -> str:
     return f"⏱ {times[0]*1000:.2f}ms" if times else "⏱ N/A"
 
+
+def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
+    if timings is None:
+        timings = {}
+    
+    for n in numbers:
+        print(f"\n\033[1mTeste n = {n}\033[0m")
+        
+        # Miller-Rabin
+        if 'Miller-Rabin' in tests_data and n in tests_data['Miller-Rabin']:
+            data = tests_data["Miller-Rabin"][n]
+            print(f"Miller-Rabin: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
+            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
+                 for a, res in data["rounds"]))
+            if 'Miller-Rabin' in timings:
+                times = [d["avg_time"] for d in timings["Miller-Rabin"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
+
+        # Solovay-Strassen
+        if 'Solovay-Strassen' in tests_data and n in tests_data['Solovay-Strassen']:
+            data = tests_data["Solovay-Strassen"][n]
+            print(f"Solovay-Strassen: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
+            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
+                 for a, res in data["rounds"]))
+            if 'Solovay-Strassen' in timings:
+                times = [d["avg_time"] for d in timings["Solovay-Strassen"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
+
+        # AKS
+        if 'AKS' in tests_data and n in tests_data['AKS']:
+            data = tests_data["AKS"][n]
+            print(f"AKS: {'✅ Prim' if data['result'] else '❌ Zusammengesetzt'}")
+            if 'find_r' in data['steps']:
+                print(f"   r = {data['steps']['find_r']}")
+            if 'prime_divisor_check' in data['steps']:
+                print(f"   Primteiler-Check: {data['steps']['prime_divisor_check']}")
+            if 'polynomial_check' in data['steps']:
+                print("   Polynom-Tests:", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
+                     for a, res in data["steps"]["polynomial_check"]))
+            if 'AKS' in timings:
+                times = [d["avg_time"] for d in timings["AKS"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
+
+"""               
 def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")
@@ -172,4 +227,4 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
                  for a, res in data["steps"]["polynomial_check"]))
             if timings:
                 times = [d["avg_time"] for d in timings["AKS"] if d["n"] == n]
-                if times: print("    ", format_timing(times))
+                if times: print("    ", format_timing(times))"""

@@ -1,7 +1,5 @@
 from src.primality.criteria import *
 from src.primality.tests import *
-from src.primality.criteriaProtocoll import *
-from src.primality.testsProtocoll import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
@@ -31,7 +29,7 @@ def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 
 def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5,repeats: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]: 
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
-    print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
+    print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
     
     # INITIALIZE DATA STRUCTURES 
     init_criteria_data(numbers)
@@ -97,7 +95,7 @@ def run_prime_test_analysis(
     
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
-    print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
+    print(f"Generating {len(numbers)} test numbers for prime tests (Typ '{num_type}')")
 
     # INITIALIZE DATA STRUCTURES 
     init_tests_data(numbers)
@@ -116,7 +114,7 @@ def run_prime_test_analysis(
         test_functions["AKS"] = aks_test
         test_colors["AKS"] = "red"
     if not test_functions:
-        raise ValueError("Mindestens ein Test muss ausgewählt werden (m/s/a)")
+        raise ValueError("Choose at least one test (m/s/a)")
     
     # MEASURE
     datasets = {}
@@ -167,5 +165,5 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
-    #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
     tests = run_prime_test_analysis(n_numbers=4, num_type='p', start=10, end=100, tests="msa", repeats=5, save_results=False, show_plot=True)

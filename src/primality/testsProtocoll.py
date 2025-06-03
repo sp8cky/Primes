@@ -113,6 +113,115 @@ def aks_test_detail(n: int) -> Tuple[bool, List[Tuple[str, bool]]]:
 def format_timing(times: List[float]) -> str:
     return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
+
+
+def tests_protocoll(numbers: List[int], tests_to_run: str = "msa", timings: Optional[Dict[str, List[Dict]]] = None):
+    """
+    Führt Primzahltests durch und protokolliert die Ergebnisse
+    
+    Args:
+        numbers: Liste der zu testenden Zahlen
+        tests_to_run: String mit Test-Kennungen (m=Miller-Rabin, s=Solovay-Strassen, a=AKS)
+        timings: Optionales Timing-Dictionary
+    """
+    for n in numbers:
+        print(f"\n\033[1mTeste n = {n}\033[0m")
+
+        # Miller-Selfridge-Rabin Test
+        if 'm' in tests_to_run.lower():
+            try:
+                result, details = miller_selfridge_rabin_test_detail(n, 3)
+                print(f"Miller-Rabin: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+                
+                round_data = {0: []}
+                current_round = 0
+                for desc, cond in details:
+                    if desc.startswith("Runde"):
+                        current_round = int(desc.split()[1][:-1])
+                        round_data[current_round] = []
+                    round_data[current_round].append((desc, cond))
+                
+                for round_num in sorted(round_data.keys()):
+                    items = round_data[round_num]
+                    if round_num == 0:
+                        print(f"  {items[0][0]}: {'✓' if items[0][1] else '✗'}")
+                    else:
+                        parts = []
+                        for desc, cond in items:
+                            if "Runde" in desc:
+                                parts.append(desc)
+                            else:
+                                parts.append(f"{desc}→{'✓' if cond else '✗'}")
+                        print("  ", " | ".join(parts))
+                
+                if timings:
+                    times = [d["avg_time"] for d in timings.get("Miller-Rabin", []) if d["n"] == n]
+                    if times:
+                        print("   ", format_timing(times))
+                        
+            except ValueError as e:
+                print(f"Miller-Rabin: ⚠️ {str(e)}")
+
+        # Solovay-Strassen Test
+        if 's' in tests_to_run.lower():
+            try:
+                result, details = solovay_strassen_test_detail(n, 3)
+                print(f"Solovay-Strassen: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+                
+                round_data = {}
+                current_round = 0
+                for desc, cond in details:
+                    if desc.startswith("Runde"):
+                        current_round = int(desc.split()[1][:-1])
+                        round_data[current_round] = []
+                    round_data[current_round].append((desc, cond))
+                
+                for round_num in sorted(round_data.keys()):
+                    parts = []
+                    for desc, cond in round_data[round_num]:
+                        if "Runde" in desc:
+                            parts.append(desc)
+                        else:
+                            parts.append(f"{desc}→{'✓' if cond else '✗'}")
+                    print("  ", " | ".join(parts))
+                
+                if timings:
+                    times = [d["avg_time"] for d in timings.get("Solovay-Strassen", []) if d["n"] == n]
+                    if times:
+                        print("   ", format_timing(times))
+                        
+            except ValueError as e:
+                print(f"Solovay-Strassen: ⚠️ {str(e)}")
+
+        # AKS Test
+        if 'a' in tests_to_run.lower():
+            try:
+                result, details = aks_test_detail(n)
+                print(f"AKS: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+                
+                current_group = []
+                for desc, cond in details:
+                    if "Teste r=" in desc or "a=" in desc:
+                        current_group.append(f"{desc}→{'✓' if cond else '✗'}")
+                    else:
+                        if current_group:
+                            print("  ", " | ".join(current_group))
+                            current_group = []
+                        print(f"  {desc}: {'✓' if cond else '✗'}")
+                
+                if current_group:
+                    print("  ", " | ".join(current_group))
+                
+                if timings:
+                    times = [d["avg_time"] for d in timings.get("AKS", []) if d["n"] == n]
+                    if times:
+                        print("   ", format_timing(times))
+                        
+            except ValueError as e:
+                print(f"AKS: ⚠️ {str(e)}")
+
+
+"""
 def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")
@@ -121,8 +230,36 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
         try:
             result, details = miller_selfridge_rabin_test_detail(n, 3)
             print(f"Miller-Rabin: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            
+            # Initialisiere round_data mit Schlüssel 0 für die Zerlegungsinfo
+            round_data = {0: []}
+            current_round = 0
+            
             for desc, cond in details:
-                print(f"  {desc}: {'✓' if cond else '✗'}")
+                if desc.startswith("Runde"):
+                    current_round = int(desc.split()[1][:-1])
+                    round_data[current_round] = []
+                round_data[current_round].append((desc, cond))
+            
+            # Ausgabe nach Runden gruppiert
+            for round_num in sorted(round_data.keys()):
+                items = round_data[round_num]
+                if round_num == 0:  # Zerlegungsinfo
+                    print(f"  {items[0][0]}: {'✓' if items[0][1] else '✗'}")
+                else:
+                    parts = []
+                    for desc, cond in items:
+                        if "Runde" in desc:
+                            parts.append(desc)
+                        else:
+                            parts.append(f"{desc}→{'✓' if cond else '✗'}")
+                    print("  ", " | ".join(parts))
+            
+            if timings:
+                times = [d["avg_time"] for d in timings.get("Miller-Rabin", []) if d["n"] == n]
+                if times:
+                    print("   ", format_timing(times))
+                    
         except ValueError as e:
             print(f"Miller-Rabin: ⚠️ {str(e)}")
 
@@ -130,8 +267,31 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
         try:
             result, details = solovay_strassen_test_detail(n, 3)
             print(f"Solovay-Strassen: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            
+            # Gruppiere Details nach Runden
+            round_data = {}
+            current_round = 0
             for desc, cond in details:
-                print(f"  {desc}: {'✓' if cond else '✗'}")
+                if desc.startswith("Runde"):
+                    current_round = int(desc.split()[1][:-1])
+                    round_data[current_round] = []
+                round_data[current_round].append((desc, cond))
+            
+            # Ausgabe nach Runden gruppiert
+            for round_num, items in round_data.items():
+                parts = []
+                for desc, cond in items:
+                    if "Runde" in desc:
+                        parts.append(desc)
+                    else:
+                        parts.append(f"{desc}→{'✓' if cond else '✗'}")
+                print("  ", " | ".join(parts))
+            
+            if timings:
+                times = [d["avg_time"] for d in timings.get("Solovay-Strassen", []) if d["n"] == n]
+                if times:
+                    print("   ", format_timing(times))
+                    
         except ValueError as e:
             print(f"Solovay-Strassen: ⚠️ {str(e)}")
 
@@ -139,7 +299,26 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
         try:
             result, details = aks_test_detail(n)
             print(f"AKS: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            
+            # Gruppiere ähnliche Informationen
+            current_group = []
             for desc, cond in details:
-                print(f"  {desc}: {'✓' if cond else '✗'}")
+                if "Teste r=" in desc or "a=" in desc:
+                    current_group.append(f"{desc}→{'✓' if cond else '✗'}")
+                else:
+                    if current_group:
+                        print("  ", " | ".join(current_group))
+                        current_group = []
+                    print(f"  {desc}: {'✓' if cond else '✗'}")
+            
+            if current_group:
+                print("  ", " | ".join(current_group))
+            
+            if timings:
+                times = [d["avg_time"] for d in timings.get("AKS", []) if d["n"] == n]
+                if times:
+                    print("   ", format_timing(times))
+                    
         except ValueError as e:
             print(f"AKS: ⚠️ {str(e)}")
+            """

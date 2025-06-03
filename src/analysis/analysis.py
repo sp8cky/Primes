@@ -4,7 +4,6 @@ from src.primality.criteriaProtocoll import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
-from src.analysis.criteriaDictionary import get_criteria_details
 import random, json, os, csv
 from sympy import isprime, primerange
 from typing import List, Dict
@@ -56,13 +55,12 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     }
     
     # SAVE RESTULTS
-    #if save_results:
-        #save_json(datasets, get_timestamped_filename("criteria", "json"))
-        #export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
+    if save_results:
+        save_json(datasets, get_timestamped_filename("criteria", "json"))
+        export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
     
     # CALL PROTOCOL
     criteria_protocoll(numbers, datasets)
-
 
     
     # CREATE DATASETS FOR PLOTTING
@@ -137,5 +135,5 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
 # CALL Criteria ##
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3)
+    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
     #tests = run_prime_test_analysis(n_numbers=5, num_type='p', start=1000, end=10000, repeats=3)

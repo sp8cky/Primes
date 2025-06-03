@@ -1,5 +1,5 @@
 import src.primality.helpers as helpers
-from src.analysis.criteriaDictionary import *
+
 import random, math
 from math import gcd
 from sympy import factorint

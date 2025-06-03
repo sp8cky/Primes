@@ -6,7 +6,7 @@ from statistics import mean
 from typing import Optional, List, Dict, Tuple
 
 # same criteria as in src.primality.criteria.py, but with detailed output for each step
-def fermat_criterion(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
+def fermat_criterion_detail(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
     if n <= 1: return (False, details)
     if n == 2: return (True, details)
@@ -20,12 +20,12 @@ def fermat_criterion(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
         if not test_result: return (False, details)
     return (True, details)
 
-def wilson_criterion(n: int) -> Tuple[bool, None]:
+def wilson_criterion_detail(n: int) -> Tuple[bool, None]:
     if n <= 1: return (False, None)
     result = (math.factorial(n-1) % n) == n-1
     return (result, None)
 
-def initial_lucas_test(n: int) -> Tuple[bool, List[Tuple[int, bool]]]:
+def initial_lucas_test_detail(n: int) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
     if n <= 1: return (False, details)
     if n == 2: return (True, details)
@@ -41,7 +41,7 @@ def initial_lucas_test(n: int) -> Tuple[bool, List[Tuple[int, bool]]]:
             return (False, details)
     return (True, details)
 
-def lucas_test(n: int) -> Tuple[bool, List[Tuple[str, bool]]]:
+def lucas_test_detail(n: int) -> Tuple[bool, List[Tuple[str, bool]]]:
     details = []
     if n <= 1: return (False, details)
     if n == 2: return (True, details)
@@ -57,7 +57,7 @@ def lucas_test(n: int) -> Tuple[bool, List[Tuple[str, bool]]]:
             return (False, details)
     return (True, details)
 
-def optimized_lucas_test(n: int) -> Tuple[bool, Dict[int, List[Tuple[int, bool]]]]:
+def optimized_lucas_test_detail(n: int) -> Tuple[bool, Dict[int, List[Tuple[int, bool]]]]:
     details = {}
     if n <= 1: return (False, details)
     if n == 2: return (True, details)
@@ -88,7 +88,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
         print(f"\n\033[1mTeste n = {n}\033[0m")
 
         # Fermat
-        result, details = fermat_criterion(n, k=3)
+        result, details = fermat_criterion_detail(n, k=3)
         print(f"Fermat: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
         print("  ", " | ".join([f"a={a}→{'✓' if res else '✗'}" for a, res in details]))
         if timings:
@@ -97,7 +97,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
                 print("   ", format_timing(times))
 
         # Wilson
-        result, _ = wilson_criterion(n)
+        result, _ = wilson_criterion_detail(n)
         print(f"Wilson: {'✅ Prim' if result else '❌ Zusammengesetzt'} (kein a)")
         if timings:
             times = [d["avg_time"] for d in timings["Wilson"] if d["n"] == n]
@@ -105,7 +105,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
                 print("   ", format_timing(times))
 
         # Initial Lucas
-        result, details = initial_lucas_test(n)
+        result, details = initial_lucas_test_detail(n)
         print(f"Initial Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
         if details:
             a, res = details[0]
@@ -118,7 +118,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
                 print("   ", format_timing(times))
 
         # Lucas
-        result, details = lucas_test(n)
+        result, details = lucas_test_detail(n)
         print(f"Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
         if details:
             a, res = details[0]
@@ -131,7 +131,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
                 print("   ", format_timing(times))
 
         # Optimierter Lucas
-        result, details = optimized_lucas_test(n)
+        result, details = optimized_lucas_test_detail(n)
         print(f"Optimierter Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
         for q, tests in details.items():
             row = " | ".join([f"a={a}→{'✓' if res else '✗'}" for a, res in tests])

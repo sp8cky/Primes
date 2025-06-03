@@ -1,6 +1,7 @@
 from src.primality.criteria import *
 from src.primality.tests import *
 from src.primality.criteriaProtocoll import *
+from src.primality.testsProtocoll import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
@@ -93,7 +94,7 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
-    # MESSUNG
+    # MEASURE
     print("Starte Laufzeitmessungen für Primzahltests...")
     datasets = {
         "Miller–Rabin": measure_runtime(lambda n: miller_selfridge_rabin_test(n, msr_rounds),numbers,f"Miller–Rabin (r={msr_rounds})",repeat=repeats),
@@ -101,10 +102,14 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
         "AKS": measure_runtime(aks_test, numbers,"AKS", repeat=repeats)
     }
     
-    # SPEICHERN
+    # SAVE RESULTS
     if save_results:
         save_json(datasets, get_timestamped_filename("tests", "json"))
         export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
+
+    # PROTOCOL
+    tests_protocoll(numbers, datasets)
+
 
     # PLOTTING
     if show_plot:
@@ -136,4 +141,4 @@ def run_prime_test_analysis(n_numbers: int = 100, num_type: str = 'g', start: in
 if __name__ == "__main__":
     random.seed(42)  # Für Reproduzierbarkeit
     criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=1000, end=10000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    #tests = run_prime_test_analysis(n_numbers=5, num_type='p', start=1000, end=10000, repeats=3)
+    tests = run_prime_test_analysis(n_numbers=5, num_type='p', start=10, end=100, repeats=3, save_results=False, show_plot=True)

@@ -4,6 +4,27 @@ from src.analysis import dataset
 import statistics, timeit
 from statistics import mean, stdev
 
+
+def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "") -> Dict[str, List[Dict]]:
+    results = []
+    for n in inputs:
+        # Führe die Funktion einmal aus (die eigentliche Logik wird schon in criteria_data gespeichert)
+        start = time.perf_counter()
+        fn(n)
+        end = time.perf_counter()
+        runtime = end - start
+
+        results.append({
+            "n": n,
+            "avg_time": runtime,  # Da nur eine Ausführung, avg = einziger Wert
+            "std_dev": 0.0,      # Keine Varianz bei einer Messung
+            "best_time": runtime,
+            "worst_time": runtime,
+            "label": label
+        })
+
+    return results
+
 """
 def measure_runtime(func: Callable, numbers: List[int], label: str, repeat: int = 5, precompute: bool = False) -> List[Dict]:
     results = []
@@ -30,7 +51,8 @@ def measure_runtime(func: Callable, numbers: List[int], label: str, repeat: int 
         })
     return results
 
-"""
+
+
 # Function to measure the runtime of a given function with various inputs
 def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "", repeat: int = 3) -> List[Dict]:
     results = []
@@ -56,4 +78,4 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], label: str = "
             "label": label
         })
 
-    return results
+    return results"""

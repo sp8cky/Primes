@@ -6,7 +6,7 @@ from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
 
-def miller_selfridge_rabin_test(n: int, rounds=5) -> bool:
+def miller_selfridge_rabin_test3(n: int, rounds=5) -> bool:
     if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n):
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     # Form of n-1
@@ -32,7 +32,7 @@ def miller_selfridge_rabin_test(n: int, rounds=5) -> bool:
             return False
     return True
 
-def solovay_strassen_test(n: int, rounds=5) -> bool:
+def solovay_strassen_test3(n: int, rounds=5) -> bool:
     if rounds <= 0:
         raise ValueError("Rounds must be a positive integer.")
     if n < 2 or n % 2 == 0 and n > 2:
@@ -46,7 +46,7 @@ def solovay_strassen_test(n: int, rounds=5) -> bool:
             return False
     return True
 
-def aks_test(n: int) -> bool:
+def aks_test3(n: int) -> bool:
     if (n <= 1) or helpers.is_real_potency(n):
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
 

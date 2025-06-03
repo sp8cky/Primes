@@ -33,27 +33,33 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
     
-    # INITIALIZE DATA STRUCTURES
+    # INITIALIZE DATA STRUCTURES 
     init_criteria_data(numbers)
-
-    # MEASURE
+    
+    # CALLS
+    fermat = lambda n: fermat_criterion(n, fermat_k)
+    wilson = wilson_criterion
+    initial_lucas = initial_lucas_test
+    lucas = lucas_test
+    optimized_lucas = optimized_lucas_test
+    
+    # MEASURE 
     datasets = {
-        "Fermat": measure_runtime(lambda n: fermat_criterion(n, fermat_k), numbers, f"Fermat (k={fermat_k})", repeat=repeats),
-        "Wilson": measure_runtime(wilson_criterion, numbers, "Wilson", repeat=repeats),
-        "Initial Lucas": measure_runtime(initial_lucas_test, numbers, "Initial Lucas", repeat=repeats),
-        "Lucas": measure_runtime(lucas_test, numbers, "Lucas", repeat=repeats),
-        "Optimized Lucas": measure_runtime(optimized_lucas_test, numbers, "Optimized Lucas", repeat=repeats)
+        "Fermat": measure_runtime(fermat, numbers, f"Fermat (k={fermat_k})"),
+        "Wilson": measure_runtime(wilson, numbers, "Wilson"),
+        "Initial Lucas": measure_runtime(initial_lucas, numbers, "Initial Lucas"),
+        "Lucas": measure_runtime(lucas, numbers, "Lucas"),
+        "Optimized Lucas": measure_runtime(optimized_lucas, numbers, "Optimized Lucas")
     }
-    
-    # SAVE RESTULTS
-    if save_results:
-        save_json(datasets, get_timestamped_filename("criteria", "json"))
-        export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
-    
+ 
     # CALL PROTOCOL
     criteria_protocoll(numbers, datasets)
 
-    
+        # SAVE RESTULTS
+    if save_results:
+        save_json(datasets, get_timestamped_filename("criteria", "json"))
+        export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
+
     # CREATE DATASETS FOR PLOTTING
     if show_plot:
         plot_data = {
@@ -94,30 +100,21 @@ def run_prime_test_analysis(
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generiere {len(numbers)} Testzahlen (Typ '{num_type}')")
+
+    # INITIALIZE DATA STRUCTURES 
+    init_tests_data(numbers)
     
     # MEASURE
-    datasets = {}
-    test_mapping = {
-        'm': ("Miller–Rabin", lambda n: miller_selfridge_rabin_test(n, msr_rounds)),
-        's': ("Solovay–Strassen", lambda n: solovay_strassen_test(n, ss_rounds)),
-        'a': ("AKS", aks_test)
+    miller_rabin = lambda n: miller_selfridge_rabin_test(n, repeats)
+    solovay_strassen = lambda n: solovay_strassen_test(n, repeats)
+    aks = aks_test
+    
+    # MEASURE RUNTIMES (separat von der Ausführung)
+    datasets = {
+        "Miller-Rabin": measure_runtime(miller_rabin, numbers, f"Miller-Rabin (k={repeats})"),
+        "Solovay-Strassen": measure_runtime(solovay_strassen, numbers, f"Solovay-Strassen (k={repeats})"),
+        "AKS": measure_runtime(aks, numbers, "AKS")
     }
-    # repeat the tests based input
-    for test_code in tests_to_run.lower():
-        if test_code in test_mapping:
-            test_name, test_func = test_mapping[test_code]
-            label = test_name
-            if test_code == 'm':
-                label += f" (r={msr_rounds})"
-            elif test_code == 's':
-                label += f" (r={ss_rounds})"
-                
-            datasets[test_name] = measure_runtime(
-                test_func,
-                numbers,
-                label,
-                repeat=repeats
-            )
     
     # SAVE RESULTS
     if save_results:
@@ -125,7 +122,7 @@ def run_prime_test_analysis(
         export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
 
     # PROTOCOL
-    tests_protocoll(numbers, tests_to_run, datasets)
+    tests_protocoll(numbers, datasets)
 
     # PLOTTING
     if show_plot and datasets:
@@ -158,5 +155,6 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
+    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, repeats=5, save_results=False, show_plot=True)
     #tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests_to_run="msa", msr_rounds=5, ss_rounds=5, repeats=5, save_results=False, show_plot=True)

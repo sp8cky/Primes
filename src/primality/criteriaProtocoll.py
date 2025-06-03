@@ -21,7 +21,6 @@ def init_criteria_data(numbers: List[int]):
 
 
 def fermat_criterion(n: int, k: int = 1) -> bool:
-    print("FERMAT AUFRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUF")
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
@@ -42,7 +41,6 @@ def fermat_criterion(n: int, k: int = 1) -> bool:
     return True
 
 def wilson_criterion(p: int) -> bool:
-    print("WILSON AUFRuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuf")
     if p <= 1:
         raise ValueError("p must be greater than 1")
 
@@ -147,7 +145,7 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
         # Wilson
         if n in criteria_data["Wilson"]:
             result = criteria_data["Wilson"][n]["result"]
-            print(f"Wilson: {'✅ Prim' if result else '❌ Zusammengesetzt'} (keine Testparameter)")
+            print(f"Wilson: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
             if timings:
                 times = [d["avg_time"] for d in timings["Wilson"] if d["n"] == n]
                 if times: print("    ", format_timing(times))

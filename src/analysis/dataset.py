@@ -4,7 +4,9 @@ import csv
 from datetime import datetime
 
 
-DATA_DIR = "data"
+#DATA_DIR = "data"
+# DATA_DIR relativ zum Projekt-Hauptverzeichnis setzen
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 
 def get_timestamped_filename(basename: str, ext: str = "json"):
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")

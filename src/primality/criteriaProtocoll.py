@@ -13,9 +13,15 @@ def init_criteria_data(numbers: List[int]):
     global criteria_data
     criteria_data = {
         "Fermat": {n: {"a_values": [], "results": []} for n in numbers},
+        "Wilson": {n: None for n in numbers},  # Wilson speichert keine Testdaten
+        "Initial Lucas": {n: {"a": None, "condition1": None, "early_break": None} for n in numbers},
+        "Lucas": {n: {"a": None, "condition1": None, "early_break": None} for n in numbers},
+        "Optimized Lucas": {n: {"factors": factorint(n-1), "tests": {}} for n in numbers}
     }
 
-def fermat_criterion2(n: int, k: int = 1) -> bool:
+
+def fermat_criterion(n: int, k: int = 1) -> bool:
+    print("FERMAT AUFRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUF")
     if n <= 1:
         raise ValueError("n must be greater than 1")
     if n == 2:
@@ -33,61 +39,139 @@ def fermat_criterion2(n: int, k: int = 1) -> bool:
             return False
         if not test_ok:
             return False
+    return True
+
+def wilson_criterion(p: int) -> bool:
+    print("WILSON AUFRuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuf")
+    if p <= 1:
+        raise ValueError("p must be greater than 1")
+    return math.factorial(p - 1) % p == p - 1
+
+def initial_lucas_test(n: int) -> bool:
+    if n <= 1:
+        raise ValueError("n must be greater than 1")
+    if n == 2:
+        return True
+    
+    a = random.randint(2, n-2)
+    condition1 = pow(a, n-1, n) == 1
+    criteria_data["Initial Lucas"][n]["a"] = a
+    criteria_data["Initial Lucas"][n]["condition1"] = condition1
+    
+    if not condition1:
+        return False
+    
+    for m in range(1, n-1):
+        if pow(a, m, n) == 1:
+            criteria_data["Initial Lucas"][n]["early_break"] = m
+            return False
+    
+    return True
+
+def lucas_test(n: int) -> bool:
+    if n <= 1:
+        raise ValueError("n must be greater than 1")
+    if n == 2:
+        return True
+    
+    a = random.randint(2, n-1)
+    condition1 = pow(a, n-1, n) == 1
+    criteria_data["Lucas"][n]["a"] = a
+    criteria_data["Lucas"][n]["condition1"] = condition1
+    
+    if not condition1:
+        return False
+    
+    for m in range(1, n):
+        if (n-1) % m == 0 and pow(a, m, n) == 1:
+            criteria_data["Lucas"][n]["early_break"] = m
+            return False
+    return True
+
+def optimized_lucas_test(n: int) -> bool:
+    if n <= 1:
+        raise ValueError("n must be greater than 1")
+    if n == 2:
+        return True
+    
+    factors = criteria_data["Optimized Lucas"][n]["factors"]
+    for q in factors:
+        for a in range(2, n):
+            condition1 = pow(a, n-1, n) == 1
+            condition2 = pow(a, (n-1)//q, n) != 1
+            
+            if q not in criteria_data["Optimized Lucas"][n]["tests"]:
+                criteria_data["Optimized Lucas"][n]["tests"][q] = []
+            criteria_data["Optimized Lucas"][n]["tests"][q].append((a, condition1 and condition2))
+            
+            if condition1 and condition2:
+                break
+        else:
+            return False
     
     return True
 
 
-def format_timing2(times: List[float]) -> str:
+
+
+def format_timing(times: List[float]) -> str:
     return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
-def criteria_protocoll2(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
+
+def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")
         
-        # Fermat-Protokoll
+        # Fermat
         if n in criteria_data["Fermat"]:
             data = criteria_data["Fermat"][n]
             print(f"Fermat: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
-            print("   ", " | ".join(
-                f"a={a}→{'✓' if res else '✗'}" 
-                for a, res in zip(data["a_values"], data["results"])
-            ))
-            
+            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
+                 for a, res in zip(data["a_values"], data["results"])))
             if timings:
                 times = [d["avg_time"] for d in timings["Fermat"] if d["n"] == n]
-                if times:
-                    print("    ", format_timing(times))
+                if times: print("    ", format_timing(times))
 
-def print_criteria_details():
-    """Gibt das globale criteria_data-Dictionary formatiert aus."""
-    if not criteria_data:
-        print("Keine Testdaten gespeichert.")
-        return
-    
-    print("\n\033[1mGespeicherte Testdaten:\033[0m")
-    for criterion, numbers in criteria_data.items():
-        print(f"\n🔹 {criterion}:")
-        for n, data in numbers.items():
-            print(f"  n = {n}:")
-            
-            if "a_values" in data and "results" in data:
-                # Format für Fermat/Lucas: a→result
-                details = " | ".join(
-                    f"a={a}→{'✓' if res else '✗'}" 
-                    for a, res in zip(data["a_values"], data["results"])
-                )
-                print(f"    Testwerte: {details}")
-            
-            elif "factors" in data:  # Für optimierten Lucas
-                print(f"    Faktoren: {data['factors']}")
-                for q, tests in data.get("tests", {}).items():
-                    print(f"    q={q}: " + " | ".join(
-                        f"a={a}→{'✓' if res else '✗'}" 
-                        for a, res in tests
-                    ))
-            
-            else:  # Wilson (keine Details)
-                print("    (Keine Testparameter)")
+        # Wilson
+        print(f"Wilson: {'✅ Prim' if wilson_criterion(n) else '❌ Zusammengesetzt'} (keine Testparameter)")
+        if timings:
+            times = [d["avg_time"] for d in timings["Wilson"] if d["n"] == n]
+            if times: print("    ", format_timing(times))
+
+        # Initial Lucas
+        if n in criteria_data["Initial Lucas"]:
+            data = criteria_data["Initial Lucas"][n]
+            result = initial_lucas_test(n)
+            print(f"Initial Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            print(f"   a={data['a']}: Bedingung 1 {'✓' if data['condition1'] else '✗'}")
+            if "early_break" in data and data["early_break"]:
+                print(f"   ⚠️ Abbruch bei m={data['early_break']}")
+            if timings:
+                times = [d["avg_time"] for d in timings["Initial Lucas"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
+
+        # Lucas
+        if n in criteria_data["Lucas"]:
+            data = criteria_data["Lucas"][n]
+            result = lucas_test(n)
+            print(f"Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            print(f"   a={data['a']}: Bedingung 1 {'✓' if data['condition1'] else '✗'}")
+            if "early_break" in data and data["early_break"]:
+                print(f"   ⚠️ Abbruch bei m={data['early_break']}")
+            if timings:
+                times = [d["avg_time"] for d in timings["Lucas"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
+
+        # Optimierter Lucas
+        if n in criteria_data["Optimized Lucas"]:
+            data = criteria_data["Optimized Lucas"][n]
+            result = optimized_lucas_test(n)
+            print(f"Optimierter Lucas: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
+            for q, tests in data["tests"].items():
+                print(f"   q={q}:", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in tests))
+            if timings:
+                times = [d["avg_time"] for d in timings["Optimized Lucas"] if d["n"] == n]
+                if times: print("    ", format_timing(times))
 
 
 
@@ -97,6 +181,7 @@ def print_criteria_details():
 
 
 
+"""
 
 def fermat_criterion_detail(n: int, k: int = 1) -> Tuple[bool, List[Tuple[int, bool]]]:
     details = []
@@ -231,3 +316,4 @@ def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict
             times = [d["avg_time"] for d in timings["Optimized Lucas"] if d["n"] == n]
             if times:
                 print("   ", format_timing(times))
+"""

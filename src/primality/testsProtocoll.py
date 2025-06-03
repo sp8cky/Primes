@@ -146,19 +146,22 @@ def aks_test(n: int) -> bool:
     tests_data["AKS"][n]["result"] = True
     return True
 
+#def format_timing(times: List[float]) -> str:
+#    return f"⏱ {times[0]*1000:.2f}ms" if times else "⏱ N/A"
 def format_timing(times: List[float]) -> str:
-    return f"⏱ {times[0]*1000:.2f}ms" if times else "⏱ N/A"
+    return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
-
-def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
+def tests_protocoll(numbers: List[int], selected_tests: str = 'msa', timings: Optional[Dict[str, List[Dict]]] = None):
     if timings is None:
         timings = {}
+    
+    selected_tests = selected_tests.lower()
     
     for n in numbers:
         print(f"\n\033[1mTeste n = {n}\033[0m")
         
-        # Miller-Rabin
-        if 'Miller-Rabin' in tests_data and n in tests_data['Miller-Rabin']:
+        # Miller-Rabin Test
+        if 'm' in selected_tests and 'Miller-Rabin' in tests_data and n in tests_data['Miller-Rabin']:
             data = tests_data["Miller-Rabin"][n]
             print(f"Miller-Rabin: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
             print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
@@ -167,8 +170,8 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
                 times = [d["avg_time"] for d in timings["Miller-Rabin"] if d["n"] == n]
                 if times: print("    ", format_timing(times))
 
-        # Solovay-Strassen
-        if 'Solovay-Strassen' in tests_data and n in tests_data['Solovay-Strassen']:
+        # Solovay-Strassen Test
+        if 's' in selected_tests and 'Solovay-Strassen' in tests_data and n in tests_data['Solovay-Strassen']:
             data = tests_data["Solovay-Strassen"][n]
             print(f"Solovay-Strassen: {'✅ Prim' if all(data['results']) else '❌ Zusammengesetzt'}")
             print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
@@ -177,15 +180,15 @@ def tests_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]]
                 times = [d["avg_time"] for d in timings["Solovay-Strassen"] if d["n"] == n]
                 if times: print("    ", format_timing(times))
 
-        # AKS
-        if 'AKS' in tests_data and n in tests_data['AKS']:
+        # AKS Test
+        if 'a' in selected_tests and 'AKS' in tests_data and n in tests_data['AKS']:
             data = tests_data["AKS"][n]
             print(f"AKS: {'✅ Prim' if data['result'] else '❌ Zusammengesetzt'}")
-            if 'find_r' in data['steps']:
+            if 'steps' in data and 'find_r' in data['steps']:
                 print(f"   r = {data['steps']['find_r']}")
-            if 'prime_divisor_check' in data['steps']:
+            if 'steps' in data and 'prime_divisor_check' in data['steps']:
                 print(f"   Primteiler-Check: {data['steps']['prime_divisor_check']}")
-            if 'polynomial_check' in data['steps']:
+            if 'steps' in data and 'polynomial_check' in data['steps']:
                 print("   Polynom-Tests:", " | ".join(f"a={a}→{'✓' if res else '✗'}" 
                      for a, res in data["steps"]["polynomial_check"]))
             if 'AKS' in timings:

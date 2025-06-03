@@ -129,7 +129,7 @@ def run_prime_test_analysis(
         export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
 
     # PROTOCOL
-    tests_protocoll(numbers, datasets)
+    tests_protocoll(numbers, tests, datasets)
 
     # PLOTTING
     if show_plot and datasets:
@@ -168,4 +168,4 @@ def run_prime_test_analysis(
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
     #criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=1, num_type='p', start=10, end=100, tests="ms", repeats=5, save_results=False, show_plot=True)
+    tests = run_prime_test_analysis(n_numbers=4, num_type='p', start=10, end=100, tests="msa", repeats=5, save_results=False, show_plot=True)

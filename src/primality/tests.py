@@ -145,7 +145,8 @@ def aks_test(n: int) -> bool:
 
 
 def format_timing(times: List[float]) -> str:
-    return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
+    return f"⏱ Time: {times[0]*1000:.2f}ms"
+    #return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
 def tests_protocoll(numbers: List[int], selected_tests: str = 'msa', timings: Optional[Dict[str, List[Dict]]] = None):
     if timings is None:

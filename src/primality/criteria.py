@@ -111,7 +111,8 @@ def optimized_lucas_test(n: int) -> bool:
 
 
 def format_timing(times: List[float]) -> str:
-    return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
+    return f"⏱ Time: {times[0]*1000:.2f}ms"
+    #return f"⏱ Best: {min(times)*1000:.2f}ms | Avg: {mean(times)*1000:.2f}ms | Worst: {max(times)*1000:.2f}ms"
 
 def criteria_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None):
     for n in numbers:

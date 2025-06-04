@@ -76,20 +76,19 @@ Diese Tests wurden anhand der zugrundeliegenden Theorien erarbeitet:
 - **AKS-Test** (Agrawal–Kayal–Saxena, vollständig deterministisch)
 
 ---
-### Tests
-Folgende Tests wurden mit pytest implementiert
-- für die 5 Kriterien
-- MSRT
-SST
-AKS
 
----
+### Implementierung
+
 
 ### Nächste Schritte
 - Implementierung erster Laufzeitanalysen (`time`, `timeit`, `cProfile`)
 - Vergleich der Laufzeiten für verschiedene `n`
 - Visualisierung der Laufzeitkomplexität
 - Erweiterung um probabilistische Tests zur Gegenüberstellung (z. B. Miller–Rabin)
+range bis 1Mio weitere tests für verhalten, steigt es irgendwann stark an?
+graph die laufzeiten
+
+für die anderen kriterien/tests höhere zahlen probieren
 
 ---
 

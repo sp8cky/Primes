@@ -26,7 +26,7 @@ def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 
     return sorted(numbers)
 
 # whole analysis function for prime criteria, calls generation, measurement, saving and plotting
-def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5,repeats: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]: 
+def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]: 
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
@@ -35,6 +35,7 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     init_criteria_data(numbers)
     
     # CALLS
+    print("Running prime criteria tests...")
     fermat = lambda n: fermat_criterion(n, fermat_k)
     wilson = wilson_criterion
     initial_lucas = initial_lucas_test
@@ -42,6 +43,7 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
     optimized_lucas = optimized_lucas_test
     
     # MEASURE 
+    print("Measuring runtimes...")
     datasets = {
         "Fermat": measure_runtime(fermat, numbers, f"Fermat (k={fermat_k})"),
         "Wilson": measure_runtime(wilson, numbers, "Wilson"),
@@ -101,6 +103,7 @@ def run_prime_test_analysis(
     init_tests_data(numbers)
 
     # SELECT TESTS
+    print("Running prime tests...")
     test_functions = {}
     test_colors = {}
     
@@ -117,6 +120,7 @@ def run_prime_test_analysis(
         raise ValueError("Choose at least one test (m/s/a)")
     
     # MEASURE
+    print("Measuring runtimes...")
     datasets = {}
     for test_name, test_fn in test_functions.items():
         datasets[test_name] = measure_runtime(test_fn, numbers, f"{test_name} (k={repeats})" if test_name != "AKS" else test_name)
@@ -165,5 +169,5 @@ def run_prime_test_analysis(
 # CALL
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=2, num_type='p', start=10000, end=100000, fermat_k=3, repeats=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=4, num_type='p', start=10, end=100, tests="msa", repeats=5, save_results=False, show_plot=True)
+    criteria = run_prime_criteria_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, fermat_k=3, save_results=False, show_plot=True)
+    tests = run_prime_test_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, tests="msa", repeats=5, save_results=False, show_plot=True)

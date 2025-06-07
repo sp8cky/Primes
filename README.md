@@ -85,10 +85,7 @@ Diese Tests wurden anhand der zugrundeliegenden Theorien erarbeitet:
 - Vergleich der Laufzeiten für verschiedene `n`
 - Visualisierung der Laufzeitkomplexität
 - Erweiterung um probabilistische Tests zur Gegenüberstellung (z. B. Miller–Rabin)
-range bis 1Mio weitere tests für verhalten, steigt es irgendwann stark an?
-graph die laufzeiten
 
-für die anderen kriterien/tests höhere zahlen probieren
 
 ---
 

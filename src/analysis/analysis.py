@@ -1,12 +1,10 @@
 from src.primality.criteria import *
-from src.primality.tests import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
 import random
 from sympy import isprime, primerange
 from typing import List, Dict
-from datetime import datetime
 
 # generates numbers in a given range, either primes, composites or mixed
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
@@ -25,22 +23,40 @@ def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 
         numbers = random.sample(p + c, min(n, len(p) + len(c)))
     return sorted(numbers)
 
-# whole analysis function for prime criteria, calls generation, measurement, saving and plotting
-def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start: int = 100_000, end: int = 1_000_000, fermat_k: int = 5, save_results: bool = True, show_plot: bool = True) -> Dict[str, List[Dict]]: 
+def run_primetest_analysis(    
+    n_numbers: int = 100,
+    num_type: str = 'g',
+    start: int = 100_000,
+    end: int = 1_000_000,
+    fermat_k: int = 5,
+    msa_repeats: int = 5,                      # NEU
+    include_tests: str = "msa",                # NEU
+    save_results: bool = True,
+    show_plot: bool = True
+) -> Dict[str, List[Dict]]:
+    
+
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
     
     # INITIALIZE DATA STRUCTURES 
-    init_criteria_data(numbers)
+    init_all_test_data(numbers)
     
     # CALLS
     print("Running prime criteria tests...")
-    fermat = lambda n: fermat_criterion(n, fermat_k)
+    fermat = lambda n: fermat_test(n, fermat_k)
     wilson = wilson_criterion
     initial_lucas = initial_lucas_test
     lucas = lucas_test
     optimized_lucas = optimized_lucas_test
+    test_functions = {}
+    if 'm' in include_tests.lower():
+        test_functions["Miller-Rabin"] = lambda n: miller_selfridge_rabin_test(n, msa_repeats)
+    if 's' in include_tests.lower():
+        test_functions["Solovay-Strassen"] = lambda n: solovay_strassen_test(n, msa_repeats)
+    if 'a' in include_tests.lower():
+        test_functions["AKS"] = aks_test
     
     # MEASURE 
     print("Measuring runtimes...")
@@ -51,9 +67,13 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
         "Lucas": measure_runtime(lucas, numbers, "Lucas"),
         "Optimized Lucas": measure_runtime(optimized_lucas, numbers, "Optimized Lucas")
     }
- 
+    # MSA-Tests ergänzen
+    for test_name, test_fn in test_functions.items():
+        label = f"{test_name} (k={msa_repeats})" if test_name != "AKS" else test_name
+        datasets[test_name] = measure_runtime(test_fn, numbers, label)
+    
     # CALL PROTOCOL
-    criteria_protocoll(numbers, datasets)
+    test_protocoll(numbers, datasets, selected_tests="msa")
 
         # SAVE RESTULTS
     if save_results:
@@ -69,7 +89,7 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
             "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
             "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
             "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": ["orange", "red", "purple", "blue", "green"]
+            "colors": ["orange", "red", "purple", "blue", "green", "cyan", "black", "brown"]
         }
         plot_runtime(
             n_lists=plot_data["n_values"],
@@ -83,91 +103,20 @@ def run_prime_criteria_analysis(n_numbers: int = 100, num_type: str = 'g', start
         )
     return datasets
 
-# whole analysis function for prime tests, calls generation, measurement, saving and plotting
-def run_prime_test_analysis(
-    n_numbers: int = 100,
-    num_type: str = 'g',
-    start: int = 100_000,
-    end: int = 1_000_000,
-    tests: str = "msa",
-    repeats: int = 3,
-    save_results: bool = True,
-    show_plot: bool = True,
-) -> Dict[str, List[Dict]]:
-    
-    # GENERATION
-    numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
-    print(f"Generating {len(numbers)} test numbers for prime tests (Typ '{num_type}')")
-
-    # INITIALIZE DATA STRUCTURES 
-    init_tests_data(numbers)
-
-    # SELECT TESTS
-    print("Running prime tests...")
-    test_functions = {}
-    test_colors = {}
-    
-    if 'm' in tests.lower():
-        test_functions["Miller-Rabin"] = lambda n: miller_selfridge_rabin_test(n, repeats)
-        test_colors["Miller-Rabin"] = "blue"
-    if 's' in tests.lower():
-        test_functions["Solovay-Strassen"] = lambda n: solovay_strassen_test(n, repeats)
-        test_colors["Solovay-Strassen"] = "green"
-    if 'a' in tests.lower():
-        test_functions["AKS"] = aks_test
-        test_colors["AKS"] = "red"
-    if not test_functions:
-        raise ValueError("Choose at least one test (m/s/a)")
-    
-    # MEASURE
-    print("Measuring runtimes...")
-    datasets = {}
-    for test_name, test_fn in test_functions.items():
-        datasets[test_name] = measure_runtime(test_fn, numbers, f"{test_name} (k={repeats})" if test_name != "AKS" else test_name)
-    
-    # SAVE RESULTS
-    if save_results:
-        save_json(datasets, get_timestamped_filename("tests", "json"))
-        export_to_csv(datasets, get_timestamped_filename("tests", "csv"))
-
-    # PROTOCOL
-    tests_protocoll(numbers, tests, datasets)
-
-    # PLOTTING
-    if show_plot and datasets:
-        colors = ["red", "blue", "green"]
-        plot_data = {
-            "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
-            "avg_times": [[entry["avg_time"] for entry in data] for data in datasets.values()],
-            "std_devs": [[entry["std_dev"] for entry in data] for data in datasets.values()],
-            "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
-            "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
-            "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": colors[:len(datasets)]
-        }
-        
-        plot_runtime(
-            n_lists=plot_data["n_values"],
-            time_lists=plot_data["avg_times"],
-            std_lists=plot_data["std_devs"],
-            best_lists=plot_data["best_times"],
-            worst_lists=plot_data["worst_times"],
-            labels=plot_data["labels"],
-            colors=plot_data["colors"],
-            figsize=(7, 5)
-        )
-    
-    return {
-        "test_data": tests_data,
-        "timing_data": datasets,
-        "numbers": numbers,
-        "selected_tests": list(datasets.keys())
-    }
-
-
 ################################################
 # CALL
 if __name__ == "__main__":
     #random.seed(42)  # Für Reproduzierbarkeit
-    criteria = run_prime_criteria_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, fermat_k=3, save_results=False, show_plot=True)
-    tests = run_prime_test_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, tests="msa", repeats=5, save_results=False, show_plot=True)
+    #criteria = run_prime_criteria_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, fermat_k=3, save_results=False, show_plot=True)
+    #tests = run_prime_test_analysis(n_numbers=10, num_type='p', start=100_000, end=1_000_000, tests="msa", repeats=5, save_results=False, show_plot=True)
+    results = run_primetest_analysis(
+        n_numbers=10,
+        num_type='p',
+        start=100_000,
+        end=1_000_000,
+        fermat_k=5,
+        msa_repeats=5,
+        include_tests="msa",
+        save_results=False,
+        show_plot=True
+    )

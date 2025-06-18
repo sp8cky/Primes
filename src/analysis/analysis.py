@@ -38,7 +38,7 @@ def run_primetest_analysis(
     # Alle verfügbaren Tests (nur Namen, Funktionen kommen später)
     all_available_tests = [
         "Fermat", "Wilson", "Initial Lucas", "Lucas",
-        "Optimized Lucas", "Miller-Rabin", "Solovay-Strassen", "AKS"
+        "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Pocklington", "Optimized Pocklington", "Proth Variant", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"
     ]
     
     # Wenn keine Tests übergeben wurden, nutze alle
@@ -71,10 +71,6 @@ def run_primetest_analysis(
     for test, cfg in test_config.items():
         if test == "Fermat":
             test_functions[test] = partial(fermat_test, k=cfg["repeats"])
-        elif test == "Miller-Rabin":
-            test_functions[test] = partial(miller_selfridge_rabin_test, k=cfg["repeats"])
-        elif test == "Solovay-Strassen":
-            test_functions[test] = partial(solovay_strassen_test, k=cfg["repeats"])
         elif test == "Wilson":
             test_functions[test] = wilson_criterion
         elif test == "Initial Lucas":
@@ -83,6 +79,30 @@ def run_primetest_analysis(
             test_functions[test] = lucas_test
         elif test == "Optimized Lucas":
             test_functions[test] = optimized_lucas_test
+        elif test == "Pepin":
+            test_functions[test] = pepin_test
+        elif test == "Lucas-Lehmer":
+            test_functions[test] = lucas_lehmer_test
+        elif test == "Proth":
+            test_functions[test] = proth_test
+        elif test == "Pocklington":
+            test_functions[test] = pocklington_test
+        elif test == "Optimized Pocklington":
+            test_functions[test] = optimized_pocklington_test
+        elif test == "Proth Variant":
+            test_functions[test] = proth_test_variant
+        elif test == "Optimized Pocklington Variant":
+            test_functions[test] = optimized_pocklington_test_variant
+        elif test == "Generalized Pocklington":
+            test_functions[test] = generalized_pocklington_test
+        elif test == "Grau":
+            test_functions[test] = grau_test
+        elif test == "Grau Probability":
+            test_functions[test] = grau_probability_test
+        elif test == "Miller-Rabin":
+            test_functions[test] = partial(miller_selfridge_rabin_test, k=cfg["repeats"])
+        elif test == "Solovay-Strassen":
+            test_functions[test] = partial(solovay_strassen_test, k=cfg["repeats"])
         elif test == "AKS":
             test_functions[test] = aks_test
 
@@ -112,7 +132,7 @@ def run_primetest_analysis(
             "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
             "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
             "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": ["orange", "red", "purple", "blue", "green", "cyan", "black", "brown"]
+            "colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173", "#3182bd", "#31a354", "#756bb1", "#e6550d", "#636363"]
         }
         plot_runtime(
             n_lists=plot_data["n_values"],
@@ -122,9 +142,10 @@ def run_primetest_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(7, 5)
+            figsize=(7, 7)
         )
     return datasets
+
 
 
 
@@ -132,15 +153,15 @@ def run_primetest_analysis(
 # CALL ###################################################
 if __name__ == "__main__":
 
-    run_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
+    #run_tests = ["Fermat", "Lucas", "Proth", "Pocklington", "Optimized Pocklington"]
     repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=2,
         num_type='p',
         start=100_000,
         end=1_000_000,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         repeats=repeat_tests,
         save_results=False,
         show_plot=True

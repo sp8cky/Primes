@@ -255,7 +255,18 @@ def format_timing(times: List[float]) -> str:
     return f"⏱ Time: {times[0]*1000:.2f}ms"
 
 # Vereinheitlichte Ausgabe aller Tests
-def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None, selected_tests: str = 'msa'):
+def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None, selected_tests: Optional[List[str]] = None):
+
+    # Alle Testnamen aus test_data
+    all_test_names = list(test_data.keys())
+
+    # Wenn keine Auswahl angegeben, dann alle Tests
+    if selected_tests is None:
+        selected_tests = all_test_names
+    else:
+        selected_tests_lower = [name.lower() for name in selected_tests]
+        name_map = {name.lower(): name for name in all_test_names}
+        selected_tests = [name_map[name] for name in selected_tests_lower if name in name_map]
 
     def print_result_line(name: str, result: bool):
         print(f"{name}: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
@@ -290,16 +301,13 @@ def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] 
                 print("   Polynom-Tests:", " | ".join(f"a={a}→{'✓' if res else '✗'}"
                       for a, res in steps["polynomial_check"]))
 
-    selected_tests = selected_tests.lower()
-
     for n in numbers:
         print(f"\n\033[1mTesting n = {n}\033[0m")
-        for name, test_results in test_data.items():
-            if name[0].lower() not in selected_tests:
+        for name in selected_tests:
+            if n not in test_data[name]:
                 continue
-            if n not in test_results:
-                continue
-            data = test_results[n]
+            data = test_data[name][n]
+            # Standard: wenn "result" nicht vorhanden, dann schauen, ob alle "results" True sind
             result = data.get("result", all(data.get("results", [])))
             print_result_line(name, result)
             print_test_detail(name, n, data)

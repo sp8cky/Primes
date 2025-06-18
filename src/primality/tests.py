@@ -23,8 +23,8 @@ def init_all_test_data(numbers: List[int]):
         "Optimized Lucas": {n: {"factors": factorint(n-1), "tests": {}, "result": None} for n in numbers},
 
         # Tests
-        "Miller-Rabin": {n: {"rounds": [], "results": []} for n in numbers},
-        "Solovay-Strassen": {n: {"rounds": [], "results": []} for n in numbers},
+        "Miller-Rabin": {n: {"repeats": [], "results": []} for n in numbers},
+        "Solovay-Strassen": {n: {"repeats": [], "results": []} for n in numbers},
         "AKS": {n: {"steps": {
                         "initial_check": None,
                         "find_r": None,
@@ -132,65 +132,62 @@ def optimized_lucas_test(n: int) -> bool:
 
 ############################################################################################
 
-
-def miller_selfridge_rabin_test(n: int, rounds=5) -> bool:
+def miller_selfridge_rabin_test(n: int, k=5) -> bool:
     if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n):
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     
-    # Form von n-1 zerlegen
-    m = n-1
-    k = 0
+    # Zerlegung von n - 1 in 2^r * m
+    m = n - 1
+    r = 0
     while m % 2 == 0:
         m //= 2
-        k += 1
-    
-    # Iterationen (Runden)
-    for round_num in range(rounds):
+        r += 1
+
+    for round_num in range(k):
         a = random.randint(1, n - 1)
-        gcd_ok = gcd(a, n) == 1
-        test_ok = True
-        
-        if not gcd_ok:
-            test_data["Miller-Rabin"][n]["rounds"].append((a, False))
+        if gcd(a, n) != 1:
+            test_data["Miller-Rabin"][n]["repeats"].append((a, False))
             test_data["Miller-Rabin"][n]["results"].append(False)
             return False
         
         if pow(a, m, n) == 1:
-            test_data["Miller-Rabin"][n]["rounds"].append((a, True))
+            test_data["Miller-Rabin"][n]["repeats"].append((a, True))
             continue
         
-        for i in range(k):
-            if pow(a, 2**i * m, n) % n == n-1:
+        for i in range(r):
+            if pow(a, 2**i * m, n) % n == n - 1:
                 break
         else:
-            test_data["Miller-Rabin"][n]["rounds"].append((a, False))
+            test_data["Miller-Rabin"][n]["repeats"].append((a, False))
             test_data["Miller-Rabin"][n]["results"].append(False)
             return False
-        
-        test_data["Miller-Rabin"][n]["rounds"].append((a, True))
-    
+
+        test_data["Miller-Rabin"][n]["repeats"].append((a, True))
+
     test_data["Miller-Rabin"][n]["results"].append(True)
     return True
 
-def solovay_strassen_test(n: int, rounds=5) -> bool:
-    if rounds <= 0: raise ValueError("Rounds must be a positive integer.")
+
+def solovay_strassen_test(n: int, k=5) -> bool:
+    if k <= 0:
+        raise ValueError("k must be a positive integer.")
     if n < 2 or (n % 2 == 0 and n > 2):
         raise ValueError("n must be odd and > 1.")
     if n == 2:
         test_data["Solovay-Strassen"][n]["results"].append(True)
         return True
 
-    for round_num in range(rounds):
+    for round_num in range(k):
         a = random.randint(2, n - 1)
         jacobi = jacobi_symbol(a, n)
-        condition = (jacobi == 0) or (pow(a, (n-1)//2, n) != jacobi % n)
-        
-        test_data["Solovay-Strassen"][n]["rounds"].append((a, not condition))
-        
+        condition = (jacobi == 0) or (pow(a, (n - 1) // 2, n) != jacobi % n)
+
+        test_data["Solovay-Strassen"][n]["repeats"].append((a, not condition))
+
         if condition:
             test_data["Solovay-Strassen"][n]["results"].append(False)
             return False
-    
+
     test_data["Solovay-Strassen"][n]["results"].append(True)
     return True
 
@@ -288,9 +285,9 @@ def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] 
             for q, tests in data["tests"].items():
                 print(f"   q={q}:", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in tests))
         elif name == "Miller-Rabin":
-            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["rounds"]))
+            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["repeats"]))
         elif name == "Solovay-Strassen":
-            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["rounds"]))
+            print("   ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["repeats"]))
         elif name == "AKS":
             steps = data.get("steps", {})
             if "find_r" in steps:

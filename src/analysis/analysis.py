@@ -5,6 +5,7 @@ from src.analysis.dataset import *
 import random
 from sympy import isprime, primerange
 from typing import List, Dict
+from functools import partial
 
 # generates numbers in a given range, either primes, composites or mixed
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
@@ -28,16 +29,35 @@ def run_primetest_analysis(
     num_type: str = 'g',
     start: int = 100_000,
     end: int = 1_000_000,
-    fermat_k: int = 5,
-    msa_repeats: int = 5,
     include_tests: list = None,
+    repeats: list = None,
     save_results: bool = True,
     show_plot: bool = True
 ) -> Dict[str, List[Dict]]:
     
- # Wenn keine Tests übergeben wurden, führe alle aus
+    # Alle verfügbaren Tests (nur Namen, Funktionen kommen später)
+    all_available_tests = [
+        "Fermat", "Wilson", "Initial Lucas", "Lucas",
+        "Optimized Lucas", "Miller-Rabin", "Solovay-Strassen", "AKS"
+    ]
+    
+    # Wenn keine Tests übergeben wurden, nutze alle
     if include_tests is None:
-        include_tests = ["Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Miller-Rabin", "Solovay-Strassen", "AKS"]
+        include_tests = all_available_tests
+
+    # Konfiguriere Wiederholungen (Standard: 3 für alle probabilistischen Tests)
+    prob_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
+    default_repeats = [3, 3, 3]
+    repeats = repeats if repeats is not None else default_repeats
+    
+    # Erzeuge Konfigurations-Dictionary
+    test_config = {}
+    for test in include_tests:
+        if test in prob_tests:
+            idx = prob_tests.index(test)
+            test_config[test] = {"repeats": repeats[idx]}
+        else:
+            test_config[test] = {}
 
     # GENERATION
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
@@ -45,56 +65,45 @@ def run_primetest_analysis(
     
     # INITIALIZE DATA STRUCTURES 
     init_all_test_data(numbers)
-    
-    # CALLS
-    print("Running prime criteria tests...")
-    # Definition der Testfunktionen mit Parametern
-    fermat = lambda n: fermat_test(n, fermat_k)
-    wilson = wilson_criterion
-    initial_lucas = initial_lucas_test
-    lucas = lucas_test
-    optimized_lucas = optimized_lucas_test
 
-    msa_tests = {
-        "Miller-Rabin": lambda n: miller_selfridge_rabin_test(n, msa_repeats),
-        "Solovay-Strassen": lambda n: solovay_strassen_test(n, msa_repeats),
-        "AKS": aks_test
-    }
-    
-    # Testfunktionen für alle Tests, die wir unterstützen
-    all_tests = {
-        "Fermat": fermat,
-        "Wilson": wilson,
-        "Initial Lucas": initial_lucas,
-        "Lucas": lucas,
-        "Optimized Lucas": optimized_lucas,
-        **msa_tests
-    }
+    # MAPPING DER FUNKTIONEN
+    test_functions = {}
+    for test, cfg in test_config.items():
+        if test == "Fermat":
+            test_functions[test] = partial(fermat_test, k=cfg["repeats"])
+        elif test == "Miller-Rabin":
+            test_functions[test] = partial(miller_selfridge_rabin_test, k=cfg["repeats"])
+        elif test == "Solovay-Strassen":
+            test_functions[test] = partial(solovay_strassen_test, k=cfg["repeats"])
+        elif test == "Wilson":
+            test_functions[test] = wilson_criterion
+        elif test == "Initial Lucas":
+            test_functions[test] = initial_lucas_test
+        elif test == "Lucas":
+            test_functions[test] = lucas_test
+        elif test == "Optimized Lucas":
+            test_functions[test] = optimized_lucas_test
+        elif test == "AKS":
+            test_functions[test] = aks_test
 
-    # Filtere nur die Tests, die in include_tests sind
-    test_functions = {name: fn for name, fn in all_tests.items() if name in include_tests}
-    
     # MEASURE 
     print("Measuring runtimes...")
     datasets = {}
     for test_name, test_fn in test_functions.items():
         label = test_name
-        # Wenn MSA-Test und nicht AKS, hänge Parameter k an
-        if test_name in msa_tests and test_name != "AKS":
-            label += f" (k={msa_repeats})"
-        elif test_name == "Fermat":
-            label += f" (k={fermat_k})"
+        if "repeats" in test_config[test_name]:
+            label += f" (k={test_config[test_name]['repeats']})"
         datasets[test_name] = measure_runtime(test_fn, numbers, label)
     
     # CALL PROTOCOL
     test_protocoll(numbers, datasets, selected_tests=include_tests)
 
-        # SAVE RESTULTS
+    # SAVE RESTULTS
     if save_results:
         save_json(datasets, get_timestamped_filename("criteria", "json"))
         export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
 
-    # CREATE DATASETS FOR PLOTTING
+    # PLOTTING
     if show_plot:
         plot_data = {
             "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
@@ -117,21 +126,22 @@ def run_primetest_analysis(
         )
     return datasets
 
-################################################
-# CALL
-if __name__ == "__main__":
-    #random.seed(42)  # Für Reproduzierbarkeit
 
-    run_tests = ["Fermat", "Wilson", "Miller-Rabin"]
+
+
+# CALL ###################################################
+if __name__ == "__main__":
+
+    run_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
+    repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
         n_numbers=10,
         num_type='p',
         start=100_000,
         end=1_000_000,
-        fermat_k=5,
-        msa_repeats=5,
         include_tests=run_tests,
+        repeats=repeat_tests,
         save_results=False,
         show_plot=True
     )

@@ -11,36 +11,6 @@ def get_timestamped_filename(basename: str, ext: str = "json"):
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     return f"{timestamp}-{basename}.{ext}"
 
-# save data to a JSON file
-def save_json(data, filename):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    path = os.path.join(DATA_DIR, filename)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-# load data from a JSON file
-def load_json(filename):
-    path = os.path.join(DATA_DIR, filename)
-    with open(path, "r") as f:
-        return json.load(f)
-
-# export datasets to a CSV file
-def export_to_csv(datasets, filename):
-    path = os.path.join(DATA_DIR, filename)
-    all_rows = []
-    for method, results in datasets.items():
-        for row in results:
-            row_copy = row.copy()
-            row_copy["Methode"] = method
-            all_rows.append(row_copy)
-    if not all_rows:
-        return
-    with open(path, mode="w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=all_rows[0].keys())
-        writer.writeheader()
-        writer.writerows(all_rows)
-
-#######################################################################
 def export_test_data_to_csv(test_data: dict, filename: str):
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -63,7 +33,7 @@ def export_test_data_to_csv(test_data: dict, filename: str):
                 if key != "result":
                     flat_row[key] = str(value)
 
-            rows.append(flat_row)
+            rows.append(flat_row)  # Füge Zeile hinzu
 
     if not rows:
         print("⚠️ Testdaten sind leer.")
@@ -75,13 +45,4 @@ def export_test_data_to_csv(test_data: dict, filename: str):
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-
-    print(f"✅ Testdaten erfolgreich exportiert nach {path}")
-
-# ✅ NEU: Debug-Funktion zur Ausgabe
-def print_test_data_summary(data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
-    print("\n🔍 Überblick über test_data:")
-    for testname, numbers in data.items():
-        print(f"\n📌 {testname} ({len(numbers)} Zahlen):")
-        for i, (n, info) in enumerate(numbers.items()):
-            print(f"  {n}: {info}")
+    print(f"✅ Testdaten erfolgreich nach {path} exportiert.")

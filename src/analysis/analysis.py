@@ -65,7 +65,7 @@ def run_primetest_analysis(
     print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
     
     # INITIALIZE DATA STRUCTURES 
-    test_data = init_all_test_data(numbers)
+    init_all_test_data(numbers)
 
     # MAPPING DER FUNKTIONEN
     test_functions = {}
@@ -114,11 +114,7 @@ def run_primetest_analysis(
         label = test_name
         if "repeats" in test_config[test_name]:
             label += f" (k={test_config[test_name]['repeats']})"
-        datasets[test_name] = measure_runtime(test_fn, numbers, label)
-    
-    
-    print_test_data_summary(test_data)
-    print("\n\n\n")
+        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label)
     
     # CALL PROTOCOL
     print_test_protocoll(numbers, datasets, selected_tests=include_tests)

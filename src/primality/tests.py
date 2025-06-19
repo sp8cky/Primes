@@ -14,7 +14,7 @@ test_data = {}
 
 def init_all_test_data(numbers: List[int]):
     global test_data
-    test_data = {
+    test_data.update({
         # Kriterien
         "Fermat": {n: {"a_values": [], "results": []} for n in numbers},
         "Wilson": {n: {"result": None} for n in numbers},
@@ -43,7 +43,7 @@ def init_all_test_data(numbers: List[int]):
                 } for n in numbers
         }
         
-    }
+    })
     return test_data
 
 ############################################################################################

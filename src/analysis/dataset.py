@@ -13,35 +13,6 @@ def get_timestamped_filename(basename: str, ext: str = "json"):
 
 
 def export_test_data_to_csv(test_data: dict, filename: str):
-    """
-    Exportiert die Testdaten in eine CSV-Datei.
-    
-    Felder in der CSV (dynamisch, Beispielhafte Erklärung):
-    - Test: Name des durchgeführten Primzahltests (z.B. "Fermat", "Lucas", "Proth" etc.)
-    - Zahl: Die getestete Zahl (int)
-    - time: Laufzeit des Tests in Millisekunden (z.B. "0.123 ms")
-    - Ergebnis: boolscher Wert (True/False), ob die Zahl als prim erkannt wurde
-    - a: Ein Wert a, der für manche Tests genutzt wird (z.B. Lucas-Test)
-    - a_values: Liste von a-Werten, die bei iterativen Tests geprüft wurden (z.B. Fermat)
-    - attempts: Liste von Versuchen oder Zwischenergebnissen
-    - b_test: Hilfswert oder Zwischenergebnis in manchen Tests (z.B. Pocklington)
-    - calculation: String mit Berechnungsschritten oder Zwischenergebnissen
-    - condition1, condition2: boolsche Bedingungen in Tests, z.B. Lucas-Bedingungen
-    - early_break: Frühzeitiger Abbruchwert (z.B. m bei Lucas-Test)
-    - exponent: Exponent in Potenzierungen
-    - factors: Faktorenzerlegung (z.B. dict mit Primfaktoren)
-    - final_S: Letzter Wert einer Sequenz (z.B. Lucas-Lehmer-Test)
-    - j, k, n, p: Parameter je nach Test (z.B. Indizes, Primzahlen, Exponenten)
-    - phi_p: Wert der Eulerschen Phi-Funktion bei p
-    - reason: Grund für Abbruch oder Ergebnis (String)
-    - repeats: Anzahl der Wiederholungen bei probabilistischen Tests
-    - results: Liste von boolschen Testergebnissen einzelner Teiltests
-    - sequence: Liste mit Zwischenergebnissen einer Zahlenfolge
-    - steps: Schritte oder Phasen bei komplexen Tests (z.B. AKS)
-    - tests: Untertests (z.B. bei optimierten Varianten)
-    
-    Hinweis: Nicht alle Felder sind in jedem Test gesetzt. Die Spalten werden dynamisch erzeugt.
-    """
 
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)

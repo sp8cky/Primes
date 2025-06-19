@@ -117,7 +117,7 @@ def run_primetest_analysis(
         datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label)
     
     # CALL PROTOCOL
-    print_test_protocoll(numbers, datasets, selected_tests=include_tests)
+    #print_test_protocoll(numbers, datasets, selected_tests=include_tests)
 
     # SAVE RESTULTS
     if save_results:

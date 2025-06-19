@@ -7,8 +7,8 @@ from sympy import jacobi_symbol, gcd, log, primerange
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
-from typing import Optional, List, Dict, Tuple, Any
-
+from typing import Optional, List, Dict, Tuple, Any, Union
+"""
 test_data = {}
 def init_all_test_data(numbers: List[int]):
     print("Initialisiere Testdaten für alle Tests...")
@@ -33,9 +33,54 @@ def init_all_test_data(numbers: List[int]):
         "Solovay-Strassen": {n: {"a_values": List[Tuple[int, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
         "AKS": {n: {"a_values": None, "other_fields": Dict[str, Any], "result": bool | None, "reason": str | None} for n in numbers}
         })
-    return test_data
+    return test_data"""
     
+test_data = {}
+def init_test_data_entry() -> Dict[str, Any]:
+    """Erzeugt ein standardisiertes Dictionary für Testdaten eines einzelnen n."""
+    return {
+        "a_values": [],          # Liste von Tupeln/Integers (je nach Test)
+        "other_fields": None,    # Kann später zu einem Dict/Tuple/List werden
+        "result": None,          # True/False/None
+        "reason": None,          # String oder None
+    }
 
+def init_test_data_for_numbers(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, Any]]]:
+    print("Initialisiere Testdaten für alle Tests...")
+    """Initialisiert das globale `test_data`-Dictionary für alle Tests."""
+    
+    # Liste aller Tests mit ihren spezifischen Anpassungen
+    tests = {
+        "Fermat": {},
+        "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
+        "Initial Lucas": {"a_values": [], "other_fields": ()},
+        "Lucas": {"a_values": [], "other_fields": ()},
+        "Optimized Lucas": {"a_values": {}},  # Als Dictionary für faktorabhängige Werte
+        "Pepin": {"a_values": None, "other_fields": ()},
+        "Lucas-Lehmer": {"a_values": None, "other_fields": ()},
+        "Proth": {"a_values": []},
+        "Pocklington": {"a_values": []},
+        "Optimized Pocklington": {"a_values": {}},
+        "Proth Variant": {"a_values": []},
+        "Optimized Pocklington Variant": {"a_values": {}, "other_fields": ()},
+        "Generalized Pocklington": {"a_values": [], "other_fields": ()},
+        "Grau": {"a_values": [], "other_fields": ()},
+        "Grau Probability": {"a_values": [], "other_fields": ()},
+        "Miller-Rabin": {"a_values": []},
+        "Solovay-Strassen": {"a_values": []},
+        "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
+    }
+    
+    for test_name, test_config in tests.items():
+        test_data[test_name] = {}
+        for n in numbers:
+            entry = init_test_data_entry()
+            # Überschreibe Defaults mit testspezifischen Werten
+            for key, value in test_config.items():
+                entry[key] = value
+            test_data[test_name][n] = entry
+    
+    return test_data
 
 ############################################################################################
 
@@ -464,9 +509,6 @@ def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:
         test_data["Miller-Rabin"][n]["results"] = [True]
         test_data["Miller-Rabin"][n]["result"] = True
         return True
-
-    if "a_values" not in test_data["Miller-Rabin"][n]:
-        test_data["Miller-Rabin"][n]["a_values"] = []
 
     # Zerlegung von n - 1 in 2^r * m
     m = n-1

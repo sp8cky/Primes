@@ -65,7 +65,8 @@ def run_primetest_analysis(
     print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
     
     # INITIALIZE DATA STRUCTURES 
-    init_all_test_data(numbers)
+    #init_all_test_data(numbers)
+    init_test_data_for_numbers(numbers)
 
     # MAPPING DER FUNKTIONEN
     test_functions = {}

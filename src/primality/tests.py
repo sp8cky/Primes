@@ -76,7 +76,7 @@ def initial_lucas_test(n: int) -> bool:
         test_data["Initial Lucas"][n]["result"] = True
         return True
 
-    a = random.randint(2, n-2)
+    a = random.randint(2, n-1)
     condition1 = pow(a, n-1, n) == 1
     test_data["Initial Lucas"][n]["a"] = a
     test_data["Initial Lucas"][n]["condition1"] = condition1
@@ -142,6 +142,7 @@ def optimized_lucas_test(n: int) -> bool:
     test_data["Optimized Lucas"][n]["result"] = True
     return True
 
+
 def pepin_test(n: int) -> bool: # 3.36
     if n <= 1: raise ValueError("n must be greater than 1")
     
@@ -171,6 +172,7 @@ def pepin_test(n: int) -> bool: # 3.36
     test_data["Pepin"][n]["calculation"] = f"3^({exponent}) ≡ {result} mod {n}"
     
     return is_prime
+
 
 def lucas_lehmer_test(n: int) -> bool: #3.32
     if n <= 1: raise ValueError("n must be greater than 1")
@@ -641,7 +643,7 @@ def format_timing(times: List[float]) -> str:
     return f"⏱ Time: {times[0]*1000:.2f}ms"
 
 # Vereinheitlichte Ausgabe aller Tests
-def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None, selected_tests: Optional[List[str]] = None):
+def print_test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None, selected_tests: Optional[List[str]] = None):
 
     # Alle Testnamen aus test_data
     all_test_names = list(test_data.keys())
@@ -742,7 +744,8 @@ def test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] 
             if data.get("K") is not None:
                 print(f"    N = {data['K']}*{data['p']}^{data['n']} + 1")
                 print(f"    Quadratic non-residue a = {data.get('a', '?')}")
-                print(f"    φ_{data['p']}(a^{(n-1)/p}) ≡ {data.get('phi_p', '?')} mod N")
+                exponent = f"(N-1)/{data['p']}" if data.get('p') else "?"
+                print(f"    φ_{data['p']}(a^{exponent}) ≡ {data.get('phi_p', '?')} mod N")
             print(f"    {data.get('reason', '')}")
 
         elif name == "Grau Probability":

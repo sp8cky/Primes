@@ -116,7 +116,7 @@ def run_primetest_analysis(
         datasets[test_name] = measure_runtime(test_fn, numbers, label)
     
     # CALL PROTOCOL
-    test_protocoll(numbers, datasets, selected_tests=include_tests)
+    print_test_protocoll(numbers, datasets, selected_tests=include_tests)
 
     # SAVE RESTULTS
     if save_results:
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=2,
+        n_numbers=10,
         num_type='p',
         start=100_000,
         end=1_000_000,

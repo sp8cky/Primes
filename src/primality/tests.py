@@ -785,3 +785,5 @@ def print_test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Di
             print_result_line(name, result)
             print_test_detail(name, n, data)
             print_timing_line(name, n)
+
+

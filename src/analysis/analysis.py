@@ -2,6 +2,7 @@ from src.primality.tests import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
+from src.primality.tests import test_data
 import random
 from sympy import isprime, primerange
 from typing import List, Dict
@@ -115,13 +116,18 @@ def run_primetest_analysis(
             label += f" (k={test_config[test_name]['repeats']})"
         datasets[test_name] = measure_runtime(test_fn, numbers, label)
     
+    
+    print_test_data_summary()
+    print("\n\n\n")
+    
     # CALL PROTOCOL
     print_test_protocoll(numbers, datasets, selected_tests=include_tests)
 
     # SAVE RESTULTS
     if save_results:
-        save_json(datasets, get_timestamped_filename("criteria", "json"))
-        export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
+        #save_json(datasets, get_timestamped_filename("criteria", "json"))
+        #export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
+        export_test_data_to_csv(test_data, get_timestamped_filename("tests", "csv"))
 
     # PLOTTING
     if show_plot:
@@ -157,12 +163,12 @@ if __name__ == "__main__":
     repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=2,
         num_type='p',
-        start=100_000,
-        end=1_000_000,
+        start=1000, # 100_000,
+        end=10_000, #1_000_000,
         #include_tests=run_tests,
         repeats=repeat_tests,
-        save_results=False,
+        save_results=True,
         show_plot=True
     )

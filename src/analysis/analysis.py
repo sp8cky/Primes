@@ -159,7 +159,7 @@ if __name__ == "__main__":
     repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=2,
+        n_numbers=1,
         num_type='p',
         start=1000, # 100_000,
         end=10_000, #1_000_000,

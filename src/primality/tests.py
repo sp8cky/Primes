@@ -42,7 +42,9 @@ def init_all_test_data(numbers: List[int]):
                     "result": None
                 } for n in numbers
         }
+        
     }
+    return test_data
 
 ############################################################################################
 

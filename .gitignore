@@ -1,0 +1,6 @@
+# ignore data directory and its contents
+/data/
+
+# ignore specific file types
+*.csv
+*.json

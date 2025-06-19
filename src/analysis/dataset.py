@@ -1,6 +1,6 @@
 import os, json, csv
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Any
 from src.primality.tests import test_data
 
 # creates data directory relative to the src directory
@@ -79,9 +79,9 @@ def export_test_data_to_csv(test_data: dict, filename: str):
     print(f"✅ Testdaten erfolgreich exportiert nach {path}")
 
 # ✅ NEU: Debug-Funktion zur Ausgabe
-def print_test_data_summary():
+def print_test_data_summary(data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
     print("\n🔍 Überblick über test_data:")
-    for testname, numbers in test_data.items():
+    for testname, numbers in data.items():
         print(f"\n📌 {testname} ({len(numbers)} Zahlen):")
         for i, (n, info) in enumerate(numbers.items()):
             print(f"  {n}: {info}")

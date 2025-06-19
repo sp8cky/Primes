@@ -65,7 +65,7 @@ def run_primetest_analysis(
     print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
     
     # INITIALIZE DATA STRUCTURES 
-    init_all_test_data(numbers)
+    test_data = init_all_test_data(numbers)
 
     # MAPPING DER FUNKTIONEN
     test_functions = {}
@@ -117,7 +117,7 @@ def run_primetest_analysis(
         datasets[test_name] = measure_runtime(test_fn, numbers, label)
     
     
-    print_test_data_summary()
+    print_test_data_summary(test_data)
     print("\n\n\n")
     
     # CALL PROTOCOL

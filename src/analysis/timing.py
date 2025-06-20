@@ -23,10 +23,11 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str
         worst_t = max(runtimes)
         std_t = stdev(runtimes) if len(runtimes) > 1 else 0.0
 
-        test_data[test_name][n]["avg_time"] = avg_t
-        test_data[test_name][n]["best_time"] = best_t
-        test_data[test_name][n]["worst_time"] = worst_t
-        test_data[test_name][n]["std_dev"] = std_t
+        entry = test_data[test_name][n]
+        entry["avg_time"] = avg_t
+        entry["best_time"] = best_t
+        entry["worst_time"] = worst_t
+        entry["std_dev"] = std_t
 
         results.append({
             "n": n,

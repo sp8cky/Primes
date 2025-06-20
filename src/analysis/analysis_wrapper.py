@@ -8,53 +8,63 @@ import random
 from sympy import isprime, primerange
 from typing import List, Dict
 from functools import partial
+import time
 
-# generates numbers in a given range, either primes, composites or mixed
+# Zeitmessungshilfe
+def measure_section(label: str, func, *args, **kwargs):
+    print(f"Starte Abschnitt: {label}...")
+    start = time.perf_counter()
+    result = func(*args, **kwargs)
+    end = time.perf_counter()
+    duration = end - start
+    print(f"Abschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
+    return result
+
+# Generiert Zahlen im Bereich
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
     if num_type not in ['p', 'z', 'g']:
         raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
-    
+
     primes = list(primerange(start, end))
     composites = [x for x in range(start, end) if not isprime(x)]
     if num_type == 'p':
         numbers = random.sample(primes, min(n, len(primes)))
     elif num_type == 'z':
         numbers = random.sample(composites, min(n, len(composites)))
-    else:  # 'g'
+    else:
         p = random.sample(primes, min(n, len(primes)))
         c = random.sample(composites, min(n, len(composites)))
         numbers = random.sample(p + c, min(n, len(p) + len(c)))
     return sorted(numbers)
 
-def run_primetest_analysis(    
+def run_primetest_analysis(
     n_numbers: int = 100,
     num_type: str = 'g',
     start: int = 100_000,
     end: int = 1_000_000,
-    runs_per_n: int = 2,
+    test_repeats: int = 2,
     include_tests: list = None,
     prob_test_repeats: list = None,
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True
 ) -> Dict[str, List[Dict]]:
-    
-    # Alle verfügbaren Tests
+
     all_available_tests = [
         "Fermat", "Wilson", "Initial Lucas", "Lucas",
-        "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Pocklington", "Optimized Pocklington", "Proth Variant", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"
+        "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth",
+        "Pocklington", "Optimized Pocklington", "Proth Variant",
+        "Optimized Pocklington Variant", "Generalized Pocklington",
+        "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"
     ]
-    
-    # Wenn keine Tests übergeben wurden, nutze alle
+
     if include_tests is None:
         include_tests = all_available_tests
 
-    # Konfiguriere Wiederholungen (Standard: 3 für alle probabilistischen Tests)
     prob_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
     default_repeats = [3, 3, 3]
     prob_test_repeats = prob_test_repeats if prob_test_repeats is not None else default_repeats
-    
-    # Erzeuge Konfigurations-Dictionary
+
     test_config = {}
     for test in include_tests:
         if test in prob_tests:
@@ -63,16 +73,16 @@ def run_primetest_analysis(
         else:
             test_config[test] = {}
 
-    # ------------------------------------- GENERATION ------------------------------------- #
-    numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
+    # Zahlen generieren
+    numbers = measure_section("Zahlengenerierung", generate_numbers, n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generierte {len(numbers)} Zahlen im Bereich {start}-{end} ({num_type}): {numbers[:10]}")
-    
-    # ------------------------------------- INITIALIZE DATA STRUCTURES ------------------------------------- #
-    print("Initialisiere Testdaten...")
-    init_dictionary_fields(numbers)
 
-    runtime_functions = {} # Mapping für reine Zeitmessung 
-    protocol_functions = {} # Mapping für Protokollversion
+    # Testdaten initialisieren
+    measure_section("Initialisiere Testdaten", init_dictionary_fields, numbers)
+
+    # Funktionsabbildungen
+    runtime_functions = {}
+    protocol_functions = {}
     for test, cfg in test_config.items():
         if test == "Fermat":
             runtime_functions[test] = partial(fermat_test, k=cfg["prob_test_repeats"])
@@ -129,29 +139,27 @@ def run_primetest_analysis(
             runtime_functions[test] = aks_test
             protocol_functions[test] = aks_test_protocoll
 
-    # ------------------------------------- MEASURE ------------------------------------- #
-    print("Messe die Laufzeiten der Tests...")
-    datasets = {}
-    for test_name, test_fn in runtime_functions.items():
-        label = test_name
-        if "prob_test_repeats" in test_config[test_name]:
-            label += f" (k={test_config[test_name]['prob_test_repeats']})"
-        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label, runs=runs_per_n)
-    
-    # ------------------------------------- CALL PROTOCOL ------------------------------------- #
-    print("Rufe die Protokollversion der Tests auf...")
+    # Zeitmessung
+    datasets = measure_section("Laufzeitmessung", lambda: {
+        test_name: measure_runtime(
+            test_fn, numbers, test_name,
+            label=test_name + (f" (k={test_config[test_name]['prob_test_repeats']})" if "prob_test_repeats" in test_config[test_name] else ""),
+            runs_per_n=test_repeats
+        )
+        for test_name, test_fn in runtime_functions.items()
+    })
+
+    # Protokolle (falls aktiviert)
     if protocoll:
-        for test_name, test_fn in protocol_functions.items():
-            for n in numbers:
-                try:
-                    test_fn(n)
-                except Exception as e:
-                    print(f"❌ Fehler bei {test_name}({n}): {e}")
+        measure_section("Protokoll-Tests", lambda: [
+            test_fn(n) for test_name, test_fn in protocol_functions.items() for n in numbers
+        ])
 
-    # ------------------------------------- SAVE RESULTS ------------------------------------- #
-    if save_results: export_test_data_to_csv(test_data, get_timestamped_filename("tests", "csv"))
+    # CSV-Export
+    if save_results:
+        measure_section("Exportiere CSV", export_test_data_to_csv, test_data, get_timestamped_filename("tests", "csv"))
 
-    # ------------------------------------- PLOTTING ------------------------------------- #
+    # Plotten
     if show_plot:
         plot_data = {
             "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
@@ -162,7 +170,7 @@ def run_primetest_analysis(
             "labels": [data[0]["label"] for data in datasets.values()],
             "colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173", "#3182bd", "#31a354", "#756bb1", "#e6550d", "#636363"]
         }
-        plot_runtime(
+        measure_section("Plotten", plot_runtime,
             n_lists=plot_data["n_values"],
             time_lists=plot_data["avg_times"],
             std_lists=plot_data["std_devs"],
@@ -172,23 +180,22 @@ def run_primetest_analysis(
             colors=plot_data["colors"],
             figsize=(7, 7)
         )
+
     return datasets
 
-# CALL ###################################################
+# Hauptaufruf
 if __name__ == "__main__":
-
-    #run_tests = ["Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas"]
-    repeat_tests = [1,1,1]  # Fermat, MSRT, SST
-
-    results = run_primetest_analysis(
-        n_numbers=3,
+    run_tests = ["Fermat"]
+    repeat_tests = [1,1,1]
+    run_primetest_analysis(
+        n_numbers=10,
         num_type='p',
         start=100_000,
         end=1_000_000,
-        runs_per_n=2,
-        #include_tests=run_tests,
+        test_repeats=2,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        protocoll=False,
+        protocoll=True,
         save_results=True,
         show_plot=True
     )

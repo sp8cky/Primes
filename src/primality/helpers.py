@@ -53,3 +53,18 @@ def find_quadratic_non_residue(p):
 # Compute nth cyclotomic polynomial at x
 def cyclotomic_polynomial(n, x):
     return cyclotomic_poly(n, x)
+
+# check if n is a Fermat number
+def is_fermat_number(n: int) -> bool:
+    if n < 3: return False
+    
+    m = n - 1
+    k = 0
+    while m > 1 and m & 1 == 0:
+        m >>= 1
+        k += 1
+    
+    # Wenn m != 1, dann ist n-1 keine Zweierpotenz
+    if m != 1:
+        return False
+    return (k & (k - 1)) == 0 and k != 0

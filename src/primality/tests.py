@@ -8,33 +8,7 @@ from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
 from typing import Optional, List, Dict, Tuple, Any, Union
-"""
-test_data = {}
-def init_all_test_data(numbers: List[int]):
-    print("Initialisiere Testdaten für alle Tests...")
-    global test_data
-    test_data.update({
-        "Fermat": {n: {"a_values": List[int], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Wilson": {n: {"a_values": None, "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Initial Lucas": {n: {"a_values": List[Tuple[int, bool, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Lucas": {n: {"a_values": List[Tuple[int, bool, bool]], "other_fields": Tuple[int], "result": bool | None, "reason": str | None} for n in numbers},
-        "Optimized Lucas": {n: {"a_values": Dict[int, Tuple[int, bool, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Pepin": {n: {"a_values": None, "other_fields": Tuple[int, str], "result": bool | None, "reason": str | None} for n in numbers},
-        "Lucas-Lehmer": {n: {"a_values": None, "other_fields": Tuple[int, List[int], int], "result": bool | None, "reason": str | None} for n in numbers},
-        "Proth": {n: {"a_values": List[Tuple[int, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Pocklington": {n: {"a_values": List[Tuple[int, bool, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Optimized Pocklington": {n: {"a_values": Dict[int, Tuple[int, bool, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Proth Variant": {n: {"a_values": List[Tuple[int, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Optimized Pocklington Variant": {n: {"a_values": Dict[int, Tuple[int, bool, bool]], "other_fields": Tuple[int, bool], "result": bool | None, "reason": str | None} for n in numbers},
-        "Generalized Pocklington": {n: {"a_values": List[Tuple[int, bool, bool]], "other_fields": Tuple[int, int, int], "result": bool | None, "reason": str | None} for n in numbers},
-        "Grau": {n: {"a_values": List[int], "other_fields": Tuple[int, int, int, int], "result": bool | None, "reason": str | None} for n in numbers},
-        "Grau Probability": {n: {"a_values": List[int], "other_fields": Tuple[int, int, int, int], "result": bool | None, "reason": str | None} for n in numbers},
-        "Miller-Rabin": {n: {"a_values": List[Tuple[int, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "Solovay-Strassen": {n: {"a_values": List[Tuple[int, bool]], "other_fields": None, "result": bool | None, "reason": str | None} for n in numbers},
-        "AKS": {n: {"a_values": None, "other_fields": Dict[str, Any], "result": bool | None, "reason": str | None} for n in numbers}
-        })
-    return test_data"""
-    
+
 test_data = {}
 def init_test_data_entry() -> Dict[str, Any]:
     """Erzeugt ein standardisiertes Dictionary für Testdaten eines einzelnen n."""
@@ -186,25 +160,19 @@ def optimized_lucas_test(n: int) -> bool:
     test_data["Optimized Lucas"][n]["result"] = True
     return True
 
-
 def pepin_test(n: int) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
-
-    # Check if n is a Fermat number F_k = 2^(2^k) + 1
-    k = next((k for k in range(1, 32) if 2**(2**k) + 1 == n), None)
-    if k is None:
+    if not helpers.is_fermat_number(n):
         test_data["Pepin"][n]["result"] = False
-        test_data["Pepin"][n]["reason"] = "Keine Fermat-Zahl"
+        test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"
+        return False
+
+    if pow(3, (n - 1) // 2, n) != n - 1: 
+        test_data["Pepin"][n]["result"] = False
+        test_data["Pepin"][n]["reason"] = "3^(n-1)/2 mod n ≠ n - 1"
         return False
     
-    # Test
-    exponent = (n - 1) // 2
-    result = pow(3, exponent, n)
-    is_prime = (result == n - 1)
-    test_data["Pepin"][n]["other_fields"] = [k, f"3^({exponent}) ≡ {result} mod {n}"]
-    test_data["Pepin"][n]["result"] = is_prime
-    return is_prime
-
+    test_data["Pepin"][n]["result"] = True
+    return True
 
 def lucas_lehmer_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
@@ -541,7 +509,7 @@ def solovay_strassen_test(n: int, k: int = 5) -> bool:
     for _ in range(k):
         a = random.randint(2, n - 1)
         jacobi = jacobi_symbol(a, n)
-        cond1 = jacobi(a, n) == 0
+        cond1 = (jacobi == 0)
         test_data["Solovay-Strassen"][n]["a_values"].append((a, cond1))
 
         if cond1:
@@ -562,12 +530,12 @@ def solovay_strassen_test(n: int, k: int = 5) -> bool:
 
 def aks_test(n: int) -> bool:
     if n <= 1 or helpers.is_real_potency(n):
-        test_data["AKS"][n]["steps"]["initial_check"] = False
+        test_data["AKS"][n]["other_fields"]["initial_check"] = False
         test_data["AKS"][n]["result"] = False
         raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     # Reset steps if test has to be run again
-    test_data["AKS"][n]["steps"] = {
+    test_data["AKS"][n]["other_fields"] = {
         "initial_check": True,
         "find_r": None,
         "prime_divisor_check": None,
@@ -578,7 +546,7 @@ def aks_test(n: int) -> bool:
     r = 2
     while True:
         if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
-            test_data["AKS"][n]["steps"]["find_r"] = r
+            test_data["AKS"][n]["other_fields"]["find_r"] = r
             break
         r += 1
 
@@ -587,15 +555,15 @@ def aks_test(n: int) -> bool:
         if n % p == 0:
             if p == n:
                 test_data["AKS"][n]["result"] = True
-                test_data["AKS"][n]["steps"]["prime_divisor_check"] = f"Primfaktor {p} (n selbst)"
+                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor {p} (n selbst)"
                 return True
             else:
                 test_data["AKS"][n]["result"] = False
-                test_data["AKS"][n]["steps"]["prime_divisor_check"] = f"Teiler {p} von n"
+                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Teiler {p} von n"
                 test_data["AKS"][n]["reason"] = f"n ist durch {p} teilbar"
                 return False
 
-    test_data["AKS"][n]["steps"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
+    test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
@@ -607,7 +575,7 @@ def aks_test(n: int) -> bool:
         right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
 
         test_passed = (left == right)
-        test_data["AKS"][n]["steps"]["polynomial_check"].append((a, test_passed))
+        test_data["AKS"][n]["other_fields"]["polynomial_check"].append((a, test_passed))
 
         if not test_passed:
             test_data["AKS"][n]["result"] = False

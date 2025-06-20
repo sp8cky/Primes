@@ -1,8 +1,9 @@
 from src.primality.tests import *
+from src.primality.test_protocoll import *
 from src.analysis.timing import measure_runtime
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
-from src.primality.tests import test_data
+from src.primality.test_protocoll import test_data
 import random
 from sympy import isprime, primerange
 from typing import List, Dict
@@ -66,47 +67,47 @@ def run_primetest_analysis(
     
     # INITIALIZE DATA STRUCTURES 
     #init_all_test_data(numbers)
-    init_test_data_for_numbers(numbers)
+    init_dictionary_fields(numbers)
 
     # MAPPING DER FUNKTIONEN
     test_functions = {}
     for test, cfg in test_config.items():
         if test == "Fermat":
-            test_functions[test] = partial(fermat_test, k=cfg["repeats"])
+            test_functions[test] = partial(fermat_test_protocoll, k=cfg["repeats"])
         elif test == "Wilson":
-            test_functions[test] = wilson_criterion
+            test_functions[test] = wilson_criterion_protocoll
         elif test == "Initial Lucas":
-            test_functions[test] = initial_lucas_test
+            test_functions[test] = initial_lucas_test_protocoll
         elif test == "Lucas":
-            test_functions[test] = lucas_test
+            test_functions[test] = lucas_test_protocoll
         elif test == "Optimized Lucas":
-            test_functions[test] = optimized_lucas_test
+            test_functions[test] = optimized_lucas_test_protocoll
         elif test == "Pepin":
-            test_functions[test] = pepin_test
+            test_functions[test] = pepin_test_protocoll
         elif test == "Lucas-Lehmer":
-            test_functions[test] = lucas_lehmer_test
+            test_functions[test] = lucas_lehmer_test_protocoll
         elif test == "Proth":
-            test_functions[test] = proth_test
+            test_functions[test] = proth_test_protocoll
         elif test == "Pocklington":
-            test_functions[test] = pocklington_test
+            test_functions[test] = pocklington_test_protocoll
         elif test == "Optimized Pocklington":
-            test_functions[test] = optimized_pocklington_test
+            test_functions[test] = optimized_pocklington_test_protocoll
         elif test == "Proth Variant":
-            test_functions[test] = proth_test_variant
+            test_functions[test] = proth_test_variant_protocoll
         elif test == "Optimized Pocklington Variant":
-            test_functions[test] = optimized_pocklington_test_variant
+            test_functions[test] = optimized_pocklington_test_variant_protocoll
         elif test == "Generalized Pocklington":
-            test_functions[test] = generalized_pocklington_test
+            test_functions[test] = generalized_pocklington_test_protocoll
         elif test == "Grau":
-            test_functions[test] = grau_test
+            test_functions[test] = grau_test_protocoll
         elif test == "Grau Probability":
-            test_functions[test] = grau_probability_test
+            test_functions[test] = grau_probability_test_protocoll
         elif test == "Miller-Rabin":
-            test_functions[test] = partial(miller_selfridge_rabin_test, k=cfg["repeats"])
+            test_functions[test] = partial(miller_selfridge_rabin_test_protocoll, k=cfg["repeats"])
         elif test == "Solovay-Strassen":
-            test_functions[test] = partial(solovay_strassen_test, k=cfg["repeats"])
+            test_functions[test] = partial(solovay_strassen_test_protocoll, k=cfg["repeats"])
         elif test == "AKS":
-            test_functions[test] = aks_test
+            test_functions[test] = aks_test_protocoll
 
     # MEASURE 
     print("Measuring runtimes...")
@@ -156,15 +157,15 @@ def run_primetest_analysis(
 # CALL ###################################################
 if __name__ == "__main__":
 
-    run_tests = ["Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas"]
-    repeat_tests = [1, 5, 3]  # Fermat, MSRT, SST
+    #run_tests = ["Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas"]
+    repeat_tests = [3, 3, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=5,
+        n_numbers=3,
         num_type='p',
         start=1000, # 100_000,
         end=10_000, #1_000_000,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         repeats=repeat_tests,
         save_results=True,
         show_plot=True

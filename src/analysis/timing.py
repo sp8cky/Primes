@@ -3,7 +3,7 @@ from typing import Callable, List, Dict
 from src.analysis import dataset
 import statistics, timeit
 from statistics import mean, stdev
-from src.primality.tests import test_data
+from src.primality.test_protocoll import test_data
 
 
 def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str, label: str = "") -> List[Dict]:

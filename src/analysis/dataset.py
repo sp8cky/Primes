@@ -1,7 +1,7 @@
 import os, json, csv
 from datetime import datetime
 from typing import Dict, Any
-from src.primality.tests import test_data
+from src.primality.test_protocoll import test_data
 
 # creates data directory relative to the src directory
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")

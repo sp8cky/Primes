@@ -19,7 +19,6 @@ def init_dictionary() -> Dict[str, Any]:
         "reason": None,          # String oder None
     }
 def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, Any]]]:
-    print("Initialisiere Testdaten für alle Tests...")
     """Initialisiert das globale `test_data`-Dictionary für alle Tests."""
     
     # Liste aller Tests mit ihren spezifischen Anpassungen
@@ -58,7 +57,6 @@ def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, 
 ############################################################################################
 
 def fermat_test_protocoll(n: int, k: int = 1) -> bool:
-    print(f"Fermat-Test für n={n} mit k={k} Wiederholungen")
     if n <= 1: raise ValueError("n must be greater than 1")
     test_data["Fermat"][n]["a_values"] = []
     if n == 2:
@@ -587,157 +585,3 @@ def aks_test_protocoll(n: int) -> bool:
     test_data["AKS"][n]["result"] = True
     return True
 
-
-
-#############################################################################################
-
-"""
-# Einheitliches Format für Zeitmessung
-def format_timing(times: List[float]) -> str:
-    return f"⏱ Time: {times[0]*1000:.2f}ms"
-
-# Vereinheitlichte Ausgabe aller Tests
-def print_test_protocoll(numbers: List[int], timings: Optional[Dict[str, List[Dict]]] = None, selected_tests: Optional[List[str]] = None):
-
-    # Alle Testnamen aus test_data
-    all_test_names = list(test_data.keys())
-
-    # Wenn keine Auswahl angegeben, dann alle Tests
-    if selected_tests is None:
-        selected_tests = all_test_names
-    else:
-        selected_tests_lower = [name.lower() for name in selected_tests]
-        name_map = {name.lower(): name for name in all_test_names}
-        selected_tests = [name_map[name] for name in selected_tests_lower if name in name_map]
-
-    def print_result_line(name: str, result: bool):
-        print(f"{name}: {'✅ Prim' if result else '❌ Zusammengesetzt'}")
-
-    def print_timing_line(name: str, n: int):
-        if timings:
-            times = [d["avg_time"] for d in timings.get(name, []) if d["n"] == n]
-            if times:
-                print("    ", format_timing(times))
-
-    def print_test_detail(name: str, n: int, data: Dict):
-        if name == "Fermat":
-            print("    ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in zip(data["a_values"], data["results"])))
-        
-        elif name in {"Initial Lucas", "Lucas"}:
-            print(f"    a={data['a']}: Bedingung 1 {'✓' if data['condition1'] else '✗'}")
-            if data.get("early_break"):
-                print(f"    ⚠️ Abbruch bei m={data['early_break']}")
-        
-        elif name == "Optimized Lucas":
-            for q, tests in data["tests"].items():
-                print(f"    q={q}:", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in tests))
-        
-        elif name == "Pepin":
-            if data.get("k") is not None:
-                print(f"    F_{data['k']} = 2^(2^{data['k']}) + 1 = {n}")
-                print(f"    {data.get('calculation', 'Keine Berechnung verfügbar')}")
-                if data.get("result"):
-                    print(f"    ≡ -1 mod {n} → Primzahl")
-                else:
-                    print(f"    ≢ -1 mod {n} → Zusammengesetzt")
-            else:
-                print(f"    {data.get('reason', 'Unbekannter Fehler')}")
-        
-        elif name == "Lucas-Lehmer":
-            p = data.get("p")
-            if p is not None:
-                print(f"    M_{p} = 2^{p} - 1 = {n}")
-                print(f"    Sequenz S_k: {', '.join(map(str, data.get('sequence', [])))}")
-                final_S = data.get("final_S")
-                if final_S is not None:
-                    print(f"    Finales S_{p-2} = {final_S}")
-                if data.get("result"):
-                    print(f"    ≡ 0 mod {n} → Primzahl")
-                else:
-                    print(f"    ≢ 0 mod {n} → Zusammengesetzt")
-            else:
-                print(f"    {data.get('reason', 'Unbekannter Fehler')}")
-        
-        elif name == "Proth":
-            if data.get("reason"):
-                print(f"\n📌{data['reason']}")
-        
-        elif name == "Pocklington":
-            if data.get("reason"):
-                print(f"\n📌{data['reason']}")
-        
-        elif name == "Proth Variant":
-            if data.get("a"):
-                print(f"    a={data['a']}→✓")
-            elif data.get("reason"):
-                print(f"\n📌{data['reason']}")
-        
-        elif name == "Optimized Pocklington Variant":
-            if data.get("tests"):
-                for q, (a, res) in data["tests"].items():
-                    print(f"    q={q}: a={a}→{'✓' if res else '✗'}")
-            if data.get("b_test"):
-                b, res = data["b_test"]
-                print(f"    b={b}→{'✓' if res else '✗'}")
-            if data.get("reason"):
-                print(f"\n📌{data['reason']}")
-        elif name == "Optimized Pocklington":
-            for q, tests in data["tests"].items():
-                print(f"    q={q}:", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in tests))
-
-        elif name == "Generalized Pocklington":
-            if data.get("K") is not None:
-                print(f"    N = {data['K']}*{data['p']}^{data['n']} + 1")
-                if data.get("a"):
-                    print(f"    Found a = {data['a']} satisfying conditions")
-                else:
-                    print(f"    Attempted a values: {len(data['attempts'])}")
-            print(f"    {data.get('reason', '')}")
-
-        elif name == "Grau":
-            if data.get("K") is not None:
-                print(f"    N = {data['K']}*{data['p']}^{data['n']} + 1")
-                print(f"    Quadratic non-residue a = {data.get('a', '?')}")
-                exponent = f"(N-1)/{data['p']}" if data.get('p') else "?"
-                print(f"    φ_{data['p']}(a^{exponent}) ≡ {data.get('phi_p', '?')} mod N")
-            print(f"    {data.get('reason', '')}")
-
-        elif name == "Grau Probability":
-            if data.get("K") is not None:
-                print(f"    N = {data['K']}*{data['p']}^{data['n']} + 1")
-                if data.get("a") is not None:
-                    print(f"    Found (a,j) = ({data['a']},{data['j']}) satisfying conditions")
-                else:
-                    print(f"    Attempted (a,j) pairs: {len(data['attempts'])}")
-                print(f"    log_p(K) + n = {math.log(data['K'], data['p']) + data['n'] if data.get('K') else '?'}")
-            print(f"    {data.get('reason', '')}")
-        
-        elif name == "Miller-Rabin":
-            print("    ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["repeats"]))
-        
-        elif name == "Solovay-Strassen":
-            print("    ", " | ".join(f"a={a}→{'✓' if res else '✗'}" for a, res in data["repeats"]))
-        
-        elif name == "AKS":
-            steps = data.get("steps", {})
-            if "find_r" in steps:
-                print(f"    r = {steps['find_r']}")
-            if "prime_divisor_check" in steps:
-                print(f"    Primteiler-Check: {steps['prime_divisor_check']}")
-            if "polynomial_check" in steps:
-                print("    Polynom-Tests:", " | ".join(f"a={a}→{'✓' if res else '✗'}"
-                    for a, res in steps["polynomial_check"]))
-
-    for n in numbers:
-        print(f"\n\033[1mTesting n = {n}\033[0m")
-        for name in selected_tests:
-            if n not in test_data[name]:
-                continue
-            data = test_data[name][n]
-            # Standard: wenn "result" nicht vorhanden, dann schauen, ob alle "results" True sind
-            result = data.get("result", all(data.get("results", [])))
-            print_result_line(name, result)
-            print_test_detail(name, n, data)
-            print_timing_line(name, n)
-
-"""

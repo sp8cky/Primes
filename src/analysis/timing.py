@@ -6,22 +6,34 @@ from statistics import mean, stdev
 from src.primality.test_protocoll import test_data
 
 
-def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str, label: str = "") -> List[Dict]:
+def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str, label: str = "", runs_per_n: int = 5) -> List[Dict]:
     results = []
+
     for n in inputs:
-        start = time.perf_counter()
-        fn(n)
-        end = time.perf_counter()
-        runtime = end - start
-        print(f"Test {test_name} für {n}: {runtime*1000:.2f}ms")
-        test_data[test_name][n]["time"] = runtime
+        runtimes = []
+
+        for _ in range(runs_per_n):
+            start = time.perf_counter()
+            fn(n)
+            end = time.perf_counter()
+            runtimes.append(end - start)
+
+        avg_t = mean(runtimes)
+        best_t = min(runtimes)
+        worst_t = max(runtimes)
+        std_t = stdev(runtimes) if len(runtimes) > 1 else 0.0
+
+        test_data[test_name][n]["avg_time"] = avg_t
+        test_data[test_name][n]["best_time"] = best_t
+        test_data[test_name][n]["worst_time"] = worst_t
+        test_data[test_name][n]["std_dev"] = std_t
 
         results.append({
             "n": n,
-            "avg_time": runtime,
-            "std_dev": 0.0,
-            "best_time": runtime,
-            "worst_time": runtime,
+            "avg_time": avg_t,
+            "std_dev": std_t,
+            "best_time": best_t,
+            "worst_time": worst_t,
             "label": label
         })
 

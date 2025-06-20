@@ -33,11 +33,12 @@ def run_primetest_analysis(
     end: int = 1_000_000,
     include_tests: list = None,
     repeats: list = None,
+    protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True
 ) -> Dict[str, List[Dict]]:
     
-    # Alle verfügbaren Tests (nur Namen, Funktionen kommen später)
+    # Alle verfügbaren Tests
     all_available_tests = [
         "Fermat", "Wilson", "Initial Lucas", "Lucas",
         "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Pocklington", "Optimized Pocklington", "Proth Variant", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"
@@ -61,18 +62,16 @@ def run_primetest_analysis(
         else:
             test_config[test] = {}
 
-    # GENERATION
+    # ------------------------------------- GENERATION ------------------------------------- #
     numbers = generate_numbers(n=n_numbers, start=start, end=end, num_type=num_type)
-    print(f"Generating {len(numbers)} test numbers for prime criteria (Typ '{num_type}')")
+    print(f"Generierte {len(numbers)} Zahlen im Bereich {start}-{end} ({num_type}): {numbers[:10]}")
     
-    # INITIALIZE DATA STRUCTURES 
-    #init_all_test_data(numbers)
+    # ------------------------------------- INITIALIZE DATA STRUCTURES ------------------------------------- #
+    print("Initialisiere Testdaten...")
     init_dictionary_fields(numbers)
 
-    # Mapping für reine Zeitmessung (ohne Protokoll)
-    runtime_functions = {}
-    # Mapping für Protokollversion (die ins Dictionary schreiben)
-    protocol_functions = {}
+    runtime_functions = {} # Mapping für reine Zeitmessung 
+    protocol_functions = {} # Mapping für Protokollversion
     for test, cfg in test_config.items():
         if test == "Fermat":
             runtime_functions[test] = partial(fermat_test, k=cfg["repeats"])
@@ -129,31 +128,29 @@ def run_primetest_analysis(
             runtime_functions[test] = aks_test
             protocol_functions[test] = aks_test_protocoll
 
-    # MEASURE 
-    print("Measuring runtimes...")
+    # ------------------------------------- MEASURE ------------------------------------- #
+    print("Messe die Laufzeiten der Tests...")
     datasets = {}
     for test_name, test_fn in runtime_functions.items():
         label = test_name
         if "repeats" in test_config[test_name]:
             label += f" (k={test_config[test_name]['repeats']})"
-        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label)
+        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label, runs_per_n=5)
     
-    # CALL PROTOCOL
-    print("Recording test protocol data...")
-    for test_name, test_fn in protocol_functions.items():
-        for n in numbers:
-            try:
-                test_fn(n)
-            except Exception as e:
-                print(f"❌ Fehler bei {test_name}({n}): {e}")
+    # ------------------------------------- CALL PROTOCOL ------------------------------------- #
+    print("Rufe die Protokollversion der Tests auf...")
+    if protocoll:
+        for test_name, test_fn in protocol_functions.items():
+            for n in numbers:
+                try:
+                    test_fn(n)
+                except Exception as e:
+                    print(f"❌ Fehler bei {test_name}({n}): {e}")
 
-    # SAVE RESTULTS
-    if save_results:
-        #save_json(datasets, get_timestamped_filename("criteria", "json"))
-        #export_to_csv(datasets, get_timestamped_filename("criteria", "csv"))
-        export_test_data_to_csv(test_data, get_timestamped_filename("tests", "csv"))
+    # ------------------------------------- SAVE RESULTS ------------------------------------- #
+    if save_results: export_test_data_to_csv(test_data, get_timestamped_filename("tests", "csv"))
 
-    # PLOTTING
+    # ------------------------------------- PLOTTING ------------------------------------- #
     if show_plot:
         plot_data = {
             "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
@@ -176,10 +173,6 @@ def run_primetest_analysis(
         )
     return datasets
 
-
-
-
-
 # CALL ###################################################
 if __name__ == "__main__":
 
@@ -187,12 +180,13 @@ if __name__ == "__main__":
     repeat_tests = [3, 3, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=2,
+        n_numbers=10,
         num_type='p',
-        start=1000, # 100_000,
-        end=10_000, #1_000_000,
+        start=100_000,
+        end=1_000_000,
         #include_tests=run_tests,
         repeats=repeat_tests,
+        protocoll=False,
         save_results=True,
         show_plot=True
     )

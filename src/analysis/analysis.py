@@ -69,57 +69,83 @@ def run_primetest_analysis(
     #init_all_test_data(numbers)
     init_dictionary_fields(numbers)
 
-    # MAPPING DER FUNKTIONEN
-    test_functions = {}
+    # Mapping für reine Zeitmessung (ohne Protokoll)
+    runtime_functions = {}
+    # Mapping für Protokollversion (die ins Dictionary schreiben)
+    protocol_functions = {}
     for test, cfg in test_config.items():
         if test == "Fermat":
-            test_functions[test] = partial(fermat_test_protocoll, k=cfg["repeats"])
+            runtime_functions[test] = partial(fermat_test, k=cfg["repeats"])
+            protocol_functions[test] = partial(fermat_test_protocoll, k=cfg["repeats"])
         elif test == "Wilson":
-            test_functions[test] = wilson_criterion_protocoll
+            runtime_functions[test] = wilson_criterion
+            protocol_functions[test] = wilson_criterion_protocoll
         elif test == "Initial Lucas":
-            test_functions[test] = initial_lucas_test_protocoll
+            runtime_functions[test] = initial_lucas_test
+            protocol_functions[test] = initial_lucas_test_protocoll
         elif test == "Lucas":
-            test_functions[test] = lucas_test_protocoll
+            runtime_functions[test] = lucas_test
+            protocol_functions[test] = lucas_test_protocoll
         elif test == "Optimized Lucas":
-            test_functions[test] = optimized_lucas_test_protocoll
+            runtime_functions[test] = optimized_lucas_test
+            protocol_functions[test] = optimized_lucas_test_protocoll
         elif test == "Pepin":
-            test_functions[test] = pepin_test_protocoll
+            runtime_functions[test] = pepin_test
+            protocol_functions[test] = pepin_test_protocoll
         elif test == "Lucas-Lehmer":
-            test_functions[test] = lucas_lehmer_test_protocoll
+            runtime_functions[test] = lucas_lehmer_test
+            protocol_functions[test] = lucas_lehmer_test_protocoll
         elif test == "Proth":
-            test_functions[test] = proth_test_protocoll
+            runtime_functions[test] = proth_test
+            protocol_functions[test] = proth_test_protocoll
         elif test == "Pocklington":
-            test_functions[test] = pocklington_test_protocoll
+            runtime_functions[test] = pocklington_test
+            protocol_functions[test] = pocklington_test_protocoll
         elif test == "Optimized Pocklington":
-            test_functions[test] = optimized_pocklington_test_protocoll
+            runtime_functions[test] = optimized_pocklington_test
+            protocol_functions[test] = optimized_pocklington_test_protocoll
         elif test == "Proth Variant":
-            test_functions[test] = proth_test_variant_protocoll
+            runtime_functions[test] = proth_test_variant
+            protocol_functions[test] = proth_test_variant_protocoll
         elif test == "Optimized Pocklington Variant":
-            test_functions[test] = optimized_pocklington_test_variant_protocoll
+            runtime_functions[test] = optimized_pocklington_test_variant
+            protocol_functions[test] = optimized_pocklington_test_variant_protocoll
         elif test == "Generalized Pocklington":
-            test_functions[test] = generalized_pocklington_test_protocoll
+            runtime_functions[test] = generalized_pocklington_test
+            protocol_functions[test] = generalized_pocklington_test_protocoll
         elif test == "Grau":
-            test_functions[test] = grau_test_protocoll
+            runtime_functions[test] = grau_test
+            protocol_functions[test] = grau_test_protocoll
         elif test == "Grau Probability":
-            test_functions[test] = grau_probability_test_protocoll
+            runtime_functions[test] = grau_probability_test
+            protocol_functions[test] = grau_probability_test_protocoll
         elif test == "Miller-Rabin":
-            test_functions[test] = partial(miller_selfridge_rabin_test_protocoll, k=cfg["repeats"])
+            runtime_functions[test] = partial(miller_selfridge_rabin_test, k=cfg["repeats"])
+            protocol_functions[test] = partial(miller_selfridge_rabin_test_protocoll, k=cfg["repeats"])
         elif test == "Solovay-Strassen":
-            test_functions[test] = partial(solovay_strassen_test_protocoll, k=cfg["repeats"])
+            runtime_functions[test] = partial(solovay_strassen_test, k=cfg["repeats"])
+            protocol_functions[test] = partial(solovay_strassen_test_protocoll, k=cfg["repeats"])
         elif test == "AKS":
-            test_functions[test] = aks_test_protocoll
+            runtime_functions[test] = aks_test
+            protocol_functions[test] = aks_test_protocoll
 
     # MEASURE 
     print("Measuring runtimes...")
     datasets = {}
-    for test_name, test_fn in test_functions.items():
+    for test_name, test_fn in runtime_functions.items():
         label = test_name
         if "repeats" in test_config[test_name]:
             label += f" (k={test_config[test_name]['repeats']})"
         datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label)
     
     # CALL PROTOCOL
-    #print_test_protocoll(numbers, datasets, selected_tests=include_tests)
+    print("Recording test protocol data...")
+    for test_name, test_fn in protocol_functions.items():
+        for n in numbers:
+            try:
+                test_fn(n)
+            except Exception as e:
+                print(f"❌ Fehler bei {test_name}({n}): {e}")
 
     # SAVE RESTULTS
     if save_results:
@@ -161,7 +187,7 @@ if __name__ == "__main__":
     repeat_tests = [3, 3, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=3,
+        n_numbers=2,
         num_type='p',
         start=1000, # 100_000,
         end=10_000, #1_000_000,

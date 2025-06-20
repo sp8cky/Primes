@@ -13,8 +13,7 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str
         fn(n)
         end = time.perf_counter()
         runtime = end - start
-
-        # ✅ Zeit direkt im test_data speichern
+        print(f"Test {test_name} für {n}: {runtime*1000:.2f}ms")
         test_data[test_name][n]["time"] = runtime
 
         results.append({

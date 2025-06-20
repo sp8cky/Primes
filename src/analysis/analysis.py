@@ -156,15 +156,15 @@ def run_primetest_analysis(
 # CALL ###################################################
 if __name__ == "__main__":
 
-    #run_tests = ["Fermat", "Lucas", "Proth", "Pocklington", "Optimized Pocklington"]
-    repeat_tests = [3, 5, 3]  # Fermat, MSRT, SST
+    run_tests = ["Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas"]
+    repeat_tests = [1, 5, 3]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=1,
+        n_numbers=5,
         num_type='p',
         start=1000, # 100_000,
         end=10_000, #1_000_000,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         repeats=repeat_tests,
         save_results=True,
         show_plot=True

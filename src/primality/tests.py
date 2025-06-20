@@ -1,5 +1,5 @@
 import src.primality.helpers as helpers
-import random, math
+import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
@@ -44,14 +44,13 @@ def init_test_data_entry() -> Dict[str, Any]:
         "result": None,          # True/False/None
         "reason": None,          # String oder None
     }
-
 def init_test_data_for_numbers(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, Any]]]:
     print("Initialisiere Testdaten für alle Tests...")
     """Initialisiert das globale `test_data`-Dictionary für alle Tests."""
     
     # Liste aller Tests mit ihren spezifischen Anpassungen
     tests = {
-        "Fermat": {},
+        "Fermat": {"a_values": []},
         "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
         "Initial Lucas": {"a_values": [], "other_fields": ()},
         "Lucas": {"a_values": [], "other_fields": ()},
@@ -85,24 +84,23 @@ def init_test_data_for_numbers(numbers: List[int]) -> Dict[str, Dict[int, Dict[s
 ############################################################################################
 
 def fermat_test(n: int, k: int = 1) -> bool:
+    print(f"Fermat-Test für n={n} mit k={k} Wiederholungen")
     if n <= 1: raise ValueError("n must be greater than 1")
+    test_data["Fermat"][n]["a_values"] = []
     if n == 2:
-        test_data["Fermat"][n]["a_values"] = []
         test_data["Fermat"][n]["result"] = True
+        test_data["Fermat"][n]["a_values"].append((2, True))
         return True
 
-    a_values = []
     for _ in range(k):
         a = random.randint(2, n - 1)
-        if gcd(a, n) != 1 or pow(a, n - 1, n) != 1:
-            a_values.append(a)
-            test_data["Fermat"][n]["a_values"] = a_values
+        cond = gcd(a, n) == 1 or pow(a, n - 1, n) == 1
+        test_data["Fermat"][n]["a_values"].append((a, cond))
+        if not cond:
             test_data["Fermat"][n]["result"] = False
             test_data["Fermat"][n]["reason"] = "GCD ≠ 1 or Fermat failed"
             return False
-        a_values.append(a)
 
-    test_data["Fermat"][n]["a_values"] = a_values
     test_data["Fermat"][n]["result"] = True
     return True
 
@@ -116,27 +114,27 @@ def wilson_criterion(p: int) -> bool:
 
 def initial_lucas_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
+    test_data["Initial Lucas"][n]["a_values"] = []
     if n == 2:
-        test_data["Initial Lucas"][n]["a_values"] = []
         test_data["Initial Lucas"][n]["result"] = True
         return True
 
     a = random.randint(2, n - 1)
     cond1 = pow(a, n - 1, n) == 1
+    test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, None)]
     if not cond1:
-        test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, None)]
         test_data["Initial Lucas"][n]["result"] = False
         test_data["Initial Lucas"][n]["reason"] = "a^{n-1} ≠ 1"
         return False
 
     for m in range(1, n - 1):
-        if pow(a, m, n) == 1:
-            test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, m)]
+        cond2 = pow(a, m, n) == 1
+        test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, cond2)]
+        if not cond2:
             test_data["Initial Lucas"][n]["result"] = False
             test_data["Initial Lucas"][n]["reason"] = f"early break at m = {m}"
             return False
 
-    test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, None)]
     test_data["Initial Lucas"][n]["result"] = True
     return True
 
@@ -144,52 +142,47 @@ def initial_lucas_test(n: int) -> bool:
 def lucas_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     if n == 2:
-        test_data["Lucas"][n]["a_values"] = []
         test_data["Lucas"][n]["result"] = True
         return True
 
     a = random.randint(2, n - 1)
     cond1 = pow(a, n - 1, n) == 1
+    test_data["Lucas"][n]["a_values"] = [(a, cond1, None)]
     if not cond1:
-        test_data["Lucas"][n]["a_values"] = [(a, cond1, None)]
         test_data["Lucas"][n]["result"] = False
         test_data["Lucas"][n]["reason"] = "a^{n-1} ≠ 1"
         return False
 
     for m in range(1, n):
-        if (n - 1) % m == 0 and pow(a, m, n) == 1:
-            test_data["Lucas"][n]["a_values"] = [(a, cond1, m)]
-            test_data["Lucas"][n]["other_fields"] = (m,)
+        cond2 = (n - 1) % m == 0 and pow(a, m, n) == 1
+        test_data["Lucas"][n]["a_values"] = [(a, cond1, cond2)]
+        if not cond2:
             test_data["Lucas"][n]["result"] = False
             test_data["Lucas"][n]["reason"] = f"early break at m = {m}"
             return False
 
-    test_data["Lucas"][n]["a_values"] = [(a, cond1, None)]
     test_data["Lucas"][n]["result"] = True
     return True
 
 def optimized_lucas_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
+    test_data["Optimized Lucas"][n]["a_values"] = {}
     if n == 2:
-        test_data["Optimized Lucas"][n]["a_values"] = {}
         test_data["Optimized Lucas"][n]["result"] = True
         return True
 
-    a_values = {}
     for q in factorint(n - 1):
         for a in range(2, n):
             cond1 = pow(a, n - 1, n) == 1
             cond2 = pow(a, (n - 1) // q, n) != 1
-            a_values[q] = (a, cond1, cond2)
+            test_data["Optimized Lucas"][n]["a_values"][q] = (a, cond1, cond2)
             if cond1 and cond2:
                 break
         else:
-            test_data["Optimized Lucas"][n]["a_values"] = a_values
             test_data["Optimized Lucas"][n]["result"] = False
             test_data["Optimized Lucas"][n]["reason"] = f"No valid a for q = {q}"
             return False
 
-    test_data["Optimized Lucas"][n]["a_values"] = a_values
     test_data["Optimized Lucas"][n]["result"] = True
     return True
 
@@ -201,7 +194,7 @@ def pepin_test(n: int) -> bool:
     k = next((k for k in range(1, 32) if 2**(2**k) + 1 == n), None)
     if k is None:
         test_data["Pepin"][n]["result"] = False
-        test_data["Pepin"][n]["reason"] = "Keine Fermat-Zahl (n ≠ 2^(2^k)+1)"
+        test_data["Pepin"][n]["reason"] = "Keine Fermat-Zahl"
         return False
     
     # Test
@@ -220,7 +213,7 @@ def lucas_lehmer_test(n: int) -> bool:
     p = next((p for p in range(2, 32) if 2**p - 1 == n), None)
     if p is None:
         test_data["Lucas-Lehmer"][n]["result"] = False
-        test_data["Lucas-Lehmer"][n]["reason"] = "Keine Mersenne-Zahl (n ≠ 2^p-1)"
+        test_data["Lucas-Lehmer"][n]["reason"] = "Keine Mersenne-Zahl"
         return False
     
     # Test
@@ -502,11 +495,9 @@ def grau_probability_test(n: int) -> bool: #6.14
 
 #############################################################################################
 def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n):
-        raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
+    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n): raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     
     if n in (2, 3):
-        test_data["Miller-Rabin"][n]["results"] = [True]
         test_data["Miller-Rabin"][n]["result"] = True
         return True
 
@@ -523,19 +514,20 @@ def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:
             test_data["Miller-Rabin"][n]["result"] = False
             return False
 
-        if pow(a, m, n) == 1:
-            test_data["Miller-Rabin"][n]["a_values"].append((a, True))
+        cond1 = pow(a, n - 1, n) == 1
+        test_data["Miller-Rabin"][n]["a_values"].append((a, cond1))
+        if cond1:
             continue
 
         for i in range(r):
-            if pow(a, 2**i * m, n) == n - 1:
+            if pow(a, 2**i * m, n) == n - 1: #cond2
                 break
         else:
             test_data["Miller-Rabin"][n]["a_values"].append((a, False))
             test_data["Miller-Rabin"][n]["result"] = False
             return False
 
-        test_data["Miller-Rabin"][n]["a_values"].append((a, True))
+        test_data["Miller-Rabin"][n]["a_values"].append((a, True)) # cond2
     test_data["Miller-Rabin"][n]["result"] = True
     return True
 
@@ -549,10 +541,18 @@ def solovay_strassen_test(n: int, k: int = 5) -> bool:
     for _ in range(k):
         a = random.randint(2, n - 1)
         jacobi = jacobi_symbol(a, n)
-        test_data["Solovay-Strassen"][n]["a_values"].append(a)
-        condition = (jacobi == 0) or (pow(a, (n - 1) // 2, n) != jacobi % n)
+        cond1 = jacobi(a, n) == 0
+        test_data["Solovay-Strassen"][n]["a_values"].append((a, cond1))
 
-        if condition:
+        if cond1:
+            test_data["Solovay-Strassen"][n]["result"] = False
+            test_data["Solovay-Strassen"][n]["reason"] = "Jacobi-Symbol ist 0"
+            return False
+        
+        cond2 = pow(a, (n - 1) // 2, n) != jacobi % n
+        if cond2:
+            test_data["Solovay-Strassen"][n]["a_values"].append((a, cond2))
+            test_data["Solovay-Strassen"][n]["reason"] = "Kongruenzprüfung fehlgeschlagen"
             test_data["Solovay-Strassen"][n]["result"] = False
             return False
 

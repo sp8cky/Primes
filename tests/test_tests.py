@@ -38,9 +38,9 @@ all_numbers = list(set(
     grau_probability_numbers
 ))
 
-init_all_test_data(all_numbers)
+init_test_data_for_numbers(all_numbers)
 
-# ----------- Beispielhafte Tests -----------
+
 
 @pytest.mark.parametrize("n", valid_primes + valid_composites)
 def test_fermat(n):

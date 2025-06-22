@@ -22,8 +22,7 @@ def measure_section(label: str, func, *args, **kwargs):
 
 # Generiert Zahlen im Bereich
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
-    if num_type not in ['p', 'z', 'g']:
-        raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
+    if num_type not in ['p', 'z', 'g']: raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
 
     primes = list(primerange(start, end))
     composites = [x for x in range(start, end) if not isprime(x)]
@@ -51,15 +50,10 @@ def run_primetest_analysis(
 ) -> Dict[str, List[Dict]]:
 
     all_available_tests = [
-        "Fermat", "Wilson", "Initial Lucas", "Lucas",
-        "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth",
-        "Pocklington", "Optimized Pocklington", "Proth Variant",
-        "Optimized Pocklington Variant", "Generalized Pocklington",
-        "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"
-    ]
+        "Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Pocklington", "Optimized Pocklington", "Proth Variant",
+        "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"]
 
-    if include_tests is None:
-        include_tests = all_available_tests
+    if include_tests is None: include_tests = all_available_tests
 
     prob_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
     default_repeats = [3, 3, 3]
@@ -74,7 +68,8 @@ def run_primetest_analysis(
             test_config[test] = {}
 
     # Zahlen generieren
-    numbers = measure_section("Zahlengenerierung", generate_numbers, n=n_numbers, start=start, end=end, num_type=num_type)
+    #numbers = measure_section("Zahlengenerierung", generate_numbers, n=n_numbers, start=start, end=end, num_type=num_type)
+    numbers = [1039, 3511, 1723, 2731, 4099]
     print(f"Generierte {len(numbers)} Zahlen im Bereich {start}-{end} ({num_type}): {numbers[:10]}")
 
     # Testdaten initialisieren
@@ -140,13 +135,26 @@ def run_primetest_analysis(
             protocol_functions[test] = aks_test_protocoll
 
     # Zeitmessung
-    datasets = measure_section("Laufzeitmessung", lambda: {
+    """datasets = measure_section("Laufzeitmessung", lambda: {
         test_name: measure_runtime(
             test_fn, numbers, test_name,
             label=test_name + (f" (k={test_config[test_name]['prob_test_repeats']})" if "prob_test_repeats" in test_config[test_name] else ""),
             runs_per_n=test_repeats
         )
         for test_name, test_fn in runtime_functions.items()
+    })"""
+    datasets = measure_section("Laufzeitmessung", lambda: {
+    test_name: (
+        print(f"🔍 Messe Laufzeit für: {test_name}") or
+        measure_runtime(
+            test_fn,
+            numbers,
+            test_name,
+            label=test_name + (f" (k={test_config[test_name]['prob_test_repeats']})" if "prob_test_repeats" in test_config[test_name] else ""),
+            runs_per_n=test_repeats
+        )
+    )
+    for test_name, test_fn in runtime_functions.items()
     })
 
     # Protokolle (falls aktiviert)
@@ -188,12 +196,12 @@ if __name__ == "__main__":
     run_tests = ["Fermat"]
     repeat_tests = [1,1,1]
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=5,
         num_type='p',
-        start=100_000,
-        end=1_000_000,
+        start=10_000,
+        end=100_000,
         test_repeats=2,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         protocoll=True,
         save_results=True,

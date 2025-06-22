@@ -2,6 +2,7 @@ import pytest
 import random
 from src.primality.helpers import *
 from src.primality.tests import *
+from src.primality.test_protocoll import init_dictionary_fields
 
 # Alle Zahlen aus den Tests
 valid_primes = [3, 5, 7, 13, 17, 31, 37]
@@ -38,7 +39,7 @@ all_numbers = set(
     solovay_numbers +
     aks_numbers
 )
-init_test_data_for_numbers(list(all_numbers))
+init_dictionary_fields(list(all_numbers))
 
 
 # Erwartungswerte als Dicts (in einer Zeile je Test)

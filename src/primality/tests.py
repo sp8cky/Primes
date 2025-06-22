@@ -231,33 +231,28 @@ def grau_test(n: int) -> bool: #6.13
     exponent = (n - 1) // p
     base = pow(a, exponent, n)
     phi_p = helpers.cyclotomic_polynomial(p, base) % n
+    phi_p = helpers.cyclotomic_polynomial(p, base) % n
     return phi_p == 0
 
 
 def grau_probability_test(n: int) -> bool: #6.14
     if n <= 1:  raise ValueError("n must be greater than 1")
-
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition: return False
-
+    
     K, p, n_exp = decomposition
+    a = helpers.find_quadratic_non_residue(p)
+    if a is None: return False
 
-    for a in range(2, n):
-        for j in range(n - 1, -1, -1):
-            try:
-                log_term = math.log(K, p)
-            except ValueError:
-                log_term = float("inf")
+    log_p_K = math.log(K, p) if K != 0 else float("-inf")
 
-            exp = K * (p ** (n - j - 1))
-            base = pow(a, exp, n)
-            phi_p = helpers.cyclotomic_polynomial(p, base) % n
+    for j in range(n_exp - 1, -1, -1):
+        phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
+        phi_p = helpers.cyclotomic_polynomial(p, phi_value) % n
 
-            if (phi_p == 0) and (2 * (n - j) > log_term + n):
-                return True
-
+        if (phi_p == 0) and (2 * (n_exp - j) > log_p_K + n_exp):
+            return True
     return False
-
 
 #############################################################################################
 def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:

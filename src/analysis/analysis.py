@@ -31,7 +31,7 @@ def run_primetest_analysis(
     num_type: str = 'g',
     start: int = 100_000,
     end: int = 1_000_000,
-    runs_per_n: int = 2,
+    test_repeats: int = 2,
     include_tests: list = None,
     prob_test_repeats: list = None,
     protocoll: bool = True,
@@ -133,10 +133,11 @@ def run_primetest_analysis(
     print("Messe die Laufzeiten der Tests...")
     datasets = {}
     for test_name, test_fn in runtime_functions.items():
+        print(f"Starte Test: {test_name}...")
         label = test_name
         if "prob_test_repeats" in test_config[test_name]:
             label += f" (k={test_config[test_name]['prob_test_repeats']})"
-        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label, runs=runs_per_n)
+        datasets[test_name] = measure_runtime(test_fn, numbers, test_name, label=label, runs_per_n=test_repeats)
     
     # ------------------------------------- CALL PROTOCOL ------------------------------------- #
     print("Rufe die Protokollversion der Tests auf...")
@@ -181,14 +182,14 @@ if __name__ == "__main__":
     repeat_tests = [1,1,1]  # Fermat, MSRT, SST
 
     results = run_primetest_analysis(
-        n_numbers=3,
+        n_numbers=5,
         num_type='p',
-        start=100_000,
-        end=1_000_000,
-        runs_per_n=2,
+        start=1000,
+        end=10_000,
+        test_repeats=1,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         protocoll=False,
-        save_results=True,
+        save_results=False,
         show_plot=True
     )

@@ -1,45 +1,82 @@
 import src.primality.helpers as helpers
-import random, math
-from sympy import factorint, jacobi_symbol, primerange
+import random, math, pytest
+from math import gcd
+from sympy import factorint
+from statistics import mean
+from sympy import jacobi_symbol, gcd, log, primerange
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Optional, List, Dict, Tuple, Any, Union
 
-# Neue flache Datenstruktur: Liste von Dicts
-test_data_flat: List[Dict[str, Any]] = []
+test_data = {}
+def init_dictionary() -> Dict[str, Any]:
+    """Erzeugt ein standardisiertes Dictionary für Testdaten eines einzelnen n."""
+    return {
+        "a_values": [],          # Liste von Tupeln/Integers (je nach Test)
+        "other_fields": None,    # Kann später zu einem Dict/Tuple/List werden
+        "result": None,          # True/False/None
+        "reason": None,          # String oder None
+    }
+def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, Any]]]:
+    """Initialisiert das globale `test_data`-Dictionary für alle Tests."""
+    
+    # Liste aller Tests mit ihren spezifischen Anpassungen
+    tests = {
+        "Fermat": {"a_values": []},
+        "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
+        "Initial Lucas": {"a_values": [], "other_fields": ()},
+        "Lucas": {"a_values": [], "other_fields": ()},
+        "Optimized Lucas": {"a_values": {}},  # Als Dictionary für faktorabhängige Werte
+        "Pepin": {"a_values": None, "other_fields": ()},
+        "Lucas-Lehmer": {"a_values": None, "other_fields": ()},
+        "Proth": {"a_values": []},
+        "Pocklington": {"a_values": []},
+        "Optimized Pocklington": {"a_values": {}},
+        "Proth Variant": {"a_values": []},
+        "Optimized Pocklington Variant": {"a_values": {}, "other_fields": ()},
+        "Generalized Pocklington": {"a_values": [], "other_fields": ()},
+        "Grau": {"a_values": [], "other_fields": ()},
+        "Grau Probability": {"a_values": [], "other_fields": ()},
+        "Miller-Rabin": {"a_values": []},
+        "Solovay-Strassen": {"a_values": []},
+        "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
+    }
+    
+    for test_name, test_config in tests.items():
+        test_data[test_name] = {}
+        for n in numbers:
+            entry = init_dictionary()
+            # Überschreibe Defaults mit testspezifischen Werten
+            for key, value in test_config.items():
+                entry[key] = value
+            test_data[test_name][n] = entry
+    
+    return test_data
 
-def log_test_data(test: str, n: int, **kwargs):
-    entry = {"test": test, "n": n}
-    entry.update(kwargs)
-    test_data_flat.append(entry)
-
-# Beispiel: Fermat-Test
+############################################################################################
 
 def fermat_test_protocoll(n: int, k: int = 1) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
-    a_values = []
-    result = True
-    reason = None
-
+    test_data["Fermat"][n]["a_values"] = []
     if n == 2:
-        a_values.append((2, True))
-        log_test_data("Fermat", n, a_values=a_values, result=True)
+        test_data["Fermat"][n]["result"] = True
+        test_data["Fermat"][n]["a_values"].append((2, True))
         return True
 
     for _ in range(k):
         a = random.randint(2, n - 1)
-        cond = gcd(a, n) == 1 and pow(a, n - 1, n) == 1
-        a_values.append((a, cond))
+        cond = gcd(a, n) == 1 or pow(a, n - 1, n) == 1
+        test_data["Fermat"][n]["a_values"].append((a, cond))
         if not cond:
-            result = False
-            reason = "GCD ≠ 1 or Fermat failed"
-            break
+            test_data["Fermat"][n]["result"] = False
+            test_data["Fermat"][n]["reason"] = "GCD ≠ 1 or Fermat failed"
+            return False
 
-    log_test_data("Fermat", n, a_values=a_values, result=result, reason=reason)
-    return result
+    test_data["Fermat"][n]["result"] = True
+    return True
 
-"""
+
 def wilson_criterion_protocoll(p: int) -> bool:
     if p <= 1: raise ValueError("p must be greater than 1")
     result = math.factorial(p - 1) % p == p - 1
@@ -398,32 +435,30 @@ def grau_probability_test_protocoll(n: int) -> bool: #6.14
         return False
 
     K, p, n_exp = decomposition
-    test_data["Grau Probability"][n]["reason"] = None
     test_data["Grau Probability"][n]["other_fields"] = [K, p, n_exp]
+    a = helpers.find_quadratic_non_residue(p)
+    if a is None: 
+        test_data["Grau Probability"][n]["result"] = False
+        test_data["Grau Probability"][n]["reason"] = "Keine a gefunden"
+        return False
 
-    for a in range(2, n):
-        for j in range(n - 1, -1, -1):
-            try:
-                log_term = math.log(K, p)
-            except ValueError:
-                log_term = float("inf")
+    for j in range(n_exp - 1, -1, -1):
+        phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
+        phi_p = helpers.cyclotomic_polynomial(p, phi_value) % n
 
-            exp = K * (p ** (n - j - 1))
-            base = pow(a, exp, n)
-            phi_p = helpers.cyclotomic_polynomial(p, base) % n
+        cond1 = (phi_p == 0)
+        cond2 = (2 * (n_exp - j) > math.log(K, p) + n_exp)
 
-            cond1 = (phi_p == 0)
-            cond2 = (2 * (n - j) > log_term + n)
-
-            if cond1 and cond2:
-                test_data["Grau Probability"][n]["a_values"] = [a]
-                test_data["Grau Probability"][n]["other_fields"].extend([j])
-                test_data["Grau Probability"][n]["result"] = True
-                return True
-
+        if cond1 and cond2:
+            test_data["Grau Probability"][n]["a_values"] = [a]
+            test_data["Grau Probability"][n]["other_fields"].extend([j])
+            test_data["Grau Probability"][n]["result"] = True
+            return True
+        
     test_data["Grau Probability"][n]["result"] = False
     test_data["Grau Probability"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
     return False
+
 
 #############################################################################################
 def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5) -> bool:
@@ -548,4 +583,3 @@ def aks_test_protocoll(n: int) -> bool:
     test_data["AKS"][n]["result"] = True
     return True
 
-"""

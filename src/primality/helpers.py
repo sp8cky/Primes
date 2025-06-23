@@ -23,9 +23,8 @@ def find_pocklington_decomposition(n: int) -> tuple:
     if n <= 2: return None
         
     n_minus_1 = n - 1
-    max_p = int(math.sqrt(n_minus_1)) + 1
     
-    for p in range(2, max_p + 1):
+    for p in range(2, n_minus_1 + 1):
         if not isprime(p): continue
 
         e = 1
@@ -39,6 +38,7 @@ def find_pocklington_decomposition(n: int) -> tuple:
                     return (K, p, e)
             e += 1
     return None
+
 
 def find_all_decompositions(n: int) -> list:
     if n < 3: return []
@@ -66,7 +66,6 @@ def find_all_decompositions(n: int) -> list:
     
     return decompositions
 
-
 # Find smallest quadratic non-residue modulo p
 def find_quadratic_non_residue(p: int) -> int:
     for a in range(2, p):
@@ -78,14 +77,26 @@ def find_quadratic_non_residue(p: int) -> int:
 def cyclotomic_polynomial(n, x: int) -> int:
     return cyclotomic_poly(n, x)
 
-# check if n is a Fermat number
+# Prüft ob n eine Fermat-Zahl der Form n=2^(2^k) + 1 ist
 def is_fermat_number(n: int) -> bool:
     if n < 3: return False
     k = 0
-    value = 2
-    while value < n:
-        value = 2 ** (2 ** k) + 1
-        if value == n:
+    while True:
+        fermat_candidate = (1 << (1 << k)) + 1  # Berechnet 2^(2^k) + 1 effizient
+        if fermat_candidate == n:
             return True
+        if fermat_candidate > n:  # Kein weiteres k kann n ergeben
+            return False
         k += 1
-    return False
+
+# Prüft ob n eine Mersenne-Zahl der Form n=2^p - 1 ist (für beliebiges p ≥ 2)
+def is_mersenne_number(n: int) -> bool:
+    if n <= 1: return False
+    m = n + 1  # M_p + 1 = 2^p
+    p = 0
+    while m > 1:
+        if m % 2 != 0:
+            return False
+        m = m // 2
+        p += 1
+    return p >= 2

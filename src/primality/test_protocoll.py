@@ -3,7 +3,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange
+from sympy import jacobi_symbol, gcd, log, primerange, isprime
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -176,15 +176,17 @@ def pepin_test_protocoll(n: int) -> bool:
 
 
 def lucas_lehmer_test_protocoll(n: int) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
-
-    # Check if n is a Mersenne number M_p = 2^p - 1
-    p = next((p for p in range(2, 32) if 2**p - 1 == n), None)
-    if p is None:
+    if n <= 2: raise ValueError("n must be greater than 1")
+    is_mersenne = helpers.is_mersenne_number(n)
+    p = (n + 1).bit_length() - 1
+    if not is_mersenne or not isprime(p): 
         test_data["Lucas-Lehmer"][n]["result"] = False
         test_data["Lucas-Lehmer"][n]["reason"] = "Keine Mersenne-Zahl"
         return False
-    
+    if p == 2: 
+        test_data["Lucas-Lehmer"][n]["result"] = True
+        return True
+
     # Test
     S = 4
     sequence = [S]
@@ -436,6 +438,7 @@ def grau_probability_test_protocoll(n: int) -> bool: #6.14
 
     K, p, n_exp = decomposition
     test_data["Grau Probability"][n]["other_fields"] = [K, p, n_exp]
+    log_p_K = math.log(K, p) if K != 0 else float("-inf")
     a = helpers.find_quadratic_non_residue(p)
     if a is None: 
         test_data["Grau Probability"][n]["result"] = False

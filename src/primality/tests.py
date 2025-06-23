@@ -3,7 +3,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange
+from sympy import jacobi_symbol, gcd, log, primerange, isprime
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -16,9 +16,9 @@ def fermat_test(n: int, k: int = 1) -> bool:
     for _ in range(k):
         a = random.randint(2, n - 1)
         if gcd(a, n) != 1 or pow(a, n - 1, n) != 1:
+            print(f"Fermat test failed for a={a} and n={n}")
             return False
     return True
-
 
 def wilson_criterion(p: int) -> bool:
     if p <= 1: raise ValueError("p must be greater than 1")
@@ -67,6 +67,7 @@ def optimized_lucas_test(n: int) -> bool:
 
     return True
 
+# Prüft ob eine Fermat-Zahl n prim ist
 def pepin_test(n: int) -> bool:
     if not helpers.is_fermat_number(n): return False
 
@@ -75,23 +76,20 @@ def pepin_test(n: int) -> bool:
     
     return True
 
+# Prüft ob n=2^p-1 eine Mersenne-Primzahl (mit primem p) ist
 def lucas_lehmer_test(n: int) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
-
-    # Check if n is a Mersenne number M_p = 2^p - 1
-    p = next((p for p in range(2, 32) if 2**p - 1 == n), None)
-    if p is None:
-        return False
-    
+    if n <= 2: raise ValueError("n must be greater than 1")
+    is_mersenne = helpers.is_mersenne_number(n)
+    p = (n + 1).bit_length() - 1
+    if not is_mersenne or not isprime(p): return False
+    if p == 2: return True
     # Test
     S = 4
     sequence = [S]
     for _ in range(p - 2):
         S = (S**2 - 2) % n
         sequence.append(S)
-    is_prime = (S == 0)
-    return is_prime
-
+    return (S == 0)
 
 def proth_test(n: int) -> bool: #4.5
     if n <= 1: raise ValueError("n must be greater than 1")
@@ -117,19 +115,17 @@ def pocklington_test(n: int) -> bool: #4.6
 
     # Factorize n-1 as q^m * R
     factors = factorint(n - 1)
-    if len(factors) != 1:
-        return False
+    if not factors: return False
     
     q, m = next(iter(factors.items()))
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
         return False
-    
+
     # Test
     for a in range(2, n):
         if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
             return True
-   
     return False
 
 def optimized_pocklington_test(n: int) -> bool: #4.7
@@ -150,8 +146,7 @@ def optimized_pocklington_test(n: int) -> bool: #4.7
             if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
                 found = True
                 break
-        if not found:
-            return False
+        if not found: return False
 
     return True
 
@@ -177,11 +172,10 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None) -> bool:
     F = math.prod(p**e for p, e in factors.items())
     R = (n - 1) // F
 
-    if B is None:  B = int(math.isqrt(n) // F) + 1
+    if B is None: B = int(math.isqrt(n) // F) + 1
+    if F * B <= math.isqrt(n): return False
 
-    if F * B <= math.isqrt(n):  return False
-
-    for p in primerange(2, B):
+    for p in primerange(2, B): 
         if R % p == 0: return False
 
     for q in factors:
@@ -190,18 +184,15 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None) -> bool:
             if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
                 found = True
                 break
-        if not found:
-            return False
+        if not found: return False
 
     # b-Test
     b = 2
     while b < n and pow(b, (n - 1) // F, n) == 1:
         b += 1
-    if b == n:
-        return False
+    if b == n: return False
 
     return True
-
 
 def generalized_pocklington_test(n: int) -> bool: #6.12
     if n <= 1: raise ValueError("n must be greater than 1")
@@ -210,13 +201,12 @@ def generalized_pocklington_test(n: int) -> bool: #6.12
     if decomposition is None: return False
 
     K, p, e = decomposition
-
+    
     for a in range(2, n):
         if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // p, n) - 1, n) == 1:
             return True
         
     return False
-
 
 def grau_test(n: int) -> bool: #6.13
     if n <= 1: raise ValueError("n must be greater than 1")
@@ -230,7 +220,6 @@ def grau_test(n: int) -> bool: #6.13
 
     exponent = (n - 1) // p
     base = pow(a, exponent, n)
-    phi_p = helpers.cyclotomic_polynomial(p, base) % n
     phi_p = helpers.cyclotomic_polynomial(p, base) % n
     return phi_p == 0
 
@@ -249,10 +238,10 @@ def grau_probability_test(n: int) -> bool: #6.14
     for j in range(n_exp - 1, -1, -1):
         phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
         phi_p = helpers.cyclotomic_polynomial(p, phi_value) % n
-
         if (phi_p == 0) and (2 * (n_exp - j) > log_p_K + n_exp):
             return True
     return False
+
 
 #############################################################################################
 def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:

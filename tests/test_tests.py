@@ -43,23 +43,23 @@ init_dictionary_fields(list(all_numbers))
 
 
 # Erwartungswerte als Dicts (in einer Zeile je Test)
-fermat_expected = {3:True,5:True,7:True,9:True,13:True,15:False,17:True,21:False,25:True,31:True,35:False,37:True,39:False}
+fermat_expected = {3:True,5:True,7:True,9:False,13:True,15:False,17:True,21:False,25:False,31:True,35:False,37:True,39:False}
 wilson_expected = {3:True,5:True,7:True,9:False,13:True,15:False,17:True,21:False,25:False,31:True,35:False,37:True,39:False}
 # Initial Lucas: laut deinem Code immer False (für Test-Zahlen)
 initial_lucas_expected = {n:False for n in valid_primes + valid_composites}
 # Lucas-Test: auch immer False (für Test-Zahlen)
 lucas_expected = {n:False for n in valid_primes + valid_composites}
 optimized_lucas_expected = {3:True,5:True,7:True,9:False,13:True,15:False,17:True,21:False,25:False,31:True,35:False,37:True,39:False}
-pepin_expected = {17:True,257:True,65537:True,5:False,15:False}
+pepin_expected = {5:True,15:False,17:True,257:True,65537:True}
 lucas_lehmer_expected = {3:True,7:True,15:False,31:True,63:False}
 proth_expected = {577:True,561:False,9:False}
 pocklington_expected = {1811:True,561:False}
 optimized_pocklington_expected = {1811:True,561:False}
 proth_variant_expected = {577:True,561:False}
-optimized_pocklington_variant_expected = {8081:False,1811:True}
+optimized_pocklington_variant_expected = {8081:True,1811:True}
 generalized_pocklington_expected = {8081:True,561:False}
 grau_expected = {8081:True,561:False}
-grau_probability_expected = {8081:False,561:False}
+grau_probability_expected = {8081:True,561:False}
 miller_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 29:True, 31:True, 39:False}
 solovay_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}
 aks_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}

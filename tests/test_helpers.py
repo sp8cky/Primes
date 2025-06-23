@@ -2,11 +2,6 @@ import pytest
 import math
 from src.primality.helpers import *
 
-# Test data
-test_numbers = [2, 3, 4, 5, 7, 8, 9, 10, 11, 13, 15, 17, 19, 21, 25, 31, 37]
-prime_numbers = [2, 3, 5, 7, 11, 13, 17, 19, 31, 37]
-composite_numbers = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 21, 25]
-
 # Test for divides()
 @pytest.mark.parametrize("a,b,expected", [
     (2, 4, True),
@@ -160,3 +155,52 @@ def test_cyclotomic_polynomial(n, x, expected):
 ])
 def test_is_fermat_number(n, expected):
     assert is_fermat_number(n) == expected
+
+
+# Test cases for is_mersenne_number()
+@pytest.mark.parametrize("n,expected", [
+    # Valid Mersenne numbers (both prime and composite)
+    (3, True),       # M₂ = 3 (prime)
+    (7, True),       # M₃ = 7 (prime)
+    (15, True),      # M₄ = 15 (composite)
+    (31, True),      # M₅ = 31 (prime)
+    (63, True),      # M₆ = 63 (composite)
+    (127, True),     # M₇ = 127 (prime)
+    (255, True),     # M₈ = 255 (composite)
+    (511, True),     # M₉ = 511 (composite)
+    (1023, True),    # M₁₀ = 1023 (composite)
+    (2047, True),    # M₁₁ = 2047 (composite)
+    (8191, True),    # M₁₃ = 8191 (prime)
+    (131071, True),  # M₁₇ = 131071 (prime)
+    
+    # Non-Mersenne numbers
+    (0, False),
+    (1, False),
+    (2, False),
+    (4, False),
+    (5, False),
+    (6, False),
+    (8, False),
+    (9, False),
+    (10, False),
+    (16, False),
+    (32, False),
+    (64, False),
+    (100, False),
+    (1000, False),
+    
+    # Large numbers
+    (2**17-1, True),    # M₁₇ = 131071
+    (2**19-1, True),    # M₁₉ = 524287
+    (2**31-1, True),    # M₃₁ = 2147483647
+    (2**61-1, True),    # M₆₁ = 2305843009213693951
+    (2**89-1, True),    # M₈₉ (composite)
+    (2**107-1, True),   # M₁₀₇ (prime)
+    
+    # Numbers just below/above Mersenne numbers
+    (2**5-2, False),    # 30 (M₅ = 31)
+    (2**7+1, False),    # 129 (M₇ = 127)
+    (2**13-2, False),   # 8190 (M₁₃ = 8191)
+])
+def test_is_mersenne_number(n, expected):
+    assert is_mersenne_number(n) == expected

@@ -17,7 +17,7 @@ def measure_section(label: str, func, *args, **kwargs):
     result = func(*args, **kwargs)
     end = time.perf_counter()
     duration = end - start
-    print(f"Abschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
+    print(f"\nAbschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
     return result
 
 # Generiert Zahlen im Bereich
@@ -44,12 +44,11 @@ def run_primetest_analysis(
     test_repeats: int = 2,
     include_tests: list = None,
     prob_test_repeats: list = None,
+    seed: int | None = None,
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True
 ) -> Dict[str, List[Dict]]:
-    # Set fixed random seed for reproducibility
-    #random.seed(42)
 
     all_available_tests = [
         "Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", 
@@ -137,27 +136,25 @@ def run_primetest_analysis(
 
 
     # Zeitmessung MIT PRINTS
-    """datasets = measure_section("Laufzeitmessung", lambda: {
+    datasets = measure_section("Laufzeitmessung", lambda: {
     test_name: (
-        print(f"🔍 Messe Laufzeit für: {test_name}") or
         measure_runtime(
             lambda n: (
-                print(f"▶️ Starte {test_name} für n = {n}") or
-                runtime_functions[test_name](n)
-            ),
+                print(f"\n🔍Starte {test_name} für n = {n}: ", end=""),
+                [print(i + 1, end=" ", flush=True) for i in range(test_repeats)],
+                test_fn(n)
+            )[-1],
             numbers,
             test_name,
             label=test_name + (f" (k={test_config[test_name]['prob_test_repeats']})" if "prob_test_repeats" in test_config[test_name] else ""),
-            runs_per_n=test_repeats
+            runs_per_n=1
         )
     )
-    for test_name in runtime_functions
-    })"""
+    for test_name, test_fn in runtime_functions.items()
+    })
 
-
-
-    # Zeitmessung alt funktioniert
-    datasets = measure_section("Laufzeitmessung", lambda: {
+    # Zeitmessung
+    """datasets = measure_section("Laufzeitmessung", lambda: {
     test_name: (
         print(f"🔍 Messe Laufzeit für: {test_name}") or
         measure_runtime(
@@ -169,14 +166,24 @@ def run_primetest_analysis(
         )
     )
     for test_name, test_fn in runtime_functions.items()
-    })
+    })"""
+    # Protokolle mit print
+    if protocoll:
+        measure_section("Protokoll-Tests", lambda: [
+            print(f"\n▶️ Starte {test_name} für n = {n}: ", end="") or
+            [print(i+1, end=" ", flush=True) for i in range(test_repeats)] or
+            print() or
+            test_fn(n)
+            for test_name, test_fn in protocol_functions.items()
+            for n in numbers
+        ])
 
-    # Protokolle (falls aktiviert)
+    """
+    # protkolle ohne print
     if protocoll:
         measure_section("Protokoll-Tests", lambda: [
             test_fn(n) for test_name, test_fn in protocol_functions.items() for n in numbers
-        ])
-    
+        ])"""
 
     # CSV-Export
     if save_results:
@@ -211,14 +218,16 @@ if __name__ == "__main__":
     run_tests = ["Fermat"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=2,
         num_type='p',
-        start=100_000,
-        end=1_000_000,
+        start=1_000,
+        end=10_000,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
+        #seed=42,
         protocoll=True,
         save_results=True,
         show_plot=True
     )
+    

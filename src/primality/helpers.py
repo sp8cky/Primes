@@ -81,35 +81,11 @@ def cyclotomic_polynomial(n, x: int) -> int:
 # check if n is a Fermat number
 def is_fermat_number(n: int) -> bool:
     if n < 3: return False
-    
-    m = n - 1
     k = 0
-    while m > 1 and m & 1 == 0:
-        m >>= 1
-        k += 1
-    
-    # Wenn m != 1, dann ist n-1 keine Zweierpotenz
-    if m != 1:
-        return False
-    return (k & (k - 1)) == 0 and k != 0
-
-
-
-
-##########################################################
-# Check if n is a real potency, i.e., n = a^b with a, b > 1
-def is_real_potency2(n: int):
-    if n <= 1: return False
-    for b in range(2, int(n**0.5) + 1):
-        a = round(n ** (1 / b))
-        if a ** b == n:
+    value = 2
+    while value < n:
+        value = 2 ** (2 ** k) + 1
+        if value == n:
             return True
+        k += 1
     return False
-
-# calculate the order of n modulo r
-def order2(n: int, r: int) -> int:
-    if gcd(n, r) != 1: return 0
-    for k in range(1, r):
-        if pow(n, k, r) == 1:
-            return k
-    return 0

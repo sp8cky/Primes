@@ -129,13 +129,34 @@ def test_cyclotomic_polynomial(n, x, expected):
     (17, True),     # F₂ = 17
     (257, True),    # F₃ = 257
     (65537, True),  # F₄ = 65537
+    (6, False),
+    (10, False),
+    (15, False),
+    (18, False),
+    (20, False),
+    (100, False),
+    (1000, False),
+    (10000, False),
+    (100000, False),
+    (1000000, False),
+    (0, False),
     (1, False),
     (2, False),
     (4, False),
-    (6, False),
+    (8, False),
     (9, False),
-    (15, False),
-    (33, False),    # Not a Fermat number
+    (16, False),
+    (32, False),
+    (64, False),
+    (128, False),
+    (256, False),
+    (258, False),
+    (65536, False),
+    (65538, False),
+    (999999, False),
+    (4294967297, True),  # F₅ = 2^(2^5) + 1
+    (4294967296, False),
+    (4294967298, False),
 ])
 def test_is_fermat_number(n, expected):
     assert is_fermat_number(n) == expected

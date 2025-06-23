@@ -48,9 +48,11 @@ def run_primetest_analysis(
     save_results: bool = True,
     show_plot: bool = True
 ) -> Dict[str, List[Dict]]:
+    # Set fixed random seed for reproducibility
+    #random.seed(42)
 
     all_available_tests = [
-        "Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Pocklington", "Optimized Pocklington", "Proth Variant",
+        "Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", 
         "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"]
 
     if include_tests is None: include_tests = all_available_tests
@@ -68,8 +70,7 @@ def run_primetest_analysis(
             test_config[test] = {}
 
     # Zahlen generieren
-    #numbers = measure_section("Zahlengenerierung", generate_numbers, n=n_numbers, start=start, end=end, num_type=num_type)
-    numbers = [1039, 3511, 1723, 2731, 4099]
+    numbers = measure_section("Zahlengenerierung", generate_numbers, n=n_numbers, start=start, end=end, num_type=num_type)
     print(f"Generierte {len(numbers)} Zahlen im Bereich {start}-{end} ({num_type}): {numbers[:10]}")
 
     # Testdaten initialisieren
@@ -103,15 +104,15 @@ def run_primetest_analysis(
         elif test == "Proth":
             runtime_functions[test] = proth_test
             protocol_functions[test] = proth_test_protocoll
+        elif test == "Proth Variant":
+            runtime_functions[test] = proth_test_variant
+            protocol_functions[test] = proth_test_variant_protocoll
         elif test == "Pocklington":
             runtime_functions[test] = pocklington_test
             protocol_functions[test] = pocklington_test_protocoll
         elif test == "Optimized Pocklington":
             runtime_functions[test] = optimized_pocklington_test
             protocol_functions[test] = optimized_pocklington_test_protocoll
-        elif test == "Proth Variant":
-            runtime_functions[test] = proth_test_variant
-            protocol_functions[test] = proth_test_variant_protocoll
         elif test == "Optimized Pocklington Variant":
             runtime_functions[test] = optimized_pocklington_test_variant
             protocol_functions[test] = optimized_pocklington_test_variant_protocoll
@@ -134,15 +135,28 @@ def run_primetest_analysis(
             runtime_functions[test] = aks_test
             protocol_functions[test] = aks_test_protocoll
 
-    # Zeitmessung
+
+    # Zeitmessung MIT PRINTS
     """datasets = measure_section("Laufzeitmessung", lambda: {
-        test_name: measure_runtime(
-            test_fn, numbers, test_name,
+    test_name: (
+        print(f"🔍 Messe Laufzeit für: {test_name}") or
+        measure_runtime(
+            lambda n: (
+                print(f"▶️ Starte {test_name} für n = {n}") or
+                runtime_functions[test_name](n)
+            ),
+            numbers,
+            test_name,
             label=test_name + (f" (k={test_config[test_name]['prob_test_repeats']})" if "prob_test_repeats" in test_config[test_name] else ""),
             runs_per_n=test_repeats
         )
-        for test_name, test_fn in runtime_functions.items()
+    )
+    for test_name in runtime_functions
     })"""
+
+
+
+    # Zeitmessung alt funktioniert
     datasets = measure_section("Laufzeitmessung", lambda: {
     test_name: (
         print(f"🔍 Messe Laufzeit für: {test_name}") or
@@ -162,6 +176,7 @@ def run_primetest_analysis(
         measure_section("Protokoll-Tests", lambda: [
             test_fn(n) for test_name, test_fn in protocol_functions.items() for n in numbers
         ])
+    
 
     # CSV-Export
     if save_results:
@@ -194,13 +209,13 @@ def run_primetest_analysis(
 # Hauptaufruf
 if __name__ == "__main__":
     run_tests = ["Fermat"]
-    repeat_tests = [1,1,1]
+    repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=5,
+        n_numbers=10,
         num_type='p',
-        start=10_000,
-        end=100_000,
-        test_repeats=2,
+        start=100_000,
+        end=1_000_000,
+        test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         protocoll=True,

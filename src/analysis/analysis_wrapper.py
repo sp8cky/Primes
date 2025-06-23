@@ -20,6 +20,14 @@ def measure_section(label: str, func, *args, **kwargs):
     print(f"\nAbschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
     return result
 
+def run_with_prints(test_fn, test_name, n, test_repeats):
+    print(f"  n = {n}: ", end="")
+    results = []
+    for i in range(test_repeats):
+        print(f"⏱️{i+1} ", end="", flush=True)
+        results.append(test_fn(n))
+    return results[-1]
+
 # Generiert Zahlen im Bereich
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
     if num_type not in ['p', 'z', 'g']: raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
@@ -136,7 +144,7 @@ def run_primetest_analysis(
 
 
     # Zeitmessung MIT PRINTS
-    datasets = measure_section("Laufzeitmessung", lambda: {
+    """datasets = measure_section("Laufzeitmessung", lambda: {
     test_name: (
         measure_runtime(
             lambda n: (
@@ -151,10 +159,22 @@ def run_primetest_analysis(
         )
     )
     for test_name, test_fn in runtime_functions.items()
-    })
+    })"""
+
+    # Protokolle mit print
+    """if protocoll:
+        measure_section("Protokoll-Tests", lambda: [
+            print(f"\n▶️ Starte {test_name} für n = {n}: ", end="") or
+            [print(i+1, end=" ", flush=True) for i in range(test_repeats)] or
+            print() or
+            test_fn(n)
+            for test_name, test_fn in protocol_functions.items()
+            for n in numbers
+        ])"""
+
 
     # Zeitmessung
-    """datasets = measure_section("Laufzeitmessung", lambda: {
+    datasets = measure_section("Laufzeitmessung", lambda: {
     test_name: (
         print(f"🔍 Messe Laufzeit für: {test_name}") or
         measure_runtime(
@@ -166,24 +186,14 @@ def run_primetest_analysis(
         )
     )
     for test_name, test_fn in runtime_functions.items()
-    })"""
-    # Protokolle mit print
-    if protocoll:
-        measure_section("Protokoll-Tests", lambda: [
-            print(f"\n▶️ Starte {test_name} für n = {n}: ", end="") or
-            [print(i+1, end=" ", flush=True) for i in range(test_repeats)] or
-            print() or
-            test_fn(n)
-            for test_name, test_fn in protocol_functions.items()
-            for n in numbers
-        ])
-
-    """
+    })
+    
+    
     # protkolle ohne print
     if protocoll:
         measure_section("Protokoll-Tests", lambda: [
             test_fn(n) for test_name, test_fn in protocol_functions.items() for n in numbers
-        ])"""
+        ])
 
     # CSV-Export
     if save_results:

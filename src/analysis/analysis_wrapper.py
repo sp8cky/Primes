@@ -20,14 +20,6 @@ def measure_section(label: str, func, *args, **kwargs):
     print(f"\nAbschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
     return result
 
-def run_with_prints(test_fn, test_name, n, test_repeats):
-    print(f"  n = {n}: ", end="")
-    results = []
-    for i in range(test_repeats):
-        print(f"⏱️{i+1} ", end="", flush=True)
-        results.append(test_fn(n))
-    return results[-1]
-
 # Generiert Zahlen im Bereich
 def generate_numbers(n: int, start: int = 100, end: int = 1000, num_type: str = 'g') -> List[int]:
     if num_type not in ['p', 'z', 'g']: raise ValueError("num_type muss 'p', 'z' oder 'g' sein")
@@ -59,8 +51,12 @@ def run_primetest_analysis(
 ) -> Dict[str, List[Dict]]:
 
     all_available_tests = [
-        "Fermat", "Wilson", "Initial Lucas", "Lucas", "Optimized Lucas", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", 
-        "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Miller-Rabin", "Solovay-Strassen", "AKS"]
+        "Fermat", "Miller-Rabin", "Solovay-Strassen",
+        "Initial Lucas", "Lucas", "Optimized Lucas",
+        "Pepin", "Lucas-Lehmer",
+        "Wilson", "AKS"
+        "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", 
+        "Grau", "Grau Probability"]
 
     if include_tests is None: include_tests = all_available_tests
 
@@ -195,10 +191,6 @@ def run_primetest_analysis(
             test_fn(n) for test_name, test_fn in protocol_functions.items() for n in numbers
         ])
 
-    # CSV-Export
-    if save_results:
-        measure_section("Exportiere CSV", export_test_data_to_csv, test_data, get_timestamped_filename("tests", "csv"))
-
     # Plotten
     if show_plot:
         plot_data = {
@@ -208,7 +200,7 @@ def run_primetest_analysis(
             "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
             "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
             "labels": [data[0]["label"] for data in datasets.values()],
-            "colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173", "#3182bd", "#31a354", "#756bb1", "#e6550d", "#636363"]
+            "colors": ["#b41f1f", "#d62728", "#e6550d", "#ff7f0e", "#bcbd22", "#2ca02c", "#31a354", "#637939", "#8c6d31", "#17becf", "#3182bd", "#393b79", "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#8c564b", "#636363", "#7f7f7f"]
         }
         measure_section("Plotten", plot_runtime,
             n_lists=plot_data["n_values"],
@@ -221,6 +213,10 @@ def run_primetest_analysis(
             figsize=(7, 7)
         )
 
+    # CSV-Export
+    if save_results:
+        measure_section("Exportiere CSV", export_test_data_to_csv, test_data, get_timestamped_filename("test-data", "csv"))
+
     return datasets
 
 # Hauptaufruf
@@ -228,10 +224,10 @@ if __name__ == "__main__":
     run_tests = ["Fermat"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=2,
+        n_numbers=10,
         num_type='p',
-        start=1_000,
-        end=10_000,
+        start=10_000,
+        end=100_000,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,

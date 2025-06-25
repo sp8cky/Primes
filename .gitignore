@@ -4,6 +4,7 @@
 # ignore specific file types
 *.csv
 *.json
+*.png
 
 __pycache__/
 *.py[cod]

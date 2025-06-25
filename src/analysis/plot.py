@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from src.analysis.dataset import get_timestamped_filename
 
 
 def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(10, 6), use_log=True):
@@ -36,4 +37,5 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
     plt.legend()
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout()
+    plt.savefig(get_timestamped_filename("test-plot", "png"))
     plt.show()

@@ -251,12 +251,10 @@ def pocklington_test_protocoll(n: int) -> bool: #4.6
         a_values.append((a, cond1, cond2))
         if cond1 and cond2:
             test_data["Pocklington"][n]["a_values"] = a_values
-            test_data["Pocklington"][n]["other_fields"] = []
             test_data["Pocklington"][n]["result"] = True
             return True
         
     test_data["Pocklington"][n]["a_values"] = a_values
-    test_data["Pocklington"][n]["other_fields"] = []
     test_data["Pocklington"][n]["result"] = False
     return False
 

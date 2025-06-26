@@ -2,8 +2,7 @@ import os
 import matplotlib.pyplot as plt
 from src.analysis.dataset import get_timestamped_filename, DATA_DIR
 
-
-def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(10, 6), use_log=True):
+def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(10, 6), use_log=True, total_numbers=None, runs_per_n=None):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
 
@@ -11,9 +10,9 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
 
     for n, t, std, best, worst, label, color in zip(
         n_lists, time_lists,
-        std_lists or [None]*len(n_lists),
-        best_lists or [None]*len(n_lists),
-        worst_lists or [None]*len(n_lists),
+        std_lists or [None] * len(n_lists),
+        best_lists or [None] * len(n_lists),
+        worst_lists or [None] * len(n_lists),
         labels, colors
     ):
         t_ms = [ti * 1000 for ti in t]
@@ -23,20 +22,27 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
 
         plt.plot(n, t_ms, marker="o", label=label, color=color)
 
-        if std:
-            plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
+        if std: plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
 
-        if best and worst:
-            plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
+        if best and worst: plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
     plt.xlabel("Getestete Zahl n")
     plt.ylabel("Laufzeit (ms)")
     if use_log:
         plt.yscale("log")
-    plt.title("Laufzeitverhalten")
-    plt.legend()
+
+    # Titel mit optionalen Angaben
+    title = "Laufzeitverhalten"
+    if total_numbers is not None and runs_per_n is not None:
+        title += f"\nAnzahl getesteter Zahlen: {total_numbers}, Wiederholungen: {runs_per_n}"
+    plt.title(title)
+
+    # Legende außerhalb rechts
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 0.85, 1])  # Platz für Legende schaffen
+
+    # Speichern
     filename = get_timestamped_filename("test-plot", "png")
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)

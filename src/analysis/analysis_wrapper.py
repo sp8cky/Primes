@@ -69,8 +69,8 @@ def run_primetest_analysis(
         raise ValueError("variant muss 1 oder 2 sein")
 
     # 3. Ausgabe der generierten Zahlen
-    #for test_name, nums in numbers_per_test.items():
-        #print(f"→ {test_name}: {len(nums)} Zahlen (Beispiel: {nums[:5]})")
+    for test_name, nums in numbers_per_test.items():
+        print(f"→ {test_name}: {len(nums)} Zahlen: {nums[:5]}")
 
     # 4. Testdaten initialisieren für alle Zahlen
     all_numbers = set()
@@ -127,7 +127,9 @@ def run_primetest_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(7, 7)
+            figsize=(11, 9),
+            total_numbers=n_numbers,
+            runs_per_n=test_repeats
         )
 
     # CSV-Export
@@ -141,7 +143,7 @@ if __name__ == "__main__":
     run_tests = ["Fermat"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=3,
         num_type='p',
         start=1000,
         end=10_000,

@@ -15,9 +15,7 @@ def fermat_test(n: int, k: int = 1) -> bool:
 
     for _ in range(k):
         a = random.randint(2, n - 1)
-        if gcd(a, n) != 1 or pow(a, n - 1, n) != 1:
-            print(f"Fermat test failed for a={a} and n={n}")
-            return False
+        if gcd(a, n) != 1 or pow(a, n - 1, n) != 1: return False
     return True
 
 def wilson_criterion(p: int) -> bool:

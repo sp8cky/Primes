@@ -38,6 +38,8 @@ def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, 
         "Generalized Pocklington": {"a_values": [], "other_fields": ()},
         "Grau": {"a_values": [], "other_fields": ()},
         "Grau Probability": {"a_values": [], "other_fields": ()},
+        "Ramzy": {"a_values": [], "other_fields": ()},
+        "Rao": {"a_values": [], "other_fields": ()},
         "Miller-Rabin": {"a_values": []},
         "Solovay-Strassen": {"a_values": []},
         "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
@@ -460,6 +462,65 @@ def grau_probability_test_protocoll(n: int) -> bool: #6.14
     test_data["Grau Probability"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
     return False
 
+def ramzy_test_protocoll(n: int) -> bool: #6.15
+    if n <= 1: raise ValueError("n must be greater than 1")
+    decomposition = helpers.find_pocklington_decomposition(n)
+    if not decomposition:
+        test_data["Ramzy"][n]["result"] = False
+        test_data["Ramzy"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
+        return False
+
+    K, p, n_exp = decomposition  # N = K*p^n + 1
+    test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
+    
+    for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
+        if p**(n_exp - 1) >= K * (p**j):
+            for a in range(2, n):
+                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
+                exponent = K * (p ** (n_exp - j - 1))
+                L = pow(a, exponent, n)
+                cond1 = (L != 1)
+                cond2 = (pow(L, p**(j+1), n) == 1)
+                
+                if cond1 and cond2:
+                    test_data["Ramzy"][n]["a_values"].append((a, cond1, cond2))
+                    test_data["Ramzy"][n]["result"] = True
+                    return True
+    
+    test_data["Ramzy"][n]["result"] = False
+    test_data["Ramzy"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
+    return False
+
+
+def rao_test_protocoll(n: int) -> bool: #6.6
+    if n <= 3: raise ValueError("n must be greater than 1")
+    
+    # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
+    decomposition = helpers.find_rao_decomposition(n)
+    if not decomposition:
+        test_data["Rao"][n]["result"] = False
+        test_data["Rao"][n]["reason"] = "Keine Zerlegung R = p2^n+1 gefunden"
+        return False
+        
+    p, n_exp = decomposition
+    test_data["Rao"][n]["other_fields"] = [p, 2, n_exp]
+
+    exponent = (n - 1) // 2
+    cond1 = pow(3, exponent, n) == (n - 1)
+    if not cond1: 
+        test_data["Rao"][n]["result"] = False
+        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
+        return False
+    
+    cond2 = helpers.divides(n, helpers.calculate_generalized_fermat_number(3, n - 1))
+    if not cond2: 
+        test_data["Rao"][n]["result"] = True
+        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
+        return True
+
+    test_data["Rao"][n]["result"] = False
+    test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R | GF(3, n-1) → R ist primover"
+    return False
 
 #############################################################################################
 def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5) -> bool:

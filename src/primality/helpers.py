@@ -1,6 +1,6 @@
 import math
 from math import gcd
-from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order
+from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange
 # Helper functions for primality tests and number theory
 def divides(a: int, b: int) -> bool:
     if a == 0: raise ValueError("Division by 0.")
@@ -17,6 +17,19 @@ def order(n: int, r: int) -> int:
         return n_order(n, r)
     except ValueError:
         return 0  # Wenn gcd(n, r) ≠ 1 oder Ordnung nicht definiert
+    
+
+def find_rao_decomposition(n: int) -> tuple[int, int] | None:
+    if n <= 3: return None
+    R_minus_1 = n - 1
+    n = 1
+    while (1 << n) <= R_minus_1:  # 2^n <= R-1
+        if R_minus_1 % (1 << n) == 0:
+            p = R_minus_1 // (1 << n)
+            if p > 0 and isprime(p):
+                return (p, n)
+        n += 1
+    return None
 
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:
@@ -88,6 +101,11 @@ def is_fermat_number(n: int) -> bool:
         if fermat_candidate > n:  # Kein weiteres k kann n ergeben
             return False
         k += 1
+
+# berechnet GF(b, m) = b^{2^m} + 1
+def calculate_generalized_fermat_number(b: int, m: int) -> int:
+    if b < 2 or m < 1: raise ValueError("Ungültige Parameter: b ≥ 2, m ≥ 1 erforderlich.")
+    return pow(b, 1 << m) + 1  # b^{2^m} + 1
 
 # Prüft ob n eine Mersenne-Zahl der Form n=2^p - 1 ist (für beliebiges p ≥ 2)
 def is_mersenne_number(n: int) -> bool:

@@ -108,6 +108,20 @@ def proth_test(n: int) -> bool: #4.5
     return False
 
 
+def proth_test_variant(n: int) -> bool: #4.8
+    if n <= 1: raise ValueError("n must be greater than 1")
+    if n % 2 == 0: return False
+
+    for a in range(2, n):
+        if pow(a, n - 1, n) != 1: return False
+        
+        if pow(a, (n - 1) // 2, n) == n - 1:
+            return True
+        
+    return False
+
+
+
 def pocklington_test(n: int) -> bool: #4.6
     if n <= 1: raise ValueError("n must be greater than 1")
 
@@ -147,19 +161,6 @@ def optimized_pocklington_test(n: int) -> bool: #4.7
         if not found: return False
 
     return True
-
-
-def proth_test_variant(n: int) -> bool: #4.8
-    if n <= 1: raise ValueError("n must be greater than 1")
-    if n % 2 == 0: return False
-
-    for a in range(2, n):
-        if pow(a, n - 1, n) != 1: return False
-        
-        if pow(a, (n - 1) // 2, n) == n - 1:
-            return True
-        
-    return False
 
 
 def optimized_pocklington_test_variant(n: int, B: Optional[int] = None) -> bool: #4.9
@@ -239,6 +240,43 @@ def grau_probability_test(n: int) -> bool: #6.14
         if (phi_p == 0) and (2 * (n_exp - j) > log_p_K + n_exp):
             return True
     return False
+
+def ramzy_test(n: int) -> bool: #6.15
+    if n <= 1: raise ValueError("n must be greater than 1")
+    decomposition = helpers.find_pocklington_decomposition(n)
+    if not decomposition: return False
+
+    K, p, n_exp = decomposition  # N = K*p^n + 1
+    
+    for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
+        if p**(n_exp - 1) >= K * (p**j):
+            for a in range(2, n):
+                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
+                exponent = K * (p ** (n_exp - j - 1))
+                L = pow(a, exponent, n)
+                if L == 1: continue
+                
+                if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
+                    return True
+    return False
+
+def rao_test(n: int) -> bool: # 6.6
+    if n <= 3: raise ValueError("n must be greater than 1")
+    
+    # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
+    decomposition = helpers.find_rao_decomposition(n)
+    if not decomposition: return False
+        
+    p, n_exp = decomposition
+    exponent = (n - 1) // 2
+    cond1 = pow(3, exponent, n) == (n - 1)
+    if not cond1: return False
+    cond2 = helpers.divides(n, helpers.calculate_generalized_fermat_number(3, n - 1))
+    if not cond2: return True
+
+    return False
+
+    
 
 
 #############################################################################################

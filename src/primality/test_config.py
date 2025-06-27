@@ -104,6 +104,18 @@ test_function_mapping = {
         "prob_test": False,
         "number_type": "lucas"
     },
+    "Ramzy": {
+        "runtime_function": ramzy_test,
+        "protocol_function": ramzy_test_protocoll,
+        "prob_test": False,
+        "number_type": "lucas"
+    },
+    "Rao": {
+        "runtime_function": rao_test,
+        "protocol_function": rao_test_protocoll,
+        "prob_test": False,
+        "number_type": "lucas"
+    },
     "Wilson": {
         "runtime_function": wilson_criterion,
         "protocol_function": wilson_criterion_protocoll,

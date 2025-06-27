@@ -23,61 +23,38 @@ def find_pocklington_decomposition(n: int) -> tuple:
     if n <= 2: return None
         
     n_minus_1 = n - 1
+    prime_factors = sorted(primefactors(n_minus_1), reverse=True)
     
-    for p in range(2, n_minus_1 + 1):
-        if not isprime(p): continue
-
-        e = 1
-        while True:
+    for p in prime_factors:
+        max_e = 0
+        # Finde maximale e, sodass p^e | n_minus_1
+        while (p ** (max_e + 1)) <= n_minus_1 and n_minus_1 % (p ** (max_e + 1)) == 0:
+            max_e += 1
+        
+        # Prüfe von der maximalen Potenz rückwärts
+        for e in range(max_e, 0, -1):
             p_pow_e = p ** e
-            if p_pow_e > n_minus_1:
-                break
-            if n_minus_1 % p_pow_e == 0:
-                K = n_minus_1 // p_pow_e
-                if K < p_pow_e:
-                    return (K, p, e)
-            e += 1
+            if n_minus_1 % p_pow_e != 0:
+                continue
+            K = n_minus_1 // p_pow_e
+            if K < p_pow_e:  # Pocklington-Bedingung
+                return (K, p, e)
+    
     return None
 
 
-def find_all_decompositions(n: int) -> list:
-    if n < 3: return []
-    
-    decompositions = []
-    N_minus_1 = n - 1
-    primes = primefactors(N_minus_1) # Get all prime factors of n-1
-    
-    for p in primes:
-        # Find the maximum exponent n such that p^n divides n-1
-        n = 0
-        temp = N_minus_1
-        while temp % p == 0:
-            temp = temp // p
-            n += 1
-        # For each possible exponent from 1 to max exponent
-        for current_n in range(1, n + 1):
-            p_power = p ** current_n
-            if N_minus_1 % p_power != 0:
-                continue
-            
-            K = N_minus_1 // p_power
-            if K < p_power and K > 0:
-                decompositions.append((K, p, current_n))
-    
-    return decompositions
 
-# find the smallest prime p and exponent n such that N = p2^n + 1 with 2^n <= R-1
+# find the smallest prime p and exponent n such that N = p2^n + 1
 def find_rao_decomposition(n: int) -> tuple[int, int] | None:
     if n <= 3: return None
     R_minus_1 = n - 1
-    n = 1
-    while (1 << n) <= R_minus_1:  # 2^n <= R-1
+    for n in range(2, n):
         if R_minus_1 % (1 << n) == 0:
             p = R_minus_1 // (1 << n)
-            if p > 0 and isprime(p):
+            if p > 1 and isprime(p):
                 return (p, n)
-        n += 1
     return None
+
 
 # find prime p and exponent n such that N = K*p^n + 1 with p^{n-1} >= K*p^j
 def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
@@ -87,6 +64,7 @@ def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
     
     # Iteriere über alle möglichen Primzahlen p als Teiler von n-1
     for p in sorted(primefactors(n_minus_1)):
+        if not isprime(p): continue
         max_e = 0
         # Finde maximale Potenz p^e, die n-1 teilt
         while (p ** (max_e + 1)) <= n_minus_1 and n_minus_1 % (p ** (max_e + 1)) == 0:
@@ -107,7 +85,6 @@ def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
                     return (K, p, e)
                     
     return None
-
 
 def compute_all_valid_decompositions(N):
     if N <= 2:

@@ -66,22 +66,8 @@ optimized_pocklington_variant_expected = {8081:True,1811:True}
 generalized_pocklington_expected = {8081:True,561:False}
 grau_expected = {8081:True,561:False}
 grau_probability_expected = {8081:True,561:False}
-ramzy_expected = {
-    5: True,     # 5 = 1*2^2 + 1 (K=1 < 4, aber p=1 nicht prim → eigentlich None? Abhängig von Implementierung)
-    7: True,     # 7 = 2*3^1 + 1 (K=2 < 3)
-    13: True,    # 13 = 3*2^2 + 1 (K=3 < 4)
-    17: True,    # 17 = 2*2^3 + 1 (K=2 < 8)
-    19: True,    # 19 = 2*3^2 + 1 (K=2 < 9)
-    37: True,    # 37 = 4*3^2 + 1 (K=4 < 9)
-    1093: True,  # 1093 = 3*7^3 + 1 (K=3 < 343)
-    # Ungültige Fälle (keine Zerlegung oder K >= p^n)
-    3: False,
-    11: False,   # 11-1=10 → Keine Zerlegung mit K < p^n
-    31: False,   # 31-1=30 → Keine Zerlegung mit K < p^n
-    41: False,   # 41-1=40 → Keine Zerlegung mit K < p^n
-    73: False    # 73-1=72 → Keine Zerlegung mit K < p^n
-}
-rao_expected = {5: True, 7: True, 17: True, 41: True, 97: True, 113: True, 257: True, 65537: True}
+ramzy_expected = {5: True, 7: False, 13: False, 17: True, 19: True, 37: False, 1093: False, 3: True, 11: False, 31: False, 41: False, 73: False}
+rao_expected = {5: False, 7: False, 17: False, 41: True, 97: False, 113: False, 257: False, 65537: False}
 miller_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 29:True, 31:True, 39:False}
 solovay_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}
 aks_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}

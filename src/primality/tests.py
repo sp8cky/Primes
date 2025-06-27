@@ -264,9 +264,11 @@ def ramzy_test(n: int) -> bool: #6.15
                     return True
     print(f"Ramzy-Test: Keine gültige j gefunden für {n}")
     return False
-ramzy_numbers = [17, 31, 41, 73, 97, 113, 1811, 8081]
-for n in ramzy_numbers:
-    print(ramzy_test(n))
+
+ramzy_test(13)
+ramzy_test(1093)
+ramzy_test(3)
+
 
 def rao_test(n: int) -> bool: # 6.6
     if n <= 3: raise ValueError("n must be greater than 1")
@@ -274,20 +276,17 @@ def rao_test(n: int) -> bool: # 6.6
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition: return False
+    p, n_exp = decomposition 
 
     exponent = (n - 1) // 2
     cond1 = pow(3, exponent, n) == (n - 1)
-    print(f"Rao-Test: Bedingung 1 erfüllt: {cond1}")
     if not cond1: return False
-    cond2 = (pow(3, 1 << (n - 1), n) + 1) % n  # (1 << (n-1)) = 2^(n-1)
-    print(f"Rao-Test: Bedingung 2 erfüllt: {cond2}")
+    cond2 = (pow(3, 1 << (n_exp - 1), n) + 1) % n
     if cond2 == 0: return True
 
     return False
 
     
-
-
 #############################################################################################
 def miller_selfridge_rabin_test(n: int, k: int = 5) -> bool:
     if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n): raise ValueError("n must be an odd integer greater than 1 and not a real potency.")

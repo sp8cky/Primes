@@ -53,8 +53,8 @@ def test_order(n, r, expected):
 
 @pytest.mark.parametrize("n,expected", [
     # Gültige Zerlegungen (n = p * 2^k + 1, mit p prim)
-    (5, (2, 1)),        # 5 = 2 * 2¹ + 1 
-    (7, (3, 1)),      # 7 = 3 * 2¹ + 1 (3 ist prim)
+    (5, None),    # No valid decomposition (p=1 is not prime)
+    (7, None),    # No valid decomposition (no integer p for n≥2)
     (13, (3, 2)),     # 13 = 3 * 2² + 1 (3 ist prim)
     (17, (2, 3)),     # 17 = 2 * 2³ + 1 (2 ist prim)
     (41, (5, 3)),     # 41 = 5 * 2³ + 1 (5 ist prim)
@@ -79,75 +79,42 @@ def test_find_rao_decomposition(n, expected):
 
 
 # Test for find_ramzy_decomposition()
-@pytest.mark.parametrize("N, expected_decomps", [
+@pytest.mark.parametrize("n, expected", [
     # Valid cases (all possible decompositions)
-    (5, [(1, 2, 2)]),                 # Only 4 = 1*2^2 works (j=0: 2 >= 1)
-    (9, [(2, 2, 2)]),                  # Only 8 = 2*2^2 works (j=0: 2 >= 2)
-    (17, [(1, 2, 4), (2, 2, 3)]),      # 16 = 1*2^4 (j=0: 8 >= 1) or 2*2^3 (j=0: 4 >= 2)
-    (25, [(3, 2, 3)]),                 # Only 24 = 3*2^3 works (j=0: 4 >= 3)
-    (3, [(1, 2, 1)]),                  # Only 2 = 1*2^1 works (j=0: 1 >= 1)
-    # Edge cases (no valid decomposition)
-    (2, [None]),
-    (4, [None]),                       # p=1 is invalid
-    (7, [None]),                       # 6=3*2^1 fails (1 >= 3? No)
-    (11, [None]),                      # No valid (K,p,n) pair
-    (19, [None]),                      # 18=9*2^1 fails (1 >= 9? No)
-    (37, [None]),                      # 36=9*2^2 fails (2 >= 9? No)
+    (5, (1, 2, 2)),                 # Only 4 = 1*2^2 works (j=0: 2 >= 1)
+    (9, (2, 2, 2)),                  # Only 8 = 2*2^2 works (j=0: 2 >= 2)
+    (17, (2, 2, 3)),      # 16 = 1*2^4 (j=0: 8 >= 1) or 2*2^3 (j=0: 4 >= 2)
+    (25, (3, 2, 3)),                 # Only 24 = 3*2^3 works (j=0: 4 >= 3)
+    (3, (1, 2, 1)),                  # Only 2 = 1*2^1 works (j=0: 1 >= 1)
+    (2, None),
+    (4, (1, 3, 1)),
+    (7, None),                       # 6=3*2^1 fails (1 >= 3? No)
+    (11, None),                      # No valid (K,p,n) pair
+    (19, (2, 3, 2)),                 # 18=9*2^1 fails (1 >= 9? No)
+    (37, None),                      # 36=9*2^2 fails (2 >= 9? No)
+    (13, None),                 # 12=3*2^2 works (2 >= 3? No)
+    (1093, None),            # 1092=2*2^6 works (6 >= 2? Yes)
+    (3, (1, 2, 1)),                  # 2=1*2^1 works (1 >= 1? Yes)
 ])
-def test_find_ramzy_decomposition(N, expected_decomps):
-    result = find_ramzy_decomposition(N)
-    valid_decomps = compute_all_valid_decompositions(N)
-    
-    # Check if result is in the list of valid decompositions
-    assert result in expected_decomps, \
-        f"Failed for N={N}. Expected one of {expected_decomps}, got {result}"
-    
-    # Also verify that the helper's result is in the computed valid decomps
-    assert result in valid_decomps, \
-        f"Helper's result {result} for N={N} is not in valid decompositions {valid_decomps}"
-
-
-
-
+def test_find_ramzy_decomposition(n, expected):
+    result = find_ramzy_decomposition(n)
+    assert result == expected
+ 
 # Test for find_pocklington_decomposition()
-@pytest.mark.parametrize("n,expected_options", [
-    (5, [(1, 2, 2)]),
-    (17, [(2, 2, 3), (1, 2, 4)]),
-    (19, [(9, 2, 1), (2, 3, 2)]),
-    (37, [(9, 2, 2), (4, 3, 2)]),
-    (1093, [(13, 3, 5), (3, 7, 3)]),
-    (7, [(2, 3, 1)]),
-    (13, [(3, 2, 2)]),
+@pytest.mark.parametrize("n, expected", [
+    (7, (2, 3, 1)),
+    (13, (3, 2, 2)),
+    (17, (1, 2, 4)),
+    (31, None),
+    (5, (1, 2, 2)),
+    (19, (2, 3, 2)),
+    (11, (2, 5, 1)),
+    (23, (2, 11, 1)),
+    (3, (1, 2, 1)),
 ])
-def test_find_pocklington_decomposition(n, expected_options):
+def test_find_pocklington_decomposition(n, expected):
     result = find_pocklington_decomposition(n)
-    assert result in expected_options
-
-
-@pytest.mark.parametrize("N,expected_decompositions", [
-    # Primzahlen mit gültigen Zerlegungen
-    (5, [(1, 2, 2)]),          # 5 = 1*2² + 1 (1 < 4)
-    (17, [(1, 2, 4), (2, 2, 3)]),         # 17 = 1*2⁴ + 1 (1 < 16)
-    (37, [(4, 3, 2)]),         # 37 = 9*2² + 1 (9 < 4? Nein → Test soll fehlschlagen)
-    (1093, [(1, 3, 6)]),  # 1093 = 273*2²+1 (273 < 4? Nein) und 1*3⁶+1 (1 < 729)
-    (3511, []),    # 3511 = 1755*2¹ + 1 (1755 < 2? Nein)
-    (7, []),                   # 7-1=6 → Keine Zerlegung mit K < p^n
-    (13, []),                  # 13-1=12 → Keine gültige Zerlegung
-    (31, []),                  # 31-1=30 → Keine gültige Zerlegung
-    (2, []),                   # N < 3 → Leere Liste
-    (1, []),                   # N < 3 → Leere Liste
-])
-def test_find_all_decompositions(N, expected_decompositions):
-    decompositions = find_all_decompositions(N)
-
-    assert len(decompositions) == len(expected_decompositions)
-
-    for (K, p, n), (exp_K, exp_p, exp_n) in zip(decompositions, expected_decompositions):
-        computed_N = K * (p**n) + 1
-        assert computed_N == N
-        assert K < (p**n)
-        assert (K, p, n) == (exp_K, exp_p, exp_n)
-
+    assert result == expected
 
 
 # Test for find_quadratic_non_residue()

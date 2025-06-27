@@ -512,8 +512,8 @@ def rao_test_protocoll(n: int) -> bool: #6.6
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
         return False
     
-    cond2 = helpers.divides(n, helpers.calculate_generalized_fermat_number(3, n - 1))
-    if not cond2: 
+    cond2 = (pow(3, 1 << (n - 1), n) + 1) % n
+    if cond2 == 0: 
         test_data["Rao"][n]["result"] = True
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
         return True

@@ -1,6 +1,6 @@
 import math
 from math import gcd
-from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange
+from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange, primefactors
 # Helper functions for primality tests and number theory
 def divides(a: int, b: int) -> bool:
     if a == 0: raise ValueError("Division by 0.")
@@ -17,19 +17,6 @@ def order(n: int, r: int) -> int:
         return n_order(n, r)
     except ValueError:
         return 0  # Wenn gcd(n, r) ≠ 1 oder Ordnung nicht definiert
-    
-
-def find_rao_decomposition(n: int) -> tuple[int, int] | None:
-    if n <= 3: return None
-    R_minus_1 = n - 1
-    n = 1
-    while (1 << n) <= R_minus_1:  # 2^n <= R-1
-        if R_minus_1 % (1 << n) == 0:
-            p = R_minus_1 // (1 << n)
-            if p > 0 and isprime(p):
-                return (p, n)
-        n += 1
-    return None
 
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:
@@ -79,6 +66,79 @@ def find_all_decompositions(n: int) -> list:
     
     return decompositions
 
+# find the smallest prime p and exponent n such that N = p2^n + 1 with 2^n <= R-1
+def find_rao_decomposition(n: int) -> tuple[int, int] | None:
+    if n <= 3: return None
+    R_minus_1 = n - 1
+    n = 1
+    while (1 << n) <= R_minus_1:  # 2^n <= R-1
+        if R_minus_1 % (1 << n) == 0:
+            p = R_minus_1 // (1 << n)
+            if p > 0 and isprime(p):
+                return (p, n)
+        n += 1
+    return None
+
+# find prime p and exponent n such that N = K*p^n + 1 with p^{n-1} >= K*p^j
+def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
+    if n <= 2: return None
+        
+    n_minus_1 = n - 1
+    
+    # Iteriere über alle möglichen Primzahlen p als Teiler von n-1
+    for p in sorted(primefactors(n_minus_1)):
+        max_e = 0
+        # Finde maximale Potenz p^e, die n-1 teilt
+        while (p ** (max_e + 1)) <= n_minus_1 and n_minus_1 % (p ** (max_e + 1)) == 0:
+            max_e += 1
+            
+        if max_e == 0: continue
+            
+        # Für alle möglichen e von 1 bis max_e
+        for e in range(1, max_e + 1):
+            p_pow_e = p ** e
+            if n_minus_1 % p_pow_e != 0: continue
+                
+            K = n_minus_1 // p_pow_e
+            
+            # Prüfe Ramzy-Bedingung p^{e-1} >= K*p^j für mindestens ein j
+            for j in range(e):
+                if (p ** (e - 1)) >= (K * (p ** j)):
+                    return (K, p, e)
+                    
+    return None
+
+
+def compute_all_valid_decompositions(N):
+    if N <= 2:
+        return [None]
+    
+    decompositions = []
+    N_minus_1 = N - 1
+    
+    # Iterate over all prime factors of N-1
+    for p in sorted(primefactors(N_minus_1), reverse=True):
+        max_e = 0
+        # Find the maximal e such that p^e divides N-1
+        while (p ** (max_e + 1)) <= N_minus_1 and N_minus_1 % (p ** (max_e + 1)) == 0:
+            max_e += 1
+        
+        # Try all possible exponents e from 1 to max_e
+        for e in range(1, max_e + 1):
+            if N_minus_1 % (p ** e) != 0:
+                continue
+            K = N_minus_1 // (p ** e)
+            
+            # Check Ramzy condition: p^{e-1} >= K * p^j for some j in 0..e-1
+            for j in range(e):
+                if (p ** (e - 1)) >= (K * (p ** j)):
+                    decompositions.append((K, p, e))
+                    break  # Only need one valid j per (K,p,e)
+    
+    return decompositions if decompositions else [None]
+
+
+
 # Find smallest quadratic non-residue modulo p
 def find_quadratic_non_residue(p: int) -> int:
     for a in range(2, p):
@@ -102,10 +162,6 @@ def is_fermat_number(n: int) -> bool:
             return False
         k += 1
 
-# berechnet GF(b, m) = b^{2^m} + 1
-def calculate_generalized_fermat_number(b: int, m: int) -> int:
-    if b < 2 or m < 1: raise ValueError("Ungültige Parameter: b ≥ 2, m ≥ 1 erforderlich.")
-    return pow(b, 1 << m) + 1  # b^{2^m} + 1
 
 # Prüft ob n eine Mersenne-Zahl der Form n=2^p - 1 ist (für beliebiges p ≥ 2)
 def is_mersenne_number(n: int) -> bool:

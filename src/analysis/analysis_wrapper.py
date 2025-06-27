@@ -70,7 +70,7 @@ def run_primetest_analysis(
 
     # 3. Ausgabe der generierten Zahlen
     for test_name, nums in numbers_per_test.items():
-        print(f"→ {test_name}: {len(nums)} Zahlen: {nums[:5]}")
+        print(f"→ {test_name}: {len(nums)} Zahlen: {nums}")
 
     # 4. Testdaten initialisieren für alle Zahlen
     all_numbers = set()
@@ -140,15 +140,17 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Fermat"]
+    run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=3,
+        n_numbers=10,
         num_type='p',
-        start=1000,
-        end=10_000,
+        start=10,
+        end=100,
         test_repeats=10,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
+        seed=42,
         protocoll=True,
         save_results=True,
         show_plot=True,

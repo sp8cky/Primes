@@ -17,6 +17,9 @@ optimized_pocklington_variant_numbers = [8081, 1811]
 generalized_pocklington_numbers = [8081, 561]
 grau_numbers = [8081, 561]
 grau_probability_numbers = [8081, 561]
+ramzy_numbers = [5, 7, 13, 17, 19, 37, 1093]
+ramzy_invalid_numbers = [3, 11, 31, 41, 73]
+rao_numbers = [5, 7, 17, 41, 97, 113, 257, 65537]
 miller_numbers = [2, 3, 5, 7, 11, 15, 21, 29, 31, 39]
 solovay_numbers = [2, 3, 5, 7, 11, 15, 21, 25, 31, 39]
 aks_numbers = [2, 3, 5, 7, 11, 15, 21, 25, 31, 39]
@@ -35,6 +38,9 @@ all_numbers = set(
     generalized_pocklington_numbers +
     grau_numbers +
     grau_probability_numbers + 
+    ramzy_numbers +
+    ramzy_invalid_numbers +
+    rao_numbers +
     miller_numbers +
     solovay_numbers +
     aks_numbers
@@ -60,6 +66,22 @@ optimized_pocklington_variant_expected = {8081:True,1811:True}
 generalized_pocklington_expected = {8081:True,561:False}
 grau_expected = {8081:True,561:False}
 grau_probability_expected = {8081:True,561:False}
+ramzy_expected = {
+    5: True,     # 5 = 1*2^2 + 1 (K=1 < 4, aber p=1 nicht prim → eigentlich None? Abhängig von Implementierung)
+    7: True,     # 7 = 2*3^1 + 1 (K=2 < 3)
+    13: True,    # 13 = 3*2^2 + 1 (K=3 < 4)
+    17: True,    # 17 = 2*2^3 + 1 (K=2 < 8)
+    19: True,    # 19 = 2*3^2 + 1 (K=2 < 9)
+    37: True,    # 37 = 4*3^2 + 1 (K=4 < 9)
+    1093: True,  # 1093 = 3*7^3 + 1 (K=3 < 343)
+    # Ungültige Fälle (keine Zerlegung oder K >= p^n)
+    3: False,
+    11: False,   # 11-1=10 → Keine Zerlegung mit K < p^n
+    31: False,   # 31-1=30 → Keine Zerlegung mit K < p^n
+    41: False,   # 41-1=40 → Keine Zerlegung mit K < p^n
+    73: False    # 73-1=72 → Keine Zerlegung mit K < p^n
+}
+rao_expected = {5: True, 7: True, 17: True, 41: True, 97: True, 113: True, 257: True, 65537: True}
 miller_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 29:True, 31:True, 39:False}
 solovay_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}
 aks_expected = {2:True, 3:True, 5:True, 7:True, 11:True, 15:False, 21:False, 25:False, 31:True, 39:False}
@@ -160,6 +182,18 @@ def test_grau_probability(n):
     result = grau_probability_test(n)
     expected = grau_probability_expected.get(n, False)
     assert result == expected
+
+@pytest.mark.parametrize("n", ramzy_numbers + ramzy_invalid_numbers)
+def test_ramzy(n):
+    result = ramzy_test(n)
+    expected = ramzy_expected.get(n, False)
+    assert result == expected
+
+@pytest.mark.parametrize("n", rao_numbers)
+def test_rao(n):
+    result = rao_test(n)
+    expected = rao_expected.get(n, False)
+    assert result == expected, f"Rao-Test failed for n={n}: expected {expected}, got {result}"
 
 @pytest.mark.parametrize("n", miller_numbers)
 def test_miller_selfridge_rabin(n):

@@ -242,23 +242,31 @@ def grau_probability_test(n: int) -> bool: #6.14
     return False
 
 def ramzy_test(n: int) -> bool: #6.15
+    print(f"\nRamzy-Test für {n} gestartet")
     if n <= 1: raise ValueError("n must be greater than 1")
-    decomposition = helpers.find_pocklington_decomposition(n)
-    if not decomposition: return False
+    decomposition = helpers.find_ramzy_decomposition(n)
+    if not decomposition: 
+        print(f"Ramzy-Test: Keine Zerlegung für {n} gefunden")
+        return False
 
     K, p, n_exp = decomposition  # N = K*p^n + 1
     
-    for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
+    for j in range(0, n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
         if p**(n_exp - 1) >= K * (p**j):
+            print(f"Ramzy-Test: Bedingung p^{n_exp - 1} ≥ Kp^{j} erfüllt für j={j}")
             for a in range(2, n):
                 # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
                 exponent = K * (p ** (n_exp - j - 1))
                 L = pow(a, exponent, n)
                 if L == 1: continue
-                
+                print(f"Ramzy-Test: L = {L} für a={a}, K={K}, p={p}, j={j}")
                 if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
                     return True
+    print(f"Ramzy-Test: Keine gültige j gefunden für {n}")
     return False
+ramzy_numbers = [17, 31, 41, 73, 97, 113, 1811, 8081]
+for n in ramzy_numbers:
+    print(ramzy_test(n))
 
 def rao_test(n: int) -> bool: # 6.6
     if n <= 3: raise ValueError("n must be greater than 1")
@@ -266,13 +274,14 @@ def rao_test(n: int) -> bool: # 6.6
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition: return False
-        
-    p, n_exp = decomposition
+
     exponent = (n - 1) // 2
     cond1 = pow(3, exponent, n) == (n - 1)
+    print(f"Rao-Test: Bedingung 1 erfüllt: {cond1}")
     if not cond1: return False
-    cond2 = helpers.divides(n, helpers.calculate_generalized_fermat_number(3, n - 1))
-    if not cond2: return True
+    cond2 = (pow(3, 1 << (n - 1), n) + 1) % n  # (1 << (n-1)) = 2^(n-1)
+    print(f"Rao-Test: Bedingung 2 erfüllt: {cond2}")
+    if cond2 == 0: return True
 
     return False
 

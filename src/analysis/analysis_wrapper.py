@@ -33,7 +33,7 @@ def run_primetest_analysis(
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True,
-     variant: int = 1  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    variant: int = 1  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
 ) -> Dict[str, List[Dict]]:
 
     if seed is not None: random.seed(seed)
@@ -134,8 +134,21 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        measure_section("Exportiere CSV", export_test_data_to_csv, test_data, get_timestamped_filename("test-data", "csv"))
-
+        measure_section(
+            "Exportiere CSV",
+            lambda: export_test_data_to_csv(
+                test_data,
+                get_timestamped_filename("test-data", "csv"),
+                metadata={
+                    "n_numbers": n_numbers,
+                    "start": start,
+                    "end": end,
+                    "test_repeats": test_repeats,
+                    "number_type": num_type,
+                    "variant": variant
+                }
+            )
+        )
     return datasets
 
 # Hauptaufruf

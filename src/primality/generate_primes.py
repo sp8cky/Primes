@@ -1,8 +1,77 @@
 import random
+from typing import List, Dict
 from sympy import isprime, primerange, primefactors
 from math import log2
 import src.primality.helpers as helpers
+from src.primality.test_config import *
+from src.analysis.dataset import extract_base_label
 from typing import List
+
+def generate_all_test_numbers(n, start, end, test_config) -> Dict[str, List[int]]:
+    numbers_per_test = {}
+    for test_name, cfg in test_config.items():
+        number_type = cfg.get("number_type", "general")
+        print(f"Generiere Zahlen für Test '{test_name}' ({number_type})...")
+        try: # Versuche direkt n Zahlen zu generieren
+            numbers = generate_numbers_for_test(n, start, end, number_type)
+        except ValueError as e: # Wenn zu wenig möglich sind, versuche maximal verfügbare
+            print(f"⚠️ Für Test '{test_name}' konnten nicht {n}, sondern nur weniger Zahlen generiert werden: {e}")
+            try: # versuche maximal viele zu generieren
+                max_available = 1000  # großzügiger Puffer
+                candidates = generate_numbers_for_test(max_available, start, end, number_type)
+                numbers = candidates[:n]  # falls doch mehr verfügbar
+                print(f"→ Nur {len(numbers)} Zahlen für Test '{test_name}' verwendet.")
+            except ValueError as e2:
+                print(f"⛔ Test '{test_name}' wird komplett übersprungen: {e2}")
+                continue
+
+        numbers_per_test[test_name] = numbers
+    return numbers_per_test
+
+def generate_numbers_per_group(n, start, end, test_config):
+    # 1. Gruppiere Tests nach Gruppe
+    group_to_tests = {}
+    for test_name in test_config:
+        base_label = extract_base_label(test_config[test_name]["label"])
+        group = TEST_GROUPS.get(base_label)
+        if group is None:
+            print(f"⚠️ Test {test_name} mit Label {base_label} hat keine Gruppe.")
+            continue
+        group_to_tests.setdefault(group, []).append(test_name)
+
+    # 2. Für jede Gruppe Zahlen generieren (einmal pro Gruppe)
+    group_numbers = {}
+    for group, tests in group_to_tests.items():
+        # Wir nehmen den Typ des ersten Tests für die Generierung
+        first_test = tests[0]
+        number_type = test_config[first_test].get("number_type", "general")
+        print(f"Generiere {n} Zahlen für Gruppe '{group}' vom Typ '{number_type}'...")
+        try:
+            numbers = generate_numbers_for_test(n, start, end, number_type)
+        except ValueError as e:
+            print(f"⚠️ Für Gruppe '{group}' konnten nicht {n} Zahlen generiert werden: {e}")
+            # Versuche max verfügbare
+            try:
+                max_available = 1000
+                candidates = generate_numbers_for_test(max_available, start, end, number_type)
+                numbers = candidates[:n]
+                print(f"→ Nur {len(numbers)} Zahlen für Gruppe '{group}' verwendet.")
+            except ValueError as e2:
+                print(f"⛔ Gruppe '{group}' wird komplett übersprungen: {e2}")
+                numbers = []
+
+        group_numbers[group] = numbers
+
+    # 3. Erstelle dict Testname → Liste von Zahlen der jeweiligen Gruppe
+    numbers_per_test = {}
+    for group, tests in group_to_tests.items():
+        nums = group_numbers.get(group, [])
+        for test in tests:
+            numbers_per_test[test] = nums
+
+    return numbers_per_test
+
+
 
 # 1. Generische grobe Filterung
 def generate_numbers(n: int, start: int, end: int, number_type: str = "general", max_attempts=10000) -> List[int]:

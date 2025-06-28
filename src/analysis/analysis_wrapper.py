@@ -33,7 +33,7 @@ def run_primetest_analysis(
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True,
-    variant: int = 1  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    variant: int = 2  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
 ) -> Dict[str, List[Dict]]:
 
     if seed is not None: random.seed(seed)
@@ -53,18 +53,11 @@ def run_primetest_analysis(
         numbers_per_test = {test_name: numbers for test_name in test_config.keys()}
     elif variant == 2:
         # 2. Eigene Zahlen pro Test, wie bisher
-        numbers_per_test = {}
-        for test_name, cfg in test_config.items():
-            number_type = cfg.get("number_type", num_type)
-            print(f"Generiere Zahlen für Test '{test_name}' mit Typ '{number_type}' ...")
-            numbers = measure_section(
-                f"Zahlengenerierung für {test_name} ({number_type})",
-                generate_numbers_for_test,
-                n_numbers, start, end, number_type
-            )
-            if len(numbers) < n_numbers:
-                raise ValueError(f"Für Test '{test_name}' konnten nur {len(numbers)} Zahlen generiert werden, benötigt: {n_numbers}")
-            numbers_per_test[test_name] = numbers
+        numbers_per_test = measure_section(
+            "Zahlengenerierung pro Test",
+            generate_numbers_per_group,
+            n_numbers, start, end, test_config
+        )
     else:
         raise ValueError("variant muss 1 oder 2 sein")
 
@@ -146,6 +139,7 @@ def run_primetest_analysis(
             test_data,
             filename,
             test_config=test_config,
+            numbers_per_test=numbers_per_test,
             metadata={
                 "n_numbers": n_numbers,
                 "start": start,
@@ -162,7 +156,7 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=1,
         num_type='p',
         start=10,
         end=10000,
@@ -173,5 +167,5 @@ if __name__ == "__main__":
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=1,
+        variant=2,
     )

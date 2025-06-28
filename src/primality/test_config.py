@@ -4,7 +4,39 @@ from functools import partial
 
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
 default_repeats = [3, 3, 3]
-prob_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
+prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+
+TEST_GROUPS = {
+    "Fermat": "Probabilistische Tests",
+    "Miller-Selfridge-Rabin": "Probabilistische Tests",
+    "Solovay-Strassen": "Probabilistische Tests",
+    
+    "Initial Lucas": "Lucas-Tests",
+    "Lucas": "Lucas-Tests",
+    "Optimized Lucas": "Lucas-Tests",
+
+    "Wilson": "Langsame Tests",
+    "AKS": "Langsame Tests",
+
+    "Proth": "Proth-Tests",
+    "Proth Variant": "Proth-Tests",
+
+    "Pocklington": "Pocklington-Tests",
+    "Optimized Pocklington": "Pocklington-Tests",
+    "Optimized Pocklington Variant": "Pocklington-Tests",
+    "Generalized Pocklington": "Pocklington-Tests",
+    "Grau": "Pocklington-Tests",
+    "Grau Probability": "Pocklington-Tests",
+
+    "Rao": "Rao",
+    "Ramzy": "Ramzy",
+   
+    "Pepin": "Fermat-Zahlen",
+    "Lucas-Lehmer": "Mersenne-Zahlen",
+}
+
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao"]
+
 
 # Zuordnung von Tests zu Funktionen und Metadaten
 test_function_mapping = {
@@ -14,7 +46,7 @@ test_function_mapping = {
         "prob_test": True,
         "number_type": "large_prime"  # große Primzahlen sind sinnvoll
     },
-    "Miller-Rabin": {
+    "Miller-Selfridge-Rabin": {
         "runtime_function": miller_selfridge_rabin_test,
         "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
@@ -43,6 +75,18 @@ test_function_mapping = {
         "protocol_function": optimized_lucas_test_protocoll,
         "prob_test": False,
         "number_type": "lucas"  # spezieller Lucas-Zahlenbereich (Zerlegung vorhanden)
+    },
+    "Wilson": {
+        "runtime_function": wilson_criterion,
+        "protocol_function": wilson_criterion_protocoll,
+        "prob_test": False,
+        "number_type": "small_prime"  # wegen Laufzeit auf kleine Primzahlen
+    },
+    "AKS": {
+        "runtime_function": aks_test,
+        "protocol_function": aks_test_protocoll,
+        "prob_test": False,
+        "number_type": "small_prime"  # ebenfalls wegen Laufzeit kleine Primzahlen
     },
     "Pepin": {
         "runtime_function": pepin_test,
@@ -115,18 +159,6 @@ test_function_mapping = {
         "protocol_function": rao_test_protocoll,
         "prob_test": False,
         "number_type": "rao"  # Rao-Zahlen
-    },
-    "Wilson": {
-        "runtime_function": wilson_criterion,
-        "protocol_function": wilson_criterion_protocoll,
-        "prob_test": False,
-        "number_type": "small_prime"  # wegen Laufzeit auf kleine Primzahlen
-    },
-    "AKS": {
-        "runtime_function": aks_test,
-        "protocol_function": aks_test_protocoll,
-        "prob_test": False,
-        "number_type": "small_prime"  # ebenfalls wegen Laufzeit kleine Primzahlen
     }
 }
 

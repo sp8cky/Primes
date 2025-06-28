@@ -2,6 +2,7 @@ import os, json, csv
 from datetime import datetime
 from typing import Dict, Any
 from src.primality.test_protocoll import test_data
+from src.primality.test_config import *
 
 # creates data directory relative to the src directory
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
@@ -11,8 +12,13 @@ def get_timestamped_filename(basename: str, ext: str = "json"):
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     return f"{timestamp}-{basename}.{ext}"
 
+# Entfernt z.B. '(k = 3)' oder andere Klammerzusätze vom Label
+def extract_base_label(label: str) -> str:
+    if label is None:
+        return None
+    return label.split(" (")[0].strip()
 
-def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, metadata: dict = None):
+def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, numbers_per_test: dict, metadata: dict = None):
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -23,9 +29,27 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, m
     rows = []
 
     for testname, entries in test_data.items():
+        full_label = test_config[testname]["label"]
+        base_label = extract_base_label(full_label)
+
+        if base_label not in TEST_GROUPS:
+            print(f"⚠️ Kein Gruppeneintrag für Test '{full_label}' (Basis: '{base_label}'), übersprungen.")
+            continue
+
+        group = TEST_GROUPS[base_label]
+        label = full_label
+
+        # Hole die gültigen Zahlen für diesen Test (nur diese exportieren!)
+        valid_numbers = set(numbers_per_test.get(testname, []))
+
         for number, details in entries.items():
+            # Nur wenn die Zahl zu den generierten Zahlen für den Test gehört
+            if number not in valid_numbers:
+                continue
+
             flat_row = {
-                "Test": test_config[testname]["label"],
+                "Gruppe": group,
+                "Test": label,
                 "Zahl": number,
                 "Ergebnis": details.get("result"),
                 "true_prime": details.get("true_prime"),
@@ -46,12 +70,12 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, m
         print("⚠️ Testdaten sind leer.")
         return
 
-    # Sortiere die Zeilen nach Zahl, sodass alle Tests für eine Zahl zusammenstehen
-    rows.sort(key=lambda r: r["Zahl"])
+    # Sortiere nach Gruppe, Test, Zahl
+    rows.sort(key=lambda r: (TEST_ORDER.index(extract_base_label(r["Test"])), int(r["Zahl"])))
 
-    # Definierte Spaltenreihenfolge gemäß deiner Vorgabe:
+    # Definierte Spaltenreihenfolge:
     fieldnames = [
-        "Test", "Zahl", "Ergebnis", "true_prime", "is_error",
+        "Gruppe", "Test", "Zahl", "Ergebnis", "true_prime", "is_error",
         "false_positive", "false_negative",
         "best_time", "avg_time", "worst_time", "std_dev",
         "a_values", "other_fields", "reason"
@@ -60,7 +84,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, m
     with open(path, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
 
-        # Metadaten als Header-Zeilen einfügen (sofern vorhanden)
+        # Metadaten als Header-Zeilen einfügen
         if metadata:
             writer.writerow(["--- Konfiguration ---"])
             for key, value in metadata.items():
@@ -71,4 +95,4 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, m
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"✅ Testdaten erfolgreich exportiert.")
+    print(f"✅ Testdaten erfolgreich exportiert: {path}")

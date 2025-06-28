@@ -44,7 +44,7 @@ def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, 
         "Grau Probability": {"a_values": [], "other_fields": ()},
         "Ramzy": {"a_values": [], "other_fields": ()},
         "Rao": {"a_values": [], "other_fields": ()},
-        "Miller-Rabin": {"a_values": []},
+        "Miller-Selfridge-Rabin": {"a_values": []},
         "Solovay-Strassen": {"a_values": []},
         "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
     }
@@ -531,7 +531,7 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5) -> bool:
     if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n): raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     
     if n in (2, 3):
-        test_data["Miller-Rabin"][n]["result"] = True
+        test_data["Miller-Selfridge-Rabin"][n]["result"] = True
         return True
 
     # Zerlegung von n - 1 in 2^r * m
@@ -544,11 +544,11 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5) -> bool:
     for _ in range(k):
         a = random.randint(2, n - 1)
         if gcd(a, n) != 1:
-            test_data["Miller-Rabin"][n]["result"] = False
+            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
             return False
 
         cond1 = pow(a, n - 1, n) == 1
-        test_data["Miller-Rabin"][n]["a_values"].append((a, cond1))
+        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1))
         if cond1:
             continue
 
@@ -556,12 +556,12 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5) -> bool:
             if pow(a, 2**i * m, n) == n - 1: #cond2
                 break
         else:
-            test_data["Miller-Rabin"][n]["a_values"].append((a, False))
-            test_data["Miller-Rabin"][n]["result"] = False
+            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, False))
+            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
             return False
 
-        test_data["Miller-Rabin"][n]["a_values"].append((a, True)) # cond2
-    test_data["Miller-Rabin"][n]["result"] = True
+        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, True)) # cond2
+    test_data["Miller-Selfridge-Rabin"][n]["result"] = True
     return True
 
 

@@ -33,7 +33,8 @@ def run_primetest_analysis(
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True,
-    variant: int = 2  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    variant: int = 2,  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    allow_partial_numbers = False
 ) -> Dict[str, List[Dict]]:
 
     if seed is not None: random.seed(seed)
@@ -56,7 +57,7 @@ def run_primetest_analysis(
         numbers_per_test = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
-            n_numbers, start, end, test_config
+            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers
         )
     else:
         raise ValueError("variant muss 1 oder 2 sein")
@@ -110,13 +111,20 @@ def run_primetest_analysis(
 
     # Plotten
     if show_plot:
+        # Nur Datensätze mit mind. einem Eintrag nehmen
+        valid_plot_entries = [
+        (test_name, data)
+        for test_name, data in datasets.items()
+            if isinstance(data, list) and len(data) > 0
+        ]
+
         plot_data = {
-            "n_values": [[entry["n"] for entry in data] for data in datasets.values()],
-            "avg_times": [[entry["avg_time"] for entry in data] for data in datasets.values()],
-            "std_devs": [[entry["std_dev"] for entry in data] for data in datasets.values()],
-            "best_times": [[entry["best_time"] for entry in data] for data in datasets.values()],
-            "worst_times": [[entry["worst_time"] for entry in data] for data in datasets.values()],
-            "labels": [data[0]["label"] for data in datasets.values()],
+            "n_values": [[entry["n"] for entry in data] for _, data in valid_plot_entries],
+            "avg_times": [[entry["avg_time"] for entry in data] for _, data in valid_plot_entries],
+            "std_devs": [[entry["std_dev"] for entry in data] for _, data in valid_plot_entries],
+            "best_times": [[entry["best_time"] for entry in data] for _, data in valid_plot_entries],
+            "worst_times": [[entry["worst_time"] for entry in data] for _, data in valid_plot_entries],
+            "labels": [data[0]["label"] for _, data in valid_plot_entries],
             "colors": ["#b41f1f", "#d62728", "#e6550d", "#ff7f0e", "#bcbd22", "#2ca02c", "#31a354", "#637939", "#8c6d31", "#17becf", "#3182bd", "#393b79", "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f"]
         }
         measure_section("Plotten", plot_runtime,
@@ -156,7 +164,7 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=1,
+        n_numbers=10,
         num_type='p',
         start=10,
         end=10000,
@@ -167,5 +175,6 @@ if __name__ == "__main__":
         protocoll=True,
         save_results=True,
         show_plot=True,
+        allow_partial_numbers = True,
         variant=2,
     )

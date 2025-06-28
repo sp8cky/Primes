@@ -143,7 +143,14 @@ def get_test_config(include_tests=None, prob_test_repeats=None):
         cfg = test_function_mapping[test].copy()
         if cfg["prob_test"]:
             idx = prob_tests.index(test)
-            cfg["prob_test_repeats"] = prob_test_repeats[idx]
+            k = prob_test_repeats[idx]
+            cfg["prob_test_repeats"] = k
+            print(f"Konfiguriere {test} mit k = {k}")
+            cfg["label"] = f"{test} (k = {k})"
+            print(f"cfg['label'] = {cfg['label']}")
+        else:
+            cfg["label"] = test
+
         test_config[test] = cfg
 
     return test_config

@@ -93,7 +93,11 @@ def run_primetest_analysis(
                 runtime_functions[test_name],
                 numbers_per_test[test_name],
                 test_name,
-                label=test_name + (f" (k={test_config[test_name].get('prob_test_repeats')})" if "prob_test_repeats" in test_config[test_name] else ""),
+                label=(
+                    f"{test_name} (k = {test_config[test_name]['prob_test_repeats']})"
+                    if "prob_test_repeats" in test_config[test_name]
+                    else test_name
+                ),
                 runs_per_n=test_repeats
             )
         )
@@ -134,21 +138,20 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        measure_section(
-            "Exportiere CSV",
-            lambda: export_test_data_to_csv(
-                test_data,
-                get_timestamped_filename("test-data", "csv"),
-                metadata={
-                    "n_numbers": n_numbers,
-                    "start": start,
-                    "end": end,
-                    "test_repeats": test_repeats,
-                    "number_type": num_type,
-                    "variant": variant
-                }
-            )
-        )
+        filename = get_timestamped_filename("test-data", "csv")
+        measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
+            test_data,
+            filename,
+            test_config=test_config,
+            metadata={
+                "n_numbers": n_numbers,
+                "start": start,
+                "end": end,
+                "test_repeats": test_repeats,
+                "number_type": num_type,
+                "variant": variant
+            }
+        ))
     return datasets
 
 # Hauptaufruf

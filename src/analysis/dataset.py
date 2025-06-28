@@ -12,7 +12,7 @@ def get_timestamped_filename(basename: str, ext: str = "json"):
     return f"{timestamp}-{basename}.{ext}"
 
 
-def export_test_data_to_csv(test_data: dict, filename: str, metadata: Dict = None):
+def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, metadata: dict = None):
 
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -27,7 +27,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, metadata: Dict = Non
         for number, details in entries.items():
             flat_row = {
                 "Ergebnis": details.get("result"),
-                "Test": testname,
+                "Test": test_config[testname]["label"],
                 "Zahl": number,
                 "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
                 "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
@@ -73,7 +73,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, metadata: Dict = Non
             writer.writerow(["--- Konfiguration ---"])
             for key, value in metadata.items():
                 writer.writerow([key, value])
-                
+
         writer.writerow([])  # Leerzeile zur Trennung
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()

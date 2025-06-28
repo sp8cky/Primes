@@ -242,33 +242,23 @@ def grau_probability_test(n: int) -> bool: #6.14
     return False
 
 def ramzy_test(n: int) -> bool: #6.15
-    print(f"\nRamzy-Test für {n} gestartet")
     if n <= 1: raise ValueError("n must be greater than 1")
     decomposition = helpers.find_ramzy_decomposition(n)
     if not decomposition: 
-        print(f"Ramzy-Test: Keine Zerlegung für {n} gefunden")
         return False
 
     K, p, n_exp = decomposition  # N = K*p^n + 1
     
     for j in range(0, n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
         if p**(n_exp - 1) >= K * (p**j):
-            print(f"Ramzy-Test: Bedingung p^{n_exp - 1} ≥ Kp^{j} erfüllt für j={j}")
             for a in range(2, n):
                 # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
                 exponent = K * (p ** (n_exp - j - 1))
                 L = pow(a, exponent, n)
                 if L == 1: continue
-                print(f"Ramzy-Test: L = {L} für a={a}, K={K}, p={p}, j={j}")
                 if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
                     return True
-    print(f"Ramzy-Test: Keine gültige j gefunden für {n}")
     return False
-
-ramzy_test(13)
-ramzy_test(1093)
-ramzy_test(3)
-
 
 def rao_test(n: int) -> bool: # 6.6
     if n <= 3: raise ValueError("n must be greater than 1")

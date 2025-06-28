@@ -1,7 +1,7 @@
 from src.primality.tests import *
 from src.primality.test_protocoll import *
 from src.primality.generate_primes import *
-from src.analysis.timing import measure_runtime
+from src.analysis.timing import *
 from src.analysis.plot import plot_runtime
 from src.analysis.dataset import *
 from src.primality.test_config import *
@@ -112,6 +112,9 @@ def run_primetest_analysis(
             for n in numbers_per_test[test_name]
         ])
 
+    # Fehleranalyse
+    measure_section("Fehleranalyse", lambda: analyze_errors(test_data))
+
     # Plotten
     if show_plot:
         plot_data = {
@@ -159,7 +162,7 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=1,
         num_type='p',
         start=10,
         end=10000,

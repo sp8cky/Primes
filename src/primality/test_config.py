@@ -9,20 +9,20 @@ prob_tests = ["Fermat", "Miller-Rabin", "Solovay-Strassen"]
 # Zuordnung von Tests zu Funktionen und Metadaten
 test_function_mapping = {
     "Fermat": {
-        "runtime_function": partial(fermat_test, k=3),
-        "protocol_function": partial(fermat_test_protocoll, k=3),
+        "runtime_function": fermat_test,
+        "protocol_function": fermat_test_protocoll,
         "prob_test": True,
         "number_type": "general"
     },
     "Miller-Rabin": {
-        "runtime_function": partial(miller_selfridge_rabin_test, k=3),
-        "protocol_function": partial(miller_selfridge_rabin_test_protocoll, k=3),
+        "runtime_function": miller_selfridge_rabin_test,
+        "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
         "number_type": "general"
     },
     "Solovay-Strassen": {
-        "runtime_function": partial(solovay_strassen_test, k=3),
-        "protocol_function": partial(solovay_strassen_test_protocoll, k=3),
+        "runtime_function": solovay_strassen_test,
+        "protocol_function": solovay_strassen_test_protocoll,
         "prob_test": True,
         "number_type": "general"
     },
@@ -145,9 +145,9 @@ def get_test_config(include_tests=None, prob_test_repeats=None):
             idx = prob_tests.index(test)
             k = prob_test_repeats[idx]
             cfg["prob_test_repeats"] = k
-            print(f"Konfiguriere {test} mit k = {k}")
+            cfg["runtime_function"] = partial(cfg["runtime_function"], k=k)
+            cfg["protocol_function"] = partial(cfg["protocol_function"], k=k)
             cfg["label"] = f"{test} (k = {k})"
-            print(f"cfg['label'] = {cfg['label']}")
         else:
             cfg["label"] = test
 

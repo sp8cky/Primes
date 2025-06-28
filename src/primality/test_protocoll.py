@@ -13,6 +13,10 @@ test_data = {}
 def init_dictionary() -> Dict[str, Any]:
     """Erzeugt ein standardisiertes Dictionary für Testdaten eines einzelnen n."""
     return {
+        "true_prime": None,      # True/False, tatsächlicher Primstatus
+        "is_error": None,        # True/False, Fehler bei Testausgabe
+        "false_positive": None,  # True/False
+        "false_negative": None,  # True/False
         "a_values": [],          # Liste von Tupeln/Integers (je nach Test)
         "other_fields": None,    # Kann später zu einem Dict/Tuple/List werden
         "result": None,          # True/False/None

@@ -162,7 +162,7 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     run_primetest_analysis(
-        n_numbers=1,
+        n_numbers=10,
         num_type='p',
         start=10,
         end=10000,

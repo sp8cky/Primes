@@ -12,121 +12,121 @@ test_function_mapping = {
         "runtime_function": fermat_test,
         "protocol_function": fermat_test_protocoll,
         "prob_test": True,
-        "number_type": "general"
+        "number_type": "large_prime"  # große Primzahlen sind sinnvoll
     },
     "Miller-Rabin": {
         "runtime_function": miller_selfridge_rabin_test,
         "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
-        "number_type": "general"
+        "number_type": "large_prime"  # große Zahlen, da Test für große Zahlen gedacht
     },
     "Solovay-Strassen": {
         "runtime_function": solovay_strassen_test,
         "protocol_function": solovay_strassen_test_protocoll,
         "prob_test": True,
-        "number_type": "general"
+        "number_type": "large_prime"  # ebenfalls große Zahlen sinnvoll
     },
     "Initial Lucas": {
         "runtime_function": initial_lucas_test,
         "protocol_function": initial_lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "general"
+        "number_type": "lucas"  # allgemeine Zahlen, keine spezielle Form nötig
     },
     "Lucas": {
         "runtime_function": lucas_test,
         "protocol_function": lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "general"
+        "number_type": "lucas"  # wie Initial Lucas
     },
     "Optimized Lucas": {
         "runtime_function": optimized_lucas_test,
         "protocol_function": optimized_lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "lucas"  # spezieller Lucas-Zahlenbereich (Zerlegung vorhanden)
     },
     "Pepin": {
         "runtime_function": pepin_test,
         "protocol_function": pepin_test_protocoll,
         "prob_test": False,
-        "number_type": "fermat"
+        "number_type": "fermat"  # genau Fermat-Zahlen
     },
     "Lucas-Lehmer": {
         "runtime_function": lucas_lehmer_test,
         "protocol_function": lucas_lehmer_test_protocoll,
         "prob_test": False,
-        "number_type": "mersenne"
+        "number_type": "mersenne"  # nur Mersenne-Zahlen
     },
     "Proth": {
         "runtime_function": proth_test,
         "protocol_function": proth_test_protocoll,
         "prob_test": False,
-        "number_type": "proth"
+        "number_type": "proth"  # Proth-Zahlen
     },
     "Proth Variant": {
         "runtime_function": proth_test_variant,
         "protocol_function": proth_test_variant_protocoll,
         "prob_test": False,
-        "number_type": "proth"
+        "number_type": "proth"  # Proth-Zahlen
     },
     "Pocklington": {
         "runtime_function": pocklington_test,
         "protocol_function": pocklington_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # Pocklington-Zerlegung, ähnlicher Bereich wie Lucas
     },
     "Optimized Pocklington": {
         "runtime_function": optimized_pocklington_test,
         "protocol_function": optimized_pocklington_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # wie Pocklington
     },
     "Optimized Pocklington Variant": {
         "runtime_function": optimized_pocklington_test_variant,
         "protocol_function": optimized_pocklington_test_variant_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # wie Pocklington
     },
     "Generalized Pocklington": {
         "runtime_function": generalized_pocklington_test,
         "protocol_function": generalized_pocklington_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # wie Pocklington
     },
     "Grau": {
         "runtime_function": grau_test,
         "protocol_function": grau_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # ebenfalls mit Pocklington-Zerlegung
     },
     "Grau Probability": {
         "runtime_function": grau_probability_test,
         "protocol_function": grau_probability_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas"
+        "number_type": "pocklington"  # wie Grau
     },
     "Ramzy": {
         "runtime_function": ramzy_test,
         "protocol_function": ramzy_test_protocoll,
         "prob_test": False,
-        "number_type": "ramzy"
+        "number_type": "ramzy"  # Ramzy-Zahlen (spezieller Typ)
     },
     "Rao": {
         "runtime_function": rao_test,
         "protocol_function": rao_test_protocoll,
         "prob_test": False,
-        "number_type": "rao"
+        "number_type": "rao"  # Rao-Zahlen
     },
     "Wilson": {
         "runtime_function": wilson_criterion,
         "protocol_function": wilson_criterion_protocoll,
         "prob_test": False,
-        "number_type": "prime"
+        "number_type": "small_prime"  # wegen Laufzeit auf kleine Primzahlen
     },
     "AKS": {
         "runtime_function": aks_test,
         "protocol_function": aks_test_protocoll,
         "prob_test": False,
-        "number_type": "general"
+        "number_type": "small_prime"  # ebenfalls wegen Laufzeit kleine Primzahlen
     }
 }
 

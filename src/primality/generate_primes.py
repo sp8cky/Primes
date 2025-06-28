@@ -103,18 +103,22 @@ def generate_ramzy_numbers(n: int, start: int, end: int) -> List[int]:
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return results
 
-# generate lucas primes, which are primes of the form p = 2^n - 1, where n is a prime and p-1 has only small prime factors
-def generate_lucas_primes(n: int, start: int, end: int, max_factor=1000) -> List[int]:
+# generate lucas primes with an easy factorization condition
+def generate_lucas_primes(n: int, start: int, end: int) -> List[int]:
     primes = list(primerange(start, end))
     lucas_primes = []
+
     for p in primes:
+        max_allowed = int(log2(p)**2)
         factors = primefactors(p - 1)
-        if all(f <= max_factor for f in factors):
+        if all(f <= max_allowed for f in factors):
             lucas_primes.append(p)
             if len(lucas_primes) >= n:
                 break
+
     if len(lucas_primes) < n:
         raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
+
     return lucas_primes
 
 # generate large and small primes based on a threshold

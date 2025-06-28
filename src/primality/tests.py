@@ -42,7 +42,6 @@ def lucas_test(n: int) -> bool:
     if n == 2: return True
 
     a = random.randint(2, n - 1)
-    cond1 = pow(a, n - 1, n) == 1
     if pow(a, n - 1, n) != 1: return False
 
     for m in range(1, n):
@@ -114,9 +113,7 @@ def proth_test_variant(n: int) -> bool: #4.8
 
     for a in range(2, n):
         if pow(a, n - 1, n) != 1: return False
-        
-        if pow(a, (n - 1) // 2, n) == n - 1:
-            return True
+        if pow(a, (n - 1) // 2, n) == n - 1: return True
         
     return False
 

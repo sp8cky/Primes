@@ -18,6 +18,13 @@ def extract_base_label(label: str) -> str:
         return None
     return label.split(" (")[0].strip()
 
+# formated output of group ranges
+def format_group_ranges(group_ranges: dict) -> str:
+    return "\n".join(
+        f"{group}: n={cfg['n']}, start={cfg['start']}, end={cfg['end']}"
+        for group, cfg in group_ranges.items()
+    )
+
 def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, numbers_per_test: dict, metadata: dict = None):
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -97,16 +104,30 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
     ]
 
     with open(path, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
 
-        # Metadaten einfügen
         if metadata:
             writer.writerow(["--- Konfiguration ---"])
             for key, value in metadata.items():
-                writer.writerow([key, value])
-            writer.writerow([])  # Leerzeile
+                if key == "group_ranges":
+                    # Hier auf den Wert in metadata zugreifen
+                    group_ranges_value = value
+                    # Falls group_ranges als dict übergeben wird, iterieren:
+                    if isinstance(group_ranges_value, dict):
+                        for group, cfg in group_ranges_value.items():
+                            writer.writerow([
+                                "group_range",
+                                group,
+                                f"n={cfg['n']}, start={cfg['start']}, end={cfg['end']}"
+                            ])
+                    else:
+                        # Falls als String (z.B. format_group_ranges) gespeichert, einfach schreiben
+                        writer.writerow([key, value])
+                else:
+                    writer.writerow([key, value])
+            writer.writerow([])
 
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
         writer.writerows(rows)
 

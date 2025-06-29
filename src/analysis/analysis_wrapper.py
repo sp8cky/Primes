@@ -2,7 +2,7 @@ from src.primality.tests import *
 from src.primality.test_protocoll import *
 from src.primality.generate_primes import *
 from src.analysis.timing import *
-from src.analysis.plot import plot_runtime
+from src.analysis.plot import *
 from src.analysis.dataset import *
 from src.primality.test_config import *
 import time
@@ -128,7 +128,7 @@ def run_primetest_analysis(
             "labels": [data[0]["label"] for _, data in valid_plot_entries],
             "colors": ["#b41f1f", "#d62728", "#e6550d", "#ff7f0e", "#bcbd22", "#2ca02c", "#31a354", "#637939", "#8c6d31", "#17becf", "#3182bd", "#393b79", "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f"]
         }
-        measure_section("Plotten", plot_runtime,
+        measure_section("Plotten", plot_runtime_grouped,
             n_lists=plot_data["n_values"],
             time_lists=plot_data["avg_times"],
             std_lists=plot_data["std_devs"],

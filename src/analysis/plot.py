@@ -148,3 +148,93 @@ def plot_runtime(
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
     plt.show()
+
+
+
+
+
+def plot_runtime_and_errorrate_by_group(
+    datasets: dict,
+    test_data: dict,
+    group_ranges: dict = None,
+    figsize=(12, 7),
+    show_errors: bool = True,
+    timestamp: str = None,
+    seed: int = None,
+    variant: int = None,
+    start: int = None,
+    end: int = None,
+):
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    grouped_data = defaultdict(list)
+    for test_name, data in datasets.items():
+        base_label = extract_base_label(test_name)
+        group = TEST_GROUPS.get(base_label, "Unbekannte Gruppe")
+        if not data:
+            continue
+        n_values = [entry["n"] for entry in data]
+        avg_times = [entry["avg_time"] * 1000 for entry in data]  # in ms
+        grouped_data[group].append((test_name, avg_times, n_values))
+
+    for group, tests in grouped_data.items():
+        plt.figure(figsize=figsize)
+        all_n_values = []
+
+        for test_name, avg_times, n_values in tests:
+            plt.plot(n_values, avg_times, marker='o', label=test_name)
+            all_n_values.extend(n_values)
+
+        plt.title(f"Laufzeitverhalten der Gruppe: {group}")
+        plt.xlabel("Getestete Zahl n")
+        plt.ylabel("Durchschnittliche Laufzeit (ms)")
+        plt.yscale("log")
+        plt.grid(True, which='both', linestyle='--', alpha=0.5)
+
+        # Dynamische X-Achse (normal skaliert, nicht log)
+        if variant == 2 and group_ranges and group in group_ranges:
+            x_min = group_ranges[group].get("start", min(all_n_values))
+            x_max = group_ranges[group].get("end", max(all_n_values))
+        else:
+            x_min = start if start is not None else min(all_n_values)
+            x_max = end if end is not None else max(all_n_values)
+
+        plt.xscale("linear")
+        plt.xlim(x_min, x_max)
+        step = max((x_max - x_min) // 10, 1)
+        plt.xticks(range(x_min, x_max + 1, step))
+        plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+
+        # Bereichsinformation für die Legende
+        range_str = ""
+        if group_ranges and group in group_ranges:
+            r = group_ranges[group]
+            range_str = f"(n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
+        plt.legend(title=f"{group} {range_str}", fontsize=9)
+
+        # Fehlerbalken
+        if show_errors:
+            ax2 = plt.gca().twinx()
+            error_rates = []
+            test_labels = []
+            for test_name, _, _ in tests:
+                test_entries = test_data.get(test_name, {})
+                total_repeats = sum(entry.get("repeat_count", 0) for entry in test_entries.values())
+                total_errors = sum(entry.get("error_count", 0) for entry in test_entries.values())
+                rate = total_errors / total_repeats if total_repeats > 0 else 0
+                error_rates.append(rate)
+                test_labels.append(test_name)
+            ax2.bar(test_labels, error_rates, color='red', alpha=0.4, label="Fehlerrate")
+            ax2.set_ylabel("Fehlerrate")
+            ax2.set_ylim(0, 1)
+            ax2.legend(loc="upper right", fontsize=9)
+            plt.xticks(rotation=45, ha='right')
+
+        plt.tight_layout()
+
+        # Speichern
+        safe_group = group.replace(" ", "_").replace("/", "_")
+        fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
+        path = os.path.join(DATA_DIR, fname)
+        plt.savefig(path)
+        plt.show()

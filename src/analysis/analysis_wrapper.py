@@ -155,6 +155,18 @@ def run_primetest_analysis(
             start=start,
             end=end
         )
+            # Gruppierten Plot aufrufen
+        measure_section("Gruppierte Laufzeit- und Fehleranalyse",
+            plot_runtime_and_errorrate_by_group,
+            datasets=datasets,
+            test_data=test_data,
+            group_ranges=group_ranges,
+            timestamp=timestamp,
+            seed=seed,
+            variant=variant,
+            start=start,
+            end=end
+        )
 
     # CSV-Export
     if save_results:
@@ -201,11 +213,11 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=500,
+        seed=2,
         protocoll=True,
         save_results=True,
         show_plot=True,
         allow_partial_numbers = True,
-        variant=1,
+        variant=2,
         group_ranges=group_ranges
     )

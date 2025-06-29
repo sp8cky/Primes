@@ -17,6 +17,9 @@ def init_dictionary() -> Dict[str, Any]:
         "is_error": None,        # True/False, Fehler bei Testausgabe
         "false_positive": None,  # True/False
         "false_negative": None,  # True/False
+        "repeat_count": 0,       # Für Fehleranalyse   
+        "error_count": 0,        # Für Fehleranalyse      
+        "error_rate": None,      # Für Fehleranalyse
         "a_values": [],          # Liste von Tupeln/Integers (je nach Test)
         "other_fields": None,    # Kann später zu einem Dict/Tuple/List werden
         "result": None,          # True/False/None
@@ -28,25 +31,25 @@ def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, 
     # Liste aller Tests mit ihren spezifischen Anpassungen
     tests = {
         "Fermat": {"a_values": []},
-        "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
+        "Miller-Selfridge-Rabin": {"a_values": []},
+        "Solovay-Strassen": {"a_values": []},
         "Initial Lucas": {"a_values": [], "other_fields": ()},
         "Lucas": {"a_values": [], "other_fields": ()},
         "Optimized Lucas": {"a_values": {}},  # Als Dictionary für faktorabhängige Werte
-        "Pepin": {"a_values": None, "other_fields": ()},
-        "Lucas-Lehmer": {"a_values": None, "other_fields": ()},
+        "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
+        "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
         "Proth": {"a_values": []},
+        "Proth Variant": {"a_values": []},
         "Pocklington": {"a_values": []},
         "Optimized Pocklington": {"a_values": {}},
-        "Proth Variant": {"a_values": []},
         "Optimized Pocklington Variant": {"a_values": {}, "other_fields": ()},
         "Generalized Pocklington": {"a_values": [], "other_fields": ()},
         "Grau": {"a_values": [], "other_fields": ()},
         "Grau Probability": {"a_values": [], "other_fields": ()},
         "Ramzy": {"a_values": [], "other_fields": ()},
         "Rao": {"a_values": [], "other_fields": ()},
-        "Miller-Selfridge-Rabin": {"a_values": []},
-        "Solovay-Strassen": {"a_values": []},
-        "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
+        "Pepin": {"a_values": None, "other_fields": ()},
+        "Lucas-Lehmer": {"a_values": None, "other_fields": ()},
     }
     
     for test_name, test_config in tests.items():

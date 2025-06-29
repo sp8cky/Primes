@@ -68,6 +68,8 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                     "is_error": details.get("is_error"),
                     "false_positive": details.get("false_positive"),
                     "false_negative": details.get("false_negative"),
+                    "error_count": details.get("error_count", ""),
+                    "error_rate": round(details.get("error_rate", 0), 3) if "error_rate" in details else "",
                     "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
                     "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
                     "worst_time": f"{details.get('worst_time', 0)*1000:.3f} ms",
@@ -98,7 +100,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     fieldnames = [
         "Gruppe", "Test", "Zahl", "Ergebnis", "true_prime", "is_error",
-        "false_positive", "false_negative",
+        "false_positive", "false_negative", "error_count", "error_rate",
         "best_time", "avg_time", "worst_time", "std_dev",
         "a_values", "other_fields", "reason"
     ]

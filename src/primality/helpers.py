@@ -1,6 +1,6 @@
 import math
 from math import gcd
-from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange, primefactors
+from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange, primefactors, factorint
 # Helper functions for primality tests and number theory
 def divides(a: int, b: int) -> bool:
     if a == 0: raise ValueError("Division by 0.")
@@ -42,6 +42,29 @@ def find_pocklington_decomposition(n: int) -> tuple:
     
     return None
 
+def fast_pocklington_decomposition(n: int, max_factors: int = 3) -> tuple | None:
+    """
+    Schnellerer Versuch, n-1 als K*p^e + 1 mit K < p^e zu schreiben.
+    max_factors: wie viele Primfaktoren maximal berücksichtigt werden (heuristisch).
+    """
+    if n <= 2:
+        return None
+
+    n_minus_1 = n - 1
+    # Nutze sympy.factorint für effizientere Faktorisierung
+    factor_map = factorint(n_minus_1)
+    sorted_factors = sorted(factor_map.items(), key=lambda x: -x[0])[:max_factors]  # größte zuerst
+
+    for p, max_e in sorted_factors:
+        for e in range(max_e, 0, -1):
+            p_pow_e = p ** e
+            if n_minus_1 % p_pow_e != 0:
+                continue
+            K = n_minus_1 // p_pow_e
+            if K < p_pow_e:
+                return (K, p, e)
+
+    return None
 
 
 # find the smallest prime p and exponent n such that N = p2^n + 1

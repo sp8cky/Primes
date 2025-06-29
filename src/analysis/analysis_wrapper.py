@@ -138,7 +138,8 @@ def run_primetest_analysis(
             colors=plot_data["colors"],
             figsize=(18, 9),
             total_numbers=n_numbers,
-            runs_per_n=test_repeats
+            runs_per_n=test_repeats,
+            group_ranges=group_ranges
         )
 
     # CSV-Export
@@ -171,8 +172,8 @@ if __name__ == "__main__":
         "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
         "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
-        "Rao-Tests":                {"n": 10, "start": 100, "end": 10_000},
-        "Ramzy-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Rao":                {"n": 10, "start": 100, "end": 10_000},
+        "Ramzy":              {"n": 10, "start": 100, "end": 10_000},
         "Fermat-Zahlen":            {"n": 5, "start": 0, "end": 10_000},
         "Mersenne-Zahlen":          {"n": 5, "start": 2, "end": 10_000},
     }

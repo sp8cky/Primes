@@ -1,9 +1,15 @@
 import os
 import matplotlib.pyplot as plt
+from collections import defaultdict
+from matplotlib.lines import Line2D
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
-def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(18, 9), use_log=True, total_numbers=None, runs_per_n=None):
+def plot_runtime(
+    n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
+    labels=None, colors=None, figsize=(18, 9), use_log=True,
+    total_numbers=None, runs_per_n=None, group_ranges=None
+):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
 
@@ -27,15 +33,14 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
         return
 
     # Sortieren nach TEST_ORDER statt alphabetisch
-    entries.sort(key=lambda x: TEST_ORDER.index(x[0]))
+    entries.sort(key=lambda x: TEST_ORDER.index(x[0]) if x[0] in TEST_ORDER else 999)
 
     # Farben und Linienstile pro Gruppe
-    unique_groups = list(sorted(set(entry[1] for entry in entries)))
-    group_colors = plt.cm.tab10.colors  # 10 Farben aus Matplotlib-Standardpalette
+    unique_groups = list(dict.fromkeys(entry[1] for entry in entries))  # Reihenfolge erhalten
+    group_colors = plt.cm.tab10.colors
     line_styles = ['-', '--', '-.', ':']
-
-    # Mapping Gruppe -> Farbe & Linienstil (zyklisch)
     group_style_map = {}
+
     for i, group in enumerate(unique_groups):
         color = group_colors[i % len(group_colors)]
         linestyle = line_styles[i % len(line_styles)]
@@ -53,7 +58,7 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
         if user_color is not None:
             color = user_color
 
-        plt.plot(n, t_ms, marker="o", label=f"{group} – {label}", color=color, linestyle=linestyle)
+        plt.plot(n, t_ms, marker="o", label=label, color=color, linestyle=linestyle)
 
         if std:
             plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
@@ -72,7 +77,44 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
         title += f"\nAnzahl getesteter Zahlen: {total_numbers}, Wiederholungen: {runs_per_n}"
     plt.title(title)
 
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    # Gruppierung der Legenden-Einträge
+    grouped_entries = defaultdict(list)
+    test_index = {name: i for i, name in enumerate(TEST_ORDER)}
+    group_order = []
+
+    for base_label, group, label, *_ in entries:
+        grouped_entries[group].append((test_index.get(base_label, 999), label, base_label))
+        if group not in group_order:
+            group_order.append(group)
+
+    for group in grouped_entries:
+        grouped_entries[group].sort(key=lambda x: x[0])
+
+    # Legendenobjekte vorbereiten
+    legend_elements = []
+
+    for group in group_order:
+        # Bereich anzeigen, auch bei Ramzy/Rao etc.
+        range_str = ""
+        if group_ranges and group in group_ranges:
+            r = group_ranges[group]
+            range_str = f" (n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
+        else:
+            range_str = " (n=?, start=?, end=?)"
+
+        # Gruppenüberschrift (fett, kein Marker)
+        legend_elements.append(Line2D(
+            [0], [0], linestyle='none', label=f"{group}{range_str}",
+            color='black', marker='', linewidth=0
+        ))
+
+        for _, label, base_label in grouped_entries[group]:
+            color, linestyle = group_style_map.get(group, ('black', '-'))
+            handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
+            legend_elements.append(handle)
+
+    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=9)
+
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 

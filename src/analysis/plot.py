@@ -237,4 +237,4 @@ def plot_runtime_and_errorrate_by_group(
         fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
         path = os.path.join(DATA_DIR, fname)
         plt.savefig(path)
-        plt.show()
+        plt.close()

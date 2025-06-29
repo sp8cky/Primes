@@ -102,29 +102,18 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
     ]
 
     with open(path, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-
+        # Erst: Metadaten schreiben als kommentierte Zeilen
         if metadata:
-            writer.writerow(["--- Konfiguration ---"])
+            f.write("# --- Konfiguration ---\n")
             for key, value in metadata.items():
-                if key == "group_ranges":
-                    # Hier auf den Wert in metadata zugreifen
-                    group_ranges_value = value
-                    # Falls group_ranges als dict übergeben wird, iterieren:
-                    if isinstance(group_ranges_value, dict):
-                        for group, cfg in group_ranges_value.items():
-                            writer.writerow([
-                                "group_range",
-                                group,
-                                f"n={cfg['n']}, start={cfg['start']}, end={cfg['end']}"
-                            ])
-                    else:
-                        # Falls als String (z.B. format_group_ranges) gespeichert, einfach schreiben
-                        writer.writerow([key, value])
+                if key == "group_ranges" and isinstance(value, dict):
+                    for group, cfg in value.items():
+                        f.write(f"# group_range, {group}, n={cfg['n']}, start={cfg['start']}, end={cfg['end']}\n")
                 else:
-                    writer.writerow([key, value])
-            writer.writerow([])
+                    f.write(f"# {key}, {value}\n")
+            f.write("#\n")  # Leerzeile als Trennung
 
+        # Jetzt: Normale Daten
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
         writer.writerows(rows)

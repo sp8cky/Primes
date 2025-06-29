@@ -3,7 +3,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -108,9 +108,9 @@ def initial_lucas_test_protocoll(n: int) -> bool:
     for m in range(1, n - 1):
         cond2 = pow(a, m, n) == 1
         test_data["Initial Lucas"][n]["a_values"] = [(a, cond1, cond2)]
-        if not cond2:
+        if cond2:
             test_data["Initial Lucas"][n]["result"] = False
-            test_data["Initial Lucas"][n]["reason"] = f"early break at m = {m}"
+            test_data["Initial Lucas"][n]["reason"] = f"a^{m} ≡ 1 mod n"
             return False
 
     test_data["Initial Lucas"][n]["result"] = True
@@ -131,12 +131,12 @@ def lucas_test_protocoll(n: int) -> bool:
         test_data["Lucas"][n]["reason"] = "a^{n-1} ≠ 1"
         return False
 
-    for m in range(1, n):
-        cond2 = (n - 1) % m == 0 and pow(a, m, n) == 1
+    for m in divisors(n - 1)[:-1]:  # exclude n-1 itself
+        cond2 = pow(a, m, n) == 1
         test_data["Lucas"][n]["a_values"] = [(a, cond1, cond2)]
-        if not cond2:
+        if cond2:
             test_data["Lucas"][n]["result"] = False
-            test_data["Lucas"][n]["reason"] = f"early break at m = {m}"
+            test_data["Lucas"][n]["reason"] = f"a^{m} ≡ 1 mod n"
             return False
 
     test_data["Lucas"][n]["result"] = True

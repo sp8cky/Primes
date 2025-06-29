@@ -3,7 +3,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -32,7 +32,7 @@ def initial_lucas_test(n: int) -> bool:
     if pow(a, n - 1, n) != 1: return False
 
     for m in range(1, n - 1):
-        if pow(a, m, n) != 1: return False
+        if pow(a, m, n) == 1: return False
 
     return True
 
@@ -44,8 +44,8 @@ def lucas_test(n: int) -> bool:
     a = random.randint(2, n - 1)
     if pow(a, n - 1, n) != 1: return False
 
-    for m in range(1, n):
-        if (n - 1) % m != 0 or pow(a, m, n) != 1: return False
+    for m in divisors(n - 1)[:-1]:
+        if pow(a, m, n) != 1: return False
 
     return True
 

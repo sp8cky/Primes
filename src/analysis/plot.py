@@ -124,8 +124,19 @@ def plot_runtime(
             color='black', marker='', linewidth=0
         ))
 
-        for _, label, base_label in grouped_entries[group]:
-            color, linestyle = group_style_map.get(group, ('black', '-'))
+        for idx, label, base_label in grouped_entries[group]:
+            # Suche in entries nach dem Eintrag mit base_label und label, um user_color zu bekommen
+            user_color = None
+            linestyle = '-'
+            # entries: (base_label, group, label, n, t, std, best, worst, user_color)
+            for e in entries:
+                if e[0] == base_label and e[2] == label:
+                    user_color = e[8]  # user_color
+                    _, linestyle = group_style_map.get(group, ('black', '-'))
+                    break
+
+            color = user_color if user_color is not None else group_style_map.get(group, ('black', '-'))[0]
+
             handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
             legend_elements.append(handle)
 

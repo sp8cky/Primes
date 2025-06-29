@@ -164,7 +164,7 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Ramzy", "Rao"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin"]
     repeat_tests = [5,5,5]
     group_ranges={
         "Probabilistische Tests":   {"n": 10, "start": 100, "end": 1_000},
@@ -177,7 +177,6 @@ if __name__ == "__main__":
         "Fermat-Zahlen":            {"n": 5, "start": 0, "end": 1_000},
         "Mersenne-Zahlen":          {"n": 5, "start": 2, "end": 1_000},
     }
-
 
     run_primetest_analysis(
         n_numbers=10,

@@ -9,7 +9,7 @@ from src.primality.test_config import *
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(18, 9), use_log=True,
-    total_numbers=None, runs_per_n=None, group_ranges=None
+    total_numbers=None, runs_per_n=None, group_ranges=None, seed=None, timestamp=None
 ):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
@@ -119,9 +119,10 @@ def plot_runtime(
             range_str = " (n=?, start=?, end=?)"
 
         # Gruppenüberschrift (fett, kein Marker)
+
         legend_elements.append(Line2D(
             [0], [0], linestyle='none', label=f"{group}{range_str}",
-            color='black', marker='', linewidth=0
+            color='black', marker=None, linewidth=0
         ))
 
         for idx, label, base_label in grouped_entries[group]:
@@ -145,7 +146,10 @@ def plot_runtime(
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-    filename = get_timestamped_filename("test-plot", "png")
+    if timestamp is None:
+        filename = f"test-plot-seed{seed}.png"
+    else:
+        filename = f"{timestamp}-test-plot-seed{seed}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)

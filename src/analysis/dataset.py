@@ -7,10 +7,6 @@ from src.primality.test_config import *
 # creates data directory relative to the src directory
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 
-# get timestamped filename for saving results
-def get_timestamped_filename(basename: str, ext: str = "json"):
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return f"{timestamp}-{basename}.{ext}"
 
 # Entfernt z.B. '(k = 3)' oder andere Klammerzusätze vom Label
 def extract_base_label(label: str) -> str:

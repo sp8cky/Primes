@@ -7,6 +7,7 @@ from src.analysis.dataset import *
 from src.primality.test_config import *
 import time
 from typing import List, Dict
+from datetime import datetime
 
 
 # Zeitmessungshilfe
@@ -38,7 +39,15 @@ def run_primetest_analysis(
     group_ranges: Dict[str, Dict[str, int]] = None
 ) -> Dict[str, List[Dict]]:
 
-    if seed is not None: random.seed(seed)
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+    if seed is not None:
+        random.seed(seed)
+        print(f"📌 Verwende festen Seed: {seed}")
+    else:
+        seed = time.time_ns()
+        random.seed(seed)
+        print(f"📌 Verwende zufälligen Seed: {seed}")
 
     # Test-Konfiguration laden
     test_config = get_test_config(include_tests, prob_test_repeats)
@@ -139,15 +148,17 @@ def run_primetest_analysis(
             figsize=(18, 9),
             total_numbers=n_numbers,
             runs_per_n=test_repeats,
-            group_ranges=group_ranges
+            group_ranges=group_ranges,
+            seed=seed,
+            timestamp=timestamp
         )
 
     # CSV-Export
     if save_results:
-        filename = get_timestamped_filename("test-data", "csv")
+        filename = f"{timestamp}-test-data-seed{seed}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
-            filename,
+            filename = filename,
             test_config=test_config,
             numbers_per_test=numbers_per_test,
             metadata={
@@ -157,6 +168,7 @@ def run_primetest_analysis(
                 "test_repeats": test_repeats,
                 "number_type": num_type,
                 "variant": variant,
+                "seed": seed, 
                 "group_ranges": group_ranges
             }
         ))
@@ -186,7 +198,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=42,
+        seed=490,
         protocoll=True,
         save_results=True,
         show_plot=True,

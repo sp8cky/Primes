@@ -58,7 +58,7 @@ def run_primetest_analysis(
         numbers_per_test = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
-            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers
+            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges
         )
     else:
         raise ValueError("variant muss 1 oder 2 sein")
@@ -136,7 +136,7 @@ def run_primetest_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(11, 9),
+            figsize=(18, 9),
             total_numbers=n_numbers,
             runs_per_n=test_repeats
         )
@@ -155,7 +155,8 @@ def run_primetest_analysis(
                 "end": end,
                 "test_repeats": test_repeats,
                 "number_type": num_type,
-                "variant": variant
+                "variant": variant,
+                "group_ranges": group_ranges
             }
         ))
     return datasets
@@ -165,15 +166,15 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     group_ranges={
-        "Probabilistische Tests": {"n": 10, "start": 100_000, "end": 1_000_000},
-        "Lucas-Tests": {"n": 10, "start": 100_000, "end": 1_000_000},
-        "Langsame Tests": {"n": 10, "start": 1_000, "end": 10_000},
-        "Proth-Tests": {"n": 10, "start": 10_000, "end": 100_000},
-        "Pocklington-Tests": {"n": 10, "start": 10_000, "end": 100_000},
-        "Rao-Tests": {"n": 10, "start": 10_000, "end": 100_000},
-        "Ramzy-Tests": {"n": 10, "start": 10_000, "end": 100_000},
-        "Fermat-Zahlen": {"n": 5, "start": 0, "end": 100_000},
-        "Mersenne-Zahlen": {"n": 5, "start": 2, "end": 100_000},
+        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
+        "Rao-Tests":                {"n": 10, "start": 100, "end": 10_000},
+        "Ramzy-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Fermat-Zahlen":            {"n": 5, "start": 0, "end": 10_000},
+        "Mersenne-Zahlen":          {"n": 5, "start": 2, "end": 10_000},
     }
 
 

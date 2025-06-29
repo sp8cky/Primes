@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
-def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(10, 6), use_log=True, total_numbers=None, runs_per_n=None):
+def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None, labels=None, colors=None, figsize=(18, 9), use_log=True, total_numbers=None, runs_per_n=None):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
 
@@ -29,15 +29,31 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
     # Sortieren nach TEST_ORDER statt alphabetisch
     entries.sort(key=lambda x: TEST_ORDER.index(x[0]))
 
+    # Farben und Linienstile pro Gruppe
+    unique_groups = list(sorted(set(entry[1] for entry in entries)))
+    group_colors = plt.cm.tab10.colors  # 10 Farben aus Matplotlib-Standardpalette
+    line_styles = ['-', '--', '-.', ':']
+
+    # Mapping Gruppe -> Farbe & Linienstil (zyklisch)
+    group_style_map = {}
+    for i, group in enumerate(unique_groups):
+        color = group_colors[i % len(group_colors)]
+        linestyle = line_styles[i % len(line_styles)]
+        group_style_map[group] = (color, linestyle)
+
     plt.figure(figsize=figsize)
 
-    for base_label, group, label, n, t, std, best, worst, color in entries:
+    for base_label, group, label, n, t, std, best, worst, user_color in entries:
         t_ms = [ti * 1000 for ti in t]
         std_ms = [s * 1000 for s in std] if std else None
         best_ms = [b * 1000 for b in best] if best else None
         worst_ms = [w * 1000 for w in worst] if worst else None
 
-        plt.plot(n, t_ms, marker="o", label=f"{group} – {label}", color=color)
+        color, linestyle = group_style_map.get(group, ('black', '-'))
+        if user_color is not None:
+            color = user_color
+
+        plt.plot(n, t_ms, marker="o", label=f"{group} – {label}", color=color, linestyle=linestyle)
 
         if std:
             plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
@@ -46,7 +62,9 @@ def plot_runtime(n_lists, time_lists, std_lists=None, best_lists=None, worst_lis
 
     plt.xlabel("Getestete Zahl n")
     plt.ylabel("Laufzeit (ms)")
+
     if use_log:
+        plt.xscale("log")
         plt.yscale("log")
 
     title = "Laufzeitverhalten"

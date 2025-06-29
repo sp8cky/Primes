@@ -76,7 +76,7 @@ def generate_numbers(n: int, start: int, end: int, number_type: str = "general",
         numbers.append(candidate)
     if len(numbers) < n:
         raise ValueError(f"Nur {len(numbers)} Zahlen generiert, weniger als benötigt ({n})")
-    return numbers
+    return sorted(numbers)
 
 # 2. Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int) -> List[int]:
@@ -92,7 +92,7 @@ def generate_fermat_numbers(n: int, start: int, end: int) -> List[int]:
     # Statt Fehler werfen, gib alle gefundenen zurück, evtl. weniger als n
     if len(fermat_candidates) == 0:
         raise ValueError(f"Keine Fermat-Zahlen im Bereich [{start}, {end}] gefunden")
-    return fermat_candidates[:n]
+    return sorted(fermat_candidates[:n])
 
 def generate_mersenne_numbers(n: int, start: int, end: int) -> List[int]:
     mersenne_candidates = []
@@ -106,7 +106,7 @@ def generate_mersenne_numbers(n: int, start: int, end: int) -> List[int]:
         p += 1
     if len(mersenne_candidates) < n:
         raise ValueError(f"Nicht genug Mersenne-Zahlen im Bereich [{start}, {end}] (nur {len(mersenne_candidates)})")
-    return random.sample(mersenne_candidates, n)
+    return sorted(random.sample(mersenne_candidates, n))
 
 # generate proth numbers N = k * 2**m + 1, where k is odd and 1 < k < 2**m
 def generate_proth_numbers(n: int, start: int, end: int) -> List[int]:
@@ -125,44 +125,71 @@ def generate_proth_numbers(n: int, start: int, end: int) -> List[int]:
     return sorted(numbers[:n])
 
 # generate pocklington numbers, which are of the form N = p * q + 1, where p is prime and q is a prime factor of N-1
-def generate_pocklington_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+    if max_attempts is None:
+        max_attempts = 100 * n
+    candidates = set()
     results = []
-    for candidate in range(start, end + 1):
+    attempts = 0
+    while len(results) < n and attempts < max_attempts:
+        candidate = random.randint(start, end)
+        if candidate in candidates:
+            attempts += 1
+            continue
+        candidates.add(candidate)
         decomposition = helpers.find_pocklington_decomposition(candidate)
         if decomposition is not None:
             results.append(candidate)
-            if len(results) >= n:
-                break
+        attempts += 1
+
     if len(results) < n:
         raise ValueError(f"Nicht genug Pocklington-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
-    return results
+    return sorted(results)
 
 # generate rao numbers, which are of the form R = p * 2^n + 1, where p is prime and R - 1 is divisible by a power of 2
-def generate_rao_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+    if max_attempts is None:
+        max_attempts = 100 * n
+    candidates = set()
     results = []
-    for candidate in range(start, end + 1):
+    attempts = 0
+    while len(results) < n and attempts < max_attempts:
+        candidate = random.randint(start, end)
+        if candidate in candidates:
+            attempts += 1
+            continue
+        candidates.add(candidate)
         decomposition = helpers.find_rao_decomposition(candidate)
         if decomposition is not None:
             results.append(candidate)
-            if len(results) >= n:
-                break
+        attempts += 1
+
     if len(results) < n:
         raise ValueError(f"Nicht genug Rao-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
-    return results
+    return sorted(results)
 
 
 # generate ramzy numbers, which are of the form N = K * p^n + 1 with a prime p and satisfying the Ramzy condition p^{n-1} >= K * p^j
-def generate_ramzy_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+    if max_attempts is None:
+        max_attempts = 100 * n
+    candidates = set()
     results = []
-    for candidate in range(start, end + 1):
+    attempts = 0
+    while len(results) < n and attempts < max_attempts:
+        candidate = random.randint(start, end)
+        if candidate in candidates:
+            attempts += 1
+            continue
+        candidates.add(candidate)
         decomposition = helpers.find_ramzy_decomposition(candidate)
         if decomposition is not None:
             results.append(candidate)
-            if len(results) >= n:
-                break
+        attempts += 1
+
     if len(results) < n:
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
-    return results
+    return sorted(results)
 
 # generate lucas primes with an easy factorization condition
 def generate_lucas_primes(n: int, start: int, end: int) -> List[int]:
@@ -174,13 +201,11 @@ def generate_lucas_primes(n: int, start: int, end: int) -> List[int]:
         factors = primefactors(p - 1)
         if all(f <= max_allowed for f in factors):
             lucas_primes.append(p)
-            if len(lucas_primes) >= n:
-                break
 
     if len(lucas_primes) < n:
         raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
 
-    return lucas_primes
+    return sorted(random.sample(lucas_primes, n))
 
 # generate large and small primes based on a threshold
 def generate_large_primes(n: int, start: int, end: int) -> List[int]:
@@ -190,7 +215,7 @@ def generate_large_primes(n: int, start: int, end: int) -> List[int]:
     large_primes = [p for p in primes if p >= threshold]
     if len(large_primes) < n:
         raise ValueError(f"Nicht genug große Primzahlen im Bereich [{start}, {end}] (nur {len(large_primes)})")
-    return random.sample(large_primes, n)
+    return sorted(random.sample(large_primes, n))
 
 # generate small primes, which are primes below a certain threshold
 def generate_small_primes(n: int, start: int, end: int) -> List[int]:
@@ -199,7 +224,7 @@ def generate_small_primes(n: int, start: int, end: int) -> List[int]:
     small_primes = [p for p in primes if p < threshold]
     if len(small_primes) < n:
         raise ValueError(f"Nicht genug kleine Primzahlen im Bereich [{start}, {end}] (nur {len(small_primes)})")
-    return random.sample(small_primes, n)
+    return sorted(random.sample(small_primes, n))
 
 # 3. Mapping Testtyp → Generator
 def generate_numbers_for_test(n: int, start: int, end: int, number_type: str) -> List[int]:

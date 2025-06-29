@@ -167,15 +167,15 @@ if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
     group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
-        "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
-        "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
-        "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
-        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
-        "Rao":                {"n": 10, "start": 100, "end": 10_000},
-        "Ramzy":              {"n": 10, "start": 100, "end": 10_000},
-        "Fermat-Zahlen":            {"n": 5, "start": 0, "end": 10_000},
-        "Mersenne-Zahlen":          {"n": 5, "start": 2, "end": 10_000},
+        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 1_000},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 1_000},
+        "Langsame Tests":           {"n": 10, "start": 100, "end": 1_000},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 1_000},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 1_000},
+        "Rao":                {"n": 10, "start": 100, "end": 1_000},
+        "Ramzy":              {"n": 10, "start": 100, "end": 1_000},
+        "Fermat-Zahlen":            {"n": 5, "start": 0, "end": 1_000},
+        "Mersenne-Zahlen":          {"n": 5, "start": 2, "end": 1_000},
     }
 
 

@@ -9,7 +9,8 @@ from src.primality.test_config import *
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(18, 9), use_log=True,
-    total_numbers=None, runs_per_n=None, group_ranges=None, seed=None, timestamp=None
+    total_numbers=None, runs_per_n=None, group_ranges=None,
+    seed=None, timestamp=None, variant=None, start=None, end=None
 ):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
@@ -33,19 +34,16 @@ def plot_runtime(
         print("⚠️ Keine gültigen Daten zum Plotten.")
         return
 
-    # Sortieren nach TEST_ORDER statt alphabetisch
     entries.sort(key=lambda x: TEST_ORDER.index(x[0]) if x[0] in TEST_ORDER else 999)
 
-    # Farben und Linienstile pro Gruppe
-    unique_groups = list(dict.fromkeys(entry[1] for entry in entries))  # Reihenfolge erhalten
+    # Farben und Linienstile
+    unique_groups = list(dict.fromkeys(entry[1] for entry in entries))
     group_colors = plt.cm.tab10.colors
     line_styles = ['-', '--', '-.', ':']
-    group_style_map = {}
-
-    for i, group in enumerate(unique_groups):
-        color = group_colors[i % len(group_colors)]
-        linestyle = line_styles[i % len(line_styles)]
-        group_style_map[group] = (color, linestyle)
+    group_style_map = {
+        group: (group_colors[i % len(group_colors)], line_styles[i % len(line_styles)])
+        for i, group in enumerate(unique_groups)
+    }
 
     plt.figure(figsize=figsize)
 
@@ -70,30 +68,31 @@ def plot_runtime(
     plt.ylabel("Laufzeit (ms)")
 
     if use_log:
-        # Keine logarithmische Skalierung, sondern lineare Achse mit 'normalen' Zahlen
         plt.xscale("linear")
-        plt.yscale("log")  # Y-Achse bleibt logarithmisch, falls gewünscht
-
-        # Für x-Achse passende Ticks setzen (automatisch oder z.B. alle 1000)
-        # min/max der x-Werte über alle Datensätze ermitteln:
+        plt.yscale("log")
         all_x = [x for entry in entries for x in entry[3]]
         xmin, xmax = min(all_x), max(all_x)
-        # Ticks im Abstand von 1000 (kannst du anpassen)
         step = 1000
         ticks = list(range(int(xmin//step)*step, int(xmax + step), step))
         plt.gca().set_xticks(ticks)
         plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
     else:
-        # Wenn use_log=False, lineare Skalierung
         plt.xscale("linear")
         plt.yscale("linear")
 
-    title = "Laufzeitverhalten"
-    if total_numbers is not None and runs_per_n is not None:
-        title += f"\nAnzahl getesteter Zahlen: {total_numbers}, Wiederholungen: {runs_per_n}"
-    plt.title(title)
+    # Titel + Untertitel je nach Variante
+    title = "Laufzeitanalyse"
+    if variant == 1:
+        all_x = [x for entry in entries for x in entry[3]]
+        subtitle = f"Variante 1, n = {total_numbers}, Wiederholungen = {runs_per_n}, start = {start}, end = {end}, Seed = {seed}"
+    elif variant == 2:
+        subtitle = f"Variante 2, Seed = {seed}"
+    else:
+        subtitle = f"Seed = {seed}"
 
-    # Gruppierung der Legenden-Einträge
+    plt.title(f"{title}\n{subtitle}")
+
+    # Legende gruppieren
     grouped_entries = defaultdict(list)
     test_index = {name: i for i, name in enumerate(TEST_ORDER)}
     group_order = []
@@ -106,19 +105,16 @@ def plot_runtime(
     for group in grouped_entries:
         grouped_entries[group].sort(key=lambda x: x[0])
 
-    # Legendenobjekte vorbereiten
     legend_elements = []
 
     for group in group_order:
-        # Bereich anzeigen, auch bei Ramzy/Rao etc.
-        range_str = ""
-        if group_ranges and group in group_ranges:
+        if variant == 2 and group_ranges and group in group_ranges:
             r = group_ranges[group]
             range_str = f" (n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
+        elif variant == 1:
+            range_str = ""
         else:
             range_str = " (n=?, start=?, end=?)"
-
-        # Gruppenüberschrift (fett, kein Marker)
 
         legend_elements.append(Line2D(
             [0], [0], linestyle='none', label=f"{group}{range_str}",
@@ -126,13 +122,11 @@ def plot_runtime(
         ))
 
         for idx, label, base_label in grouped_entries[group]:
-            # Suche in entries nach dem Eintrag mit base_label und label, um user_color zu bekommen
             user_color = None
             linestyle = '-'
-            # entries: (base_label, group, label, n, t, std, best, worst, user_color)
             for e in entries:
                 if e[0] == base_label and e[2] == label:
-                    user_color = e[8]  # user_color
+                    user_color = e[8]
                     _, linestyle = group_style_map.get(group, ('black', '-'))
                     break
 
@@ -147,12 +141,10 @@ def plot_runtime(
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 
     if timestamp is None:
-        filename = f"test-plot-seed{seed}.png"
+        filename = f"test-plot-seed{seed}-v{variant}.png"
     else:
-        filename = f"{timestamp}-test-plot-seed{seed}.png"
+        filename = f"{timestamp}-test-plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
     plt.show()
-
-

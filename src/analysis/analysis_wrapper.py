@@ -150,12 +150,15 @@ def run_primetest_analysis(
             runs_per_n=test_repeats,
             group_ranges=group_ranges,
             seed=seed,
-            timestamp=timestamp
+            timestamp=timestamp,
+            variant=variant,
+            start=start,
+            end=end
         )
 
     # CSV-Export
     if save_results:
-        filename = f"{timestamp}-test-data-seed{seed}.csv"
+        filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
             filename = filename,
@@ -198,11 +201,11 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=490,
+        seed=500,
         protocoll=True,
         save_results=True,
         show_plot=True,
         allow_partial_numbers = True,
-        variant=2,
+        variant=1,
         group_ranges=group_ranges
     )

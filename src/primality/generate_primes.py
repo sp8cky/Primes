@@ -10,16 +10,20 @@ from typing import List
 
 
 
-
-def generate_numbers_per_group(n, start, end, test_config, allow_partial_numbers=True):
+def generate_numbers_per_group(n, start, end, test_config, group_ranges=None, allow_partial_numbers=True):
     group_to_numbers = {}
     numbers_per_test = defaultdict(list)
 
-    groups = set(TEST_GROUPS.values())
+    # Reihenfolge wie in TEST_GROUPS definiert, nach Auftreten der Keys
+    seen_groups = []
+    for test in TEST_GROUPS:
+        group = TEST_GROUPS[test]
+        if group not in seen_groups:
+            seen_groups.append(group)
 
     print("Starte Abschnitt: Zahlengenerierung pro Test...")
 
-    for group in sorted(groups):
+    for group in seen_groups:
         # Finde Tests, die zu dieser Gruppe gehören
         relevant_tests = [
             name for name, conf in test_config.items()
@@ -32,13 +36,18 @@ def generate_numbers_per_group(n, start, end, test_config, allow_partial_numbers
         example_test = test_config[relevant_tests[0]]
         number_type = example_test["number_type"]
 
+        # Gruppenspezifische Parameter (oder Fallback auf global)
+        group_n = group_ranges.get(group, {}).get("n", n) if group_ranges else n
+        group_start = group_ranges.get(group, {}).get("start", start) if group_ranges else start
+        group_end = group_ranges.get(group, {}).get("end", end) if group_ranges else end
+
         try:
-            numbers = generate_numbers_for_test(n, start, end, number_type)
-            if len(numbers) < n:
-                raise ValueError(f"Nicht genug {number_type}-Zahlen im Bereich [{start}, {end}] (nur {len(numbers)})")
+            numbers = generate_numbers_for_test(group_n, group_start, group_end, number_type)
+            if len(numbers) < group_n:
+                raise ValueError(f"Nicht genug {number_type}-Zahlen im Bereich [{group_start}, {group_end}] (nur {len(numbers)})")
         except ValueError as e:
             if allow_partial_numbers and 'numbers' in locals() and len(numbers) > 0:
-                print(f"⚠️ Gruppe '{group}' bekommt nur {len(numbers)} von {n} Zahlen.")
+                print(f"⚠️ Gruppe '{group}' bekommt nur {len(numbers)} von {group_n} Zahlen.")
             else:
                 print(f"⛔ Gruppe '{group}' wird komplett übersprungen: {e}")
                 continue
@@ -51,6 +60,7 @@ def generate_numbers_per_group(n, start, end, test_config, allow_partial_numbers
 
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test
+
 
 
 

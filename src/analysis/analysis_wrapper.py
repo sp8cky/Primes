@@ -34,7 +34,8 @@ def run_primetest_analysis(
     save_results: bool = True,
     show_plot: bool = True,
     variant: int = 2,  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
-    allow_partial_numbers = False
+    allow_partial_numbers = False,
+    group_ranges: Dict[str, Dict[str, int]] = None
 ) -> Dict[str, List[Dict]]:
 
     if seed is not None: random.seed(seed)
@@ -163,6 +164,19 @@ def run_primetest_analysis(
 if __name__ == "__main__":
     run_tests = ["Ramzy", "Rao"]
     repeat_tests = [5,5,5]
+    group_ranges={
+        "Probabilistische Tests": {"n": 10, "start": 100_000, "end": 1_000_000},
+        "Lucas-Tests": {"n": 10, "start": 100_000, "end": 1_000_000},
+        "Langsame Tests": {"n": 10, "start": 1_000, "end": 10_000},
+        "Proth-Tests": {"n": 10, "start": 10_000, "end": 100_000},
+        "Pocklington-Tests": {"n": 10, "start": 10_000, "end": 100_000},
+        "Rao-Tests": {"n": 10, "start": 10_000, "end": 100_000},
+        "Ramzy-Tests": {"n": 10, "start": 10_000, "end": 100_000},
+        "Fermat-Zahlen": {"n": 5, "start": 0, "end": 100_000},
+        "Mersenne-Zahlen": {"n": 5, "start": 2, "end": 100_000},
+    }
+
+
     run_primetest_analysis(
         n_numbers=10,
         num_type='p',
@@ -177,4 +191,5 @@ if __name__ == "__main__":
         show_plot=True,
         allow_partial_numbers = True,
         variant=2,
+        group_ranges=group_ranges
     )

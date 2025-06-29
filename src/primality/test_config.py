@@ -35,7 +35,7 @@ TEST_GROUPS = {
     "Lucas-Lehmer": "Mersenne-Zahlen",
 }
 
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao"]
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao",  "Pepin", "Lucas-Lehmer"]
 
 
 # Zuordnung von Tests zu Funktionen und Metadaten

@@ -76,7 +76,18 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
         return
 
     # Sortierung optional nach Gruppe, Test, Zahl
-    rows.sort(key=lambda r: (r["Gruppe"], r["Test"], int(r["Zahl"])))
+    # Mapping: Testname → Reihenindex
+    test_rank = {
+        (TEST_GROUPS[t], t): i for i, t in enumerate(TEST_GROUPS.keys())
+    }
+
+    # Sortieren nach definierter Reihenfolge, dann nach Zahl
+    rows.sort(
+        key=lambda r: (
+            test_rank.get((r["Gruppe"], extract_base_label(r["Test"])), float("inf")),
+            int(r["Zahl"])
+        )
+    )
 
     fieldnames = [
         "Gruppe", "Test", "Zahl", "Ergebnis", "true_prime", "is_error",

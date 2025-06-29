@@ -202,29 +202,9 @@ def generate_lucas_primes(n: int, start: int, end: int) -> List[int]:
         if all(f <= max_allowed for f in factors):
             lucas_primes.append(p)
 
-    if len(lucas_primes) < n:
-        raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
-
+    if len(lucas_primes) < n: raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
     return sorted(random.sample(lucas_primes, n))
 
-# generate large and small primes based on a threshold
-def generate_large_primes(n: int, start: int, end: int) -> List[int]:
-    primes = list(primerange(start, end))
-    # Optional: Filter für "groß" z.B. obere Hälfte
-    threshold = start + (end - start) // 2
-    large_primes = [p for p in primes if p >= threshold]
-    if len(large_primes) < n:
-        raise ValueError(f"Nicht genug große Primzahlen im Bereich [{start}, {end}] (nur {len(large_primes)})")
-    return sorted(random.sample(large_primes, n))
-
-# generate small primes, which are primes below a certain threshold
-def generate_small_primes(n: int, start: int, end: int) -> List[int]:
-    primes = list(primerange(start, end))
-    threshold = start + (end - start) // 2
-    small_primes = [p for p in primes if p < threshold]
-    if len(small_primes) < n:
-        raise ValueError(f"Nicht genug kleine Primzahlen im Bereich [{start}, {end}] (nur {len(small_primes)})")
-    return sorted(random.sample(small_primes, n))
 
 # 3. Mapping Testtyp → Generator
 def generate_numbers_for_test(n: int, start: int, end: int, number_type: str) -> List[int]:
@@ -240,10 +220,6 @@ def generate_numbers_for_test(n: int, start: int, end: int, number_type: str) ->
         return generate_ramzy_numbers(n, start, end)
     elif number_type == "rao":
         return generate_rao_numbers(n, start, end)
-    elif number_type == "large_prime":
-        return generate_large_primes(n, start, end)
-    elif number_type == "small_prime":
-        return generate_small_primes(n, start, end)
     elif number_type == "lucas":
         return generate_lucas_primes(n, start, end)
     else:

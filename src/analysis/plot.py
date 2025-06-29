@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
-from matplotlib.ticker import ScalarFormatter
+import matplotlib.ticker as ticker
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
@@ -70,8 +70,23 @@ def plot_runtime(
     plt.ylabel("Laufzeit (ms)")
 
     if use_log:
-        plt.xscale("log")
-        plt.yscale("log")
+        # Keine logarithmische Skalierung, sondern lineare Achse mit 'normalen' Zahlen
+        plt.xscale("linear")
+        plt.yscale("log")  # Y-Achse bleibt logarithmisch, falls gewünscht
+
+        # Für x-Achse passende Ticks setzen (automatisch oder z.B. alle 1000)
+        # min/max der x-Werte über alle Datensätze ermitteln:
+        all_x = [x for entry in entries for x in entry[3]]
+        xmin, xmax = min(all_x), max(all_x)
+        # Ticks im Abstand von 1000 (kannst du anpassen)
+        step = 1000
+        ticks = list(range(int(xmin//step)*step, int(xmax + step), step))
+        plt.gca().set_xticks(ticks)
+        plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+    else:
+        # Wenn use_log=False, lineare Skalierung
+        plt.xscale("linear")
+        plt.yscale("linear")
 
     title = "Laufzeitverhalten"
     if total_numbers is not None and runs_per_n is not None:
@@ -126,131 +141,3 @@ def plot_runtime(
     plt.show()
 
 
-
-def plot_runtime_grouped(
-    n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
-    labels=None, colors=None, figsize=(20, 12), use_log=True,
-    total_numbers=None, runs_per_n=None, group_ranges=None
-):
-    if labels is None: labels = [None] * len(n_lists)
-    if colors is None: colors = [None] * len(n_lists)
-
-    # Sammle Einträge mit Gruppenzuordnung
-    entries = []
-    for i in range(len(n_lists)):
-        label = labels[i]
-        base_label = extract_base_label(label)
-        group = TEST_GROUPS.get(base_label)
-        if group is None:
-            print(f"⚠️  Test '{base_label}' ist keiner bekannten Gruppe zugeordnet und wird übersprungen.")
-            continue
-
-        entries.append((base_label, group, label, n_lists[i], time_lists[i],
-                        std_lists[i] if std_lists else None,
-                        best_lists[i] if best_lists else None,
-                        worst_lists[i] if worst_lists else None,
-                        colors[i] if colors else None))
-
-    if not entries:
-        print("⚠️ Keine gültigen Daten zum Plotten.")
-        return
-
-    # Gruppiere nach Testgruppe
-    grouped_entries = defaultdict(list)
-    for entry in entries:
-        grouped_entries[entry[1]].append(entry)
-
-    groups = list(grouped_entries.keys())
-    num_groups = len(groups)
-    cols = 2
-    rows = math.ceil(num_groups / cols)
-
-    fig, axes = plt.subplots(rows, cols, figsize=figsize, sharex=False, sharey=False)
-    axes = axes.flatten()
-
-    group_colors = plt.cm.tab10.colors
-    line_styles = ['-', '--', '-.', ':']
-    group_style_map = {}
-
-    for i, group in enumerate(groups):
-        color = group_colors[i % len(group_colors)]
-        linestyle = line_styles[i % len(line_styles)]
-        group_style_map[group] = (color, linestyle)
-
-    for idx, group in enumerate(groups):
-        ax = axes[idx]
-        group_entries = grouped_entries[group]
-
-        for base_label, _, label, n, t, std, best, worst, user_color in group_entries:
-            t_ms = [ti * 1000 for ti in t]
-            std_ms = [s * 1000 for s in std] if std else None
-            best_ms = [b * 1000 for b in best] if best else None
-            worst_ms = [w * 1000 for w in worst] if worst else None
-
-            color, linestyle = group_style_map.get(group, ('black', '-'))
-            if user_color is not None:
-                color = user_color
-
-            line, = ax.plot(n, t_ms, marker="o", label=label, color=color, linestyle=linestyle)
-            if std:
-                ax.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
-            if best and worst:
-                ax.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
-
-            # Beschriftung am letzten Punkt
-            if n and t_ms:
-                ax.text(n[-1], t_ms[-1], f" {label}", fontsize=8, color=color,
-                       verticalalignment='bottom', horizontalalignment='left')
-
-        # Gruppentitel mit Bereichsinformationen
-        if group_ranges and group in group_ranges:
-            r = group_ranges[group]
-            title = f"{group} (n={r['n']}, start={r['start']}, end={r['end']})"
-        else:
-            title = f"{group} (n=?, start=?, end=?)"
-        ax.set_title(title, fontsize=11)
-
-        # Logarithmische Skalen
-        if use_log:
-            ax.set_xscale("log")
-            ax.set_yscale("log")
-            ax.xaxis.set_major_formatter(ScalarFormatter())
-            ax.xaxis.set_minor_formatter(ScalarFormatter())
-            ax.yaxis.set_major_formatter(ScalarFormatter())
-            ax.yaxis.set_minor_formatter(ScalarFormatter())
-            ax.ticklabel_format(style='plain', axis='both')
-
-        # X-Achsen Bereich
-        n_values = []
-        for _, _, _, n, *_ in group_entries:
-            n_values.extend(n)
-        if n_values:
-            n_min = max(1, min(n_values) * 0.9)
-            n_max = max(n_values) * 1.1
-            ax.set_xlim(n_min, n_max)
-
-        # Y-Achsen Bereich mit Puffer
-        t_values = []
-        for _, _, _, _, t, *_ in group_entries:
-            t_values.extend([ti * 1000 for ti in t])
-        if t_values:
-            t_min = max(0.1, min(t_values) * 0.5)  # Mehr Platz nach unten
-            t_max = max(t_values) * 2  # Mehr Platz nach oben
-            ax.set_ylim(t_min, t_max)
-
-        ax.grid(True, which='both', linestyle='--', alpha=0.5)
-        ax.set_ylabel("Laufzeit (ms)")
-        ax.set_xlabel("Getestete Zahl n")
-
-    # Leere Subplots entfernen
-    for j in range(len(groups), len(axes)):
-        fig.delaxes(axes[j])
-
-    fig.suptitle("Laufzeitvergleich pro Testgruppe", fontsize=14)
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
-
-    filename = get_timestamped_filename("test-subplots", "png")
-    path = os.path.join(DATA_DIR, filename)
-    os.makedirs(DATA_DIR, exist_ok=True)
-    plt.savefig(path)
-    plt.show()

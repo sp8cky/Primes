@@ -7,19 +7,12 @@ from src.primality.test_config import *
 # creates data directory relative to the src directory
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 
-
 # Entfernt z.B. '(k = 3)' oder andere Klammerzusätze vom Label
 def extract_base_label(label: str) -> str:
     if label is None:
         return None
     return label.split(" (")[0].strip()
 
-# formated output of group ranges
-def format_group_ranges(group_ranges: dict) -> str:
-    return "\n".join(
-        f"{group}: n={cfg['n']}, start={cfg['start']}, end={cfg['end']}"
-        for group, cfg in group_ranges.items()
-    )
 
 def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, numbers_per_test: dict, metadata: dict = None):
     path = os.path.join(DATA_DIR, filename)
@@ -31,65 +24,61 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     rows = []
 
-    # Reihenfolge anhand der TEST_GROUPS
-    test_order = list(TEST_GROUPS.keys())
+    # Testlabels aus test_config basierend auf 'testgroup' und sortiert
+    # Wir sortieren hier nach testgroup und dann nach Label, um eine stabile Reihenfolge zu bekommen
+    sorted_tests = sorted(
+        test_config.items(),
+        key=lambda item: (item[1].get("testgroup", ""), item[1].get("label", item[0]))
+    )
 
-    for test_label in test_order:
-        group = TEST_GROUPS[test_label]
-        # Finde testnamen aus config mit passendem base label
-        matching_tests = [
-            testname for testname, cfg in test_config.items()
-            if extract_base_label(cfg["label"]) == test_label
-        ]
+    for testname, cfg in sorted_tests:
+        label = cfg.get("label", testname)
+        group = cfg.get("testgroup", "Unbekannte Gruppe")
 
-        for testname in matching_tests:
-            label = test_config[testname]["label"]
-            group = TEST_GROUPS[test_label]
-            entries = test_data.get(testname, {})  # leeres dict statt None
-            valid_numbers = set(numbers_per_test.get(testname, []))
+        valid_numbers = set(numbers_per_test.get(testname, []))
+        if not valid_numbers:
+            print(f"⚠️ Keine gültigen Daten für Test '{label}', übersprungen.")
+            continue
 
-            if not valid_numbers:
-                print(f"⚠️ Keine gültigen Daten für Test '{label}', übersprungen.")
-                continue
+        entries = test_data.get(testname, {})
 
-            for number in valid_numbers:
-                details = entries.get(number, {})  # leere Details wenn keine Messdaten da
+        for number in valid_numbers:
+            details = entries.get(number, {})
 
-                flat_row = {
-                    "Gruppe": group,
-                    "Test": label,
-                    "Zahl": number,
-                    "Ergebnis": details.get("result"),
-                    "true_prime": details.get("true_prime"),
-                    "is_error": details.get("is_error"),
-                    "false_positive": details.get("false_positive"),
-                    "false_negative": details.get("false_negative"),
-                    "error_count": details.get("error_count", ""),
-                    "error_rate": round(details.get("error_rate", 0), 3) if "error_rate" in details else "",
-                    "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
-                    "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
-                    "worst_time": f"{details.get('worst_time', 0)*1000:.3f} ms",
-                    "std_dev": f"{details.get('std_dev', 0)*1000:.3f} ms",
-                    "a_values": details.get("a_values"),
-                    "other_fields": details.get("other_fields"),
-                    "reason": details.get("reason"),
-                }
-                rows.append(flat_row)
+            flat_row = {
+                "Gruppe": group,
+                "Test": label,
+                "Zahl": number,
+                "Ergebnis": details.get("result"),
+                "true_prime": details.get("true_prime"),
+                "is_error": details.get("is_error"),
+                "false_positive": details.get("false_positive"),
+                "false_negative": details.get("false_negative"),
+                "error_count": details.get("error_count", ""),
+                "error_rate": round(details.get("error_rate", 0), 3) if "error_rate" in details else "",
+                "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
+                "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
+                "worst_time": f"{details.get('worst_time', 0)*1000:.3f} ms",
+                "std_dev": f"{details.get('std_dev', 0)*1000:.3f} ms",
+                "a_values": details.get("a_values"),
+                "other_fields": details.get("other_fields"),
+                "reason": details.get("reason"),
+            }
+            rows.append(flat_row)
 
     if not rows:
         print("⚠️ Keine exportierbaren Zeilen gefunden.")
         return
 
-    # Sortierung optional nach Gruppe, Test, Zahl
-    # Mapping: Testname → Reihenindex
-    test_rank = {
-        (TEST_GROUPS[t], t): i for i, t in enumerate(TEST_GROUPS.keys())
-    }
+    # Sortieren nach Gruppe (testgroup) und Zahl
+    # Erstelle Map der Tests mit Index (Sortierreihenfolge)
+    test_order = list(test_config.keys())  # Reihenfolge wie in der Konfig
+    test_order_map = {name: i for i, name in enumerate(test_order)}
 
-    # Sortieren nach definierter Reihenfolge, dann nach Zahl
+    # Sortiere rows nach Testreihenfolge und Zahl
     rows.sort(
         key=lambda r: (
-            test_rank.get((r["Gruppe"], extract_base_label(r["Test"])), float("inf")),
+            test_order_map.get(extract_base_label(r["Test"]), 9999),  # Default 9999 für unbekannte Tests
             int(r["Zahl"])
         )
     )
@@ -102,7 +91,6 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
     ]
 
     with open(path, mode="w", newline="", encoding="utf-8") as f:
-        # Erst: Metadaten schreiben als kommentierte Zeilen
         if metadata:
             f.write("# --- Konfiguration ---\n")
             for key, value in metadata.items():
@@ -111,9 +99,8 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                         f.write(f"# group_range, {group}, n={cfg['n']}, start={cfg['start']}, end={cfg['end']}\n")
                 else:
                     f.write(f"# {key}, {value}\n")
-            f.write("#\n")  # Leerzeile als Trennung
+            f.write("#\n")
 
-        # Jetzt: Normale Daten
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
         writer.writerows(rows)

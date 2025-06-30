@@ -10,30 +10,30 @@ from typing import List
 
 
 
-def generate_numbers_per_group(n, start, end, test_config, group_ranges=None, allow_partial_numbers=True):
+def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True):
     group_to_numbers = {}
     numbers_per_test = defaultdict(list)
 
     # Reihenfolge wie in TEST_GROUPS definiert, nach Auftreten der Keys
     seen_groups = []
-    for test in TEST_GROUPS:
-        group = TEST_GROUPS[test]
-        if group not in seen_groups:
-            seen_groups.append(group)
+    for conf in TEST_CONFIG.values():
+        g = conf.get("testgroup")
+        if g and g not in seen_groups:
+            seen_groups.append(g)
 
     print("Starte Abschnitt: Zahlengenerierung pro Test...")
 
     for group in seen_groups:
         # Finde Tests, die zu dieser Gruppe gehören
         relevant_tests = [
-            name for name, conf in test_config.items()
-            if TEST_GROUPS.get(extract_base_label(conf["label"])) == group
+            name for name, conf in TEST_CONFIG.items()
+            if conf.get("testgroup") == group
         ]
         if not relevant_tests:
             continue
 
         # Hole Typ aus erster Testdefinition
-        example_test = test_config[relevant_tests[0]]
+        example_test = TEST_CONFIG[relevant_tests[0]]
         number_type = example_test["number_type"]
 
         # Gruppenspezifische Parameter (oder Fallback auf global)

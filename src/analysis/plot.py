@@ -1,10 +1,30 @@
-import os
+import os, math
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
 import matplotlib.ticker as ticker
 from src.analysis.dataset import *
 from src.primality.test_config import *
+
+
+def choose_step_range(x_min, x_max):
+    range_ = x_max - x_min
+    rough_step = max(1, range_ // 8)  # ca. 8 Intervalle
+    base_candidates = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
+
+    # Finde das kleinste base_candidate >= rough_step
+    for base in base_candidates:
+        if base >= rough_step:
+            return base
+    return base_candidates[-1]  # fallback auf max base
+
+
+def round_down(x, base):
+    return (x // base) * base
+
+def round_up(x, base):
+    return ((x + base - 1) // base) * base
+
 
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
@@ -19,10 +39,17 @@ def plot_runtime(
     for i in range(len(n_lists)):
         label = labels[i]
         base_label = extract_base_label(label)
-        group = TEST_GROUPS.get(base_label)
-        if group is None:
-            print(f"⚠️  Test '{base_label}' ist keiner bekannten Gruppe zugeordnet und wird übersprungen.")
+        testname = None
+        for tn, cfg in TEST_CONFIG.items():
+            if cfg.get("label") == label or tn == base_label:
+                testname = tn
+                break
+
+        if testname is None:
+            print(f"⚠️ Test '{label}' nicht in test_config gefunden, übersprungen.")
             continue
+
+        group = TEST_CONFIG[testname].get("testgroup", "Unbekannte Gruppe")
 
         entries.append((base_label, group, label, n_lists[i], time_lists[i],
                         std_lists[i] if std_lists else None,
@@ -150,7 +177,6 @@ def plot_runtime(
     plt.show()
 
 
-
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -167,8 +193,11 @@ def plot_runtime_and_errorrate_by_group(
 
     grouped_data = defaultdict(list)
     for test_name, data in datasets.items():
-        base_label = extract_base_label(test_name)
-        group = TEST_GROUPS.get(base_label, "Unbekannte Gruppe")
+        if test_name not in TEST_CONFIG:
+            print(f"⚠️ Test '{test_name}' nicht in test_config gefunden, übersprungen.")
+            continue
+
+        group = TEST_CONFIG[test_name].get("plotgroup", TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe"))
         if not data:
             continue
 
@@ -187,11 +216,8 @@ def plot_runtime_and_errorrate_by_group(
         all_n_values = []
 
         for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
-            # Linie plotten und Farbe abgreifen
             line_handle, = plt.plot(n_values, avg_times, marker='o', label=test_name)
             color = line_handle.get_color()
-
-            # Fehlerbalken mit gleicher Farbe zeichnen
             plt.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             plt.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
 
@@ -203,17 +229,22 @@ def plot_runtime_and_errorrate_by_group(
         plt.yscale("log")
         plt.grid(True, which='both', linestyle='--', alpha=0.5)
 
-        # Dynamische X-Achse
-        if variant == 2 and group_ranges and group in group_ranges:
-            x_min = group_ranges[group].get("start", min(all_n_values))
-            x_max = group_ranges[group].get("end", max(all_n_values))
-        else:
-            x_min = start if start is not None else min(all_n_values)
-            x_max = end if end is not None else max(all_n_values)
+        # Min und Max der getesteten Zahlen bestimmen (raw)
+        x_min_raw = min(all_n_values)
+        x_max_raw = max(all_n_values)
+
+        # Schrittweite und Achsenbegrenzungen bestimmen
+        step = choose_step_range(x_min_raw, x_max_raw)
+        x_min = round_down(x_min_raw, step)
+        x_max = round_up(x_max_raw, step)
+
+        print(f"x_min_raw = {x_min_raw}, x_max_raw = {x_max_raw}")
+        print(f"step = {step}")
+        print(f"x_min (gerundet) = {x_min}, x_max (gerundet) = {x_max}")
+        print(f"Ticks: {list(range(x_min, x_max + 1, step))}")
 
         plt.xscale("linear")
         plt.xlim(x_min, x_max)
-        step = max((x_max - x_min) // 10, 1)
         plt.xticks(range(x_min, x_max + 1, step))
         plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
 
@@ -224,7 +255,6 @@ def plot_runtime_and_errorrate_by_group(
             range_str = f"(n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
         plt.legend(title=f"{group} {range_str}", fontsize=9)
 
-        # Fehlerbalken
         if show_errors:
             ax2 = plt.gca().twinx()
             error_rates = []
@@ -244,7 +274,6 @@ def plot_runtime_and_errorrate_by_group(
 
         plt.tight_layout()
 
-        # Speichern
         safe_group = group.replace(" ", "_").replace("/", "_")
         fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
         path = os.path.join(DATA_DIR, fname)

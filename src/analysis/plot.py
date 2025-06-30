@@ -151,8 +151,6 @@ def plot_runtime(
 
 
 
-
-
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -173,16 +171,30 @@ def plot_runtime_and_errorrate_by_group(
         group = TEST_GROUPS.get(base_label, "Unbekannte Gruppe")
         if not data:
             continue
+
         n_values = [entry["n"] for entry in data]
-        avg_times = [entry["avg_time"] * 1000 for entry in data]  # in ms
-        grouped_data[group].append((test_name, avg_times, n_values))
+        avg_times = [entry["avg_time"] * 1000 for entry in data]
+        best_times = [entry["best_time"] * 1000 for entry in data]
+        worst_times = [entry["worst_time"] * 1000 for entry in data]
+        std_devs = [entry["std_dev"] * 1000 for entry in data]
+
+        grouped_data[group].append(
+            (test_name, avg_times, n_values, std_devs, best_times, worst_times)
+        )
 
     for group, tests in grouped_data.items():
         plt.figure(figsize=figsize)
         all_n_values = []
 
-        for test_name, avg_times, n_values in tests:
-            plt.plot(n_values, avg_times, marker='o', label=test_name)
+        for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
+            # Linie plotten und Farbe abgreifen
+            line_handle, = plt.plot(n_values, avg_times, marker='o', label=test_name)
+            color = line_handle.get_color()
+
+            # Fehlerbalken mit gleicher Farbe zeichnen
+            plt.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
+            plt.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
+
             all_n_values.extend(n_values)
 
         plt.title(f"Laufzeitverhalten der Gruppe: {group}")
@@ -191,7 +203,7 @@ def plot_runtime_and_errorrate_by_group(
         plt.yscale("log")
         plt.grid(True, which='both', linestyle='--', alpha=0.5)
 
-        # Dynamische X-Achse (normal skaliert, nicht log)
+        # Dynamische X-Achse
         if variant == 2 and group_ranges and group in group_ranges:
             x_min = group_ranges[group].get("start", min(all_n_values))
             x_max = group_ranges[group].get("end", max(all_n_values))
@@ -217,7 +229,7 @@ def plot_runtime_and_errorrate_by_group(
             ax2 = plt.gca().twinx()
             error_rates = []
             test_labels = []
-            for test_name, _, _ in tests:
+            for test_name, *_ in tests:
                 test_entries = test_data.get(test_name, {})
                 total_repeats = sum(entry.get("repeat_count", 0) for entry in test_entries.values())
                 total_errors = sum(entry.get("error_count", 0) for entry in test_entries.values())

@@ -177,6 +177,7 @@ def plot_runtime(
     plt.show()
 
 
+
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -186,15 +187,13 @@ def plot_runtime_and_errorrate_by_group(
     timestamp: str = None,
     seed: int = None,
     variant: int = None,
-    start: int = None,
-    end: int = None,
 ):
     os.makedirs(DATA_DIR, exist_ok=True)
 
     grouped_data = defaultdict(list)
     for test_name, data in datasets.items():
         if test_name not in TEST_CONFIG:
-            print(f"⚠️ Test '{test_name}' nicht in test_config gefunden, übersprungen.")
+            print(f"⚠️ Test '{test_name}' nicht in TEST_CONFIG gefunden, übersprungen.")
             continue
 
         group = TEST_CONFIG[test_name].get("plotgroup", TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe"))
@@ -212,68 +211,82 @@ def plot_runtime_and_errorrate_by_group(
         )
 
     for group, tests in grouped_data.items():
-        plt.figure(figsize=figsize)
+        fig, ax1 = plt.subplots(figsize=figsize)
         all_n_values = []
 
-        for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
-            line_handle, = plt.plot(n_values, avg_times, marker='o', label=test_name)
-            color = line_handle.get_color()
-            plt.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
-            plt.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
+        color_map = {}
 
+        for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
+            line_handle, = ax1.plot(n_values, avg_times, marker='o', label=test_name)
+            color = line_handle.get_color()
+            color_map[test_name] = color
+
+            ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
+            ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
 
-        plt.title(f"Laufzeitverhalten der Gruppe: {group}")
-        plt.xlabel("Getestete Zahl n")
-        plt.ylabel("Durchschnittliche Laufzeit (ms)")
-        plt.yscale("log")
-        plt.grid(True, which='both', linestyle='--', alpha=0.5)
+        ax1.set_title(f"Laufzeitverhalten der Gruppe: {group}")
+        ax1.set_xlabel("Getestete Zahl n")
+        ax1.set_ylabel("Durchschnittliche Laufzeit (ms)")
+        ax1.set_yscale("log")
+        ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-        # Min und Max der getesteten Zahlen bestimmen (raw)
+        # X-Achsen-Skalierung berechnen
         x_min_raw = min(all_n_values)
         x_max_raw = max(all_n_values)
-
-        # Schrittweite und Achsenbegrenzungen bestimmen
         step = choose_step_range(x_min_raw, x_max_raw)
         x_min = round_down(x_min_raw, step)
         x_max = round_up(x_max_raw, step)
 
-        print(f"x_min_raw = {x_min_raw}, x_max_raw = {x_max_raw}")
-        print(f"step = {step}")
-        print(f"x_min (gerundet) = {x_min}, x_max (gerundet) = {x_max}")
-        print(f"Ticks: {list(range(x_min, x_max + 1, step))}")
+        ax1.set_xscale("linear")
+        ax1.set_xlim(x_min, x_max)
+        ax1.set_xticks(range(x_min, x_max + 1, step))
+        ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
 
-        plt.xscale("linear")
-        plt.xlim(x_min, x_max)
-        plt.xticks(range(x_min, x_max + 1, step))
-        plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+        # Zweite Achse: Fehlerrate
+        if show_errors:
+            ax2 = ax1.twinx()
+            ax2.set_ylabel("Fehlerrate")
+            ax2.set_ylim(0, 1)
+            ax2.grid(False)
 
-        # Bereichsinformation für die Legende
+            for test_name, avg_times, n_values, *_ in tests:
+                test_entries = test_data.get(test_name, {})
+                if not test_entries:
+                    continue
+
+                # Fehlerrate pro Zahl n
+                error_rates_per_n = []
+                for n in n_values:
+                    entry = test_entries.get(n, {})
+                    rate = entry.get("error_rate", None)
+                    if rate is not None:
+                        error_rates_per_n.append((n, rate))
+
+                if not error_rates_per_n:
+                    continue
+
+                # Nach n sortieren
+                error_rates_per_n.sort()
+                n_sorted = [n for n, _ in error_rates_per_n]
+                rates_sorted = [rate for _, rate in error_rates_per_n]
+
+                # Gleiche Farbe wie Laufzeitlinie
+                color = color_map.get(test_name, "gray")
+                ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
+
+            ax2.legend(loc="upper right", fontsize=8)
+
+        # Legende + Bereichsangabe
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
             range_str = f"(n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
-        plt.legend(title=f"{group} {range_str}", fontsize=9)
+        ax1.legend(title=f"{group} {range_str}", fontsize=9)
 
-        if show_errors:
-            ax2 = plt.gca().twinx()
-            error_rates = []
-            test_labels = []
-            for test_name, *_ in tests:
-                test_entries = test_data.get(test_name, {})
-                total_repeats = sum(entry.get("repeat_count", 0) for entry in test_entries.values())
-                total_errors = sum(entry.get("error_count", 0) for entry in test_entries.values())
-                rate = total_errors / total_repeats if total_repeats > 0 else 0
-                error_rates.append(rate)
-                test_labels.append(test_name)
-            ax2.bar(test_labels, error_rates, color='red', alpha=0.4, label="Fehlerrate")
-            ax2.set_ylabel("Fehlerrate")
-            ax2.set_ylim(0, 1)
-            ax2.legend(loc="upper right", fontsize=9)
-            plt.xticks(rotation=45, ha='right')
+        fig.tight_layout()
 
-        plt.tight_layout()
-
+        # Speichern
         safe_group = group.replace(" ", "_").replace("/", "_")
         fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
         path = os.path.join(DATA_DIR, fname)

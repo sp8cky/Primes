@@ -41,12 +41,8 @@ def run_primetest_analysis(
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-    if seed is not None:
-        random.seed(seed)
-        print(f"📌 Verwende festen Seed: {seed}")
-    else:
-        seed = time.time_ns()
-        random.seed(seed)
+    if seed is None:
+        seed = random.randint(1, 999999)
         print(f"📌 Verwende zufälligen Seed: {seed}")
 
     # Test-Konfiguration laden
@@ -161,11 +157,11 @@ def run_primetest_analysis(
             datasets=datasets,
             test_data=test_data,
             group_ranges=group_ranges,
+            figsize=(12, 7),
+            show_errors=True,
             timestamp=timestamp,
             seed=seed,
-            variant=variant,
-            start=start,
-            end=end
+            variant=variant
         )
 
     # CSV-Export
@@ -213,7 +209,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=2,
+        seed=3,
         protocoll=True,
         save_results=True,
         show_plot=True,

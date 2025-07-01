@@ -166,7 +166,7 @@ TEST_CONFIG = {
         "protocol_function": rao_test_protocoll,
         "prob_test": False,
         "number_type": "rao",
-        "testgroup": "Rao-Tests",
+        "testgroup": "Rao",
         "plotgroup": "Zusammengesetzte"
     }
 }

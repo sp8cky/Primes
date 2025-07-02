@@ -92,14 +92,14 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     with open(path, mode="w", newline="", encoding="utf-8") as f:
         if metadata:
-            f.write("# --- Konfiguration ---\n")
+            f.write("Konfiguration\n")
             for key, value in metadata.items():
                 if key == "group_ranges" and isinstance(value, dict):
                     for group, cfg in value.items():
-                        f.write(f"# group_range, {group}, n={cfg['n']}, start={cfg['start']}, end={cfg['end']}\n")
+                        f.write(f"group_range, {group}, n={cfg['n']}, start={cfg['start']}, end={cfg['end']}\n")
                 else:
-                    f.write(f"# {key}, {value}\n")
-            f.write("#\n")
+                    f.write(f"{key}, {value}\n")
+            f.write("\n")
 
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()

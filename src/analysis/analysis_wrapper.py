@@ -190,15 +190,15 @@ if __name__ == "__main__":
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     repeat_tests = [5,5,5]
     group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 1000, "end": 10_000},
-        "Lucas-Tests":              {"n": 10, "start": 1000, "end": 10_000},
-        "Langsame Tests":           {"n": 10, "start": 1000, "end": 10_000},
-        "Proth-Tests":              {"n": 10, "start": 1000, "end": 10_000},
-        "Pocklington-Tests":        {"n": 10, "start": 1000, "end": 100_000},
-        "Rao":                      {"n": 10, "start": 1000, "end": 10_000},
-        "Ramzy":                    {"n": 10, "start": 1000, "end": 10_000},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,     "end": 10_000},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,     "end": 10_000},
+        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
+        "Rao":                      {"n": 10, "start": 100, "end": 10_000},
+        "Ramzy":                    {"n": 10, "start": 100, "end": 10_000},
+        "Fermat-Zahlen":            {"n": 10, "start": 0,   "end": 10_000},
+        "Mersenne-Zahlen":          {"n": 10, "start": 0,   "end": 10_000},
     }
 
     run_primetest_analysis(
@@ -209,7 +209,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=6,
+        seed=7,
         protocoll=True,
         save_results=True,
         show_plot=True,

@@ -7,6 +7,13 @@ from src.analysis.dataset import *
 from src.primality.test_config import *
 
 
+def fixed_step_range(x_min, x_max, steps=10):
+    step = math.ceil((x_max - x_min) / steps)
+    x_min_rounded = round_down(x_min, step)
+    x_max_rounded = round_up(x_max, step)
+    return x_min_rounded, x_max_rounded, step
+
+
 def choose_step_range(x_min, x_max):
     range_ = x_max - x_min
     rough_step = max(1, range_ // 8)  # ca. 8 Intervalle
@@ -99,18 +106,17 @@ def plot_runtime(
         plt.yscale("log")
         all_x = [x for entry in entries for x in entry[3]]
         xmin, xmax = min(all_x), max(all_x)
-        step = 1000
-        ticks = list(range(int(xmin//step)*step, int(xmax + step), step))
+        x_min, x_max, step = fixed_step_range(xmin, xmax)
+        ticks = list(range(x_min, x_max + 1, step))
         plt.gca().set_xticks(ticks)
         plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
     else:
         plt.xscale("linear")
         plt.yscale("linear")
 
-    # Titel + Untertitel je nach Variante
+    # Titel
     title = "Laufzeitanalyse"
     if variant == 1:
-        all_x = [x for entry in entries for x in entry[3]]
         subtitle = f"Variante 1, n = {total_numbers}, Wiederholungen = {runs_per_n}, start = {start}, end = {end}, Seed = {seed}"
     elif variant == 2:
         subtitle = f"Variante 2, Seed = {seed}"
@@ -119,7 +125,7 @@ def plot_runtime(
 
     plt.title(f"{title}\n{subtitle}")
 
-    # Legende gruppieren
+    # Legende gruppiert
     grouped_entries = defaultdict(list)
     test_index = {name: i for i, name in enumerate(TEST_ORDER)}
     group_order = []
@@ -135,13 +141,10 @@ def plot_runtime(
     legend_elements = []
 
     for group in group_order:
+        range_str = ""
         if variant == 2 and group_ranges and group in group_ranges:
             r = group_ranges[group]
             range_str = f" (n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
-        elif variant == 1:
-            range_str = ""
-        else:
-            range_str = " (n=?, start=?, end=?)"
 
         legend_elements.append(Line2D(
             [0], [0], linestyle='none', label=f"{group}{range_str}",
@@ -167,14 +170,11 @@ def plot_runtime(
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-    if timestamp is None:
-        filename = f"test-plot-seed{seed}-v{variant}.png"
-    else:
-        filename = f"{timestamp}-test-plot-seed{seed}-v{variant}.png"
+    filename = f"{timestamp}-test-plot-seed{seed}-v{variant}.png" if timestamp else f"test-plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
-    plt.show()
+    plt.close()
 
 
 
@@ -231,19 +231,14 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-        # X-Achsen-Skalierung berechnen
         x_min_raw = min(all_n_values)
         x_max_raw = max(all_n_values)
-        step = choose_step_range(x_min_raw, x_max_raw)
-        x_min = round_down(x_min_raw, step)
-        x_max = round_up(x_max_raw, step)
-
+        x_min, x_max, step = fixed_step_range(x_min_raw, x_max_raw)
         ax1.set_xscale("linear")
         ax1.set_xlim(x_min, x_max)
         ax1.set_xticks(range(x_min, x_max + 1, step))
         ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
 
-        # Zweite Achse: Fehlerrate
         if show_errors:
             ax2 = ax1.twinx()
             ax2.set_ylabel("Fehlerrate")
@@ -255,7 +250,6 @@ def plot_runtime_and_errorrate_by_group(
                 if not test_entries:
                     continue
 
-                # Fehlerrate pro Zahl n
                 error_rates_per_n = []
                 for n in n_values:
                     entry = test_entries.get(n, {})
@@ -266,18 +260,15 @@ def plot_runtime_and_errorrate_by_group(
                 if not error_rates_per_n:
                     continue
 
-                # Nach n sortieren
                 error_rates_per_n.sort()
                 n_sorted = [n for n, _ in error_rates_per_n]
                 rates_sorted = [rate for _, rate in error_rates_per_n]
 
-                # Gleiche Farbe wie Laufzeitlinie
                 color = color_map.get(test_name, "gray")
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
 
             ax2.legend(loc="upper right", fontsize=8)
 
-        # Legende + Bereichsangabe
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
@@ -286,7 +277,6 @@ def plot_runtime_and_errorrate_by_group(
 
         fig.tight_layout()
 
-        # Speichern
         safe_group = group.replace(" ", "_").replace("/", "_")
         fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
         path = os.path.join(DATA_DIR, fname)

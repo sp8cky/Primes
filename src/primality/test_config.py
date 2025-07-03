@@ -2,6 +2,7 @@ from src.primality.tests import *
 from src.primality.test_protocoll import *
 from functools import partial
 
+
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
 default_repeats = [3, 3, 3]
 prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
@@ -171,9 +172,11 @@ TEST_CONFIG = {
     }
 }
 
+
+
 # Konfiguration für die Tests erzeugen (inkl. Wiederholungen & Spezial-Zahlentyp)
-def get_test_config(include_tests=None, prob_test_repeats=None):
-    global TEST_CONFIG  # Optional, aber nicht unbedingt nötig, wenn du nur liest
+def get_test_config(include_tests=None, prob_test_repeats=None, global_seed: int | None = None):
+    global TEST_CONFIG
 
     if include_tests is None:
         include_tests = list(TEST_CONFIG.keys())
@@ -181,7 +184,7 @@ def get_test_config(include_tests=None, prob_test_repeats=None):
     if prob_test_repeats is None:
         prob_test_repeats = default_repeats
 
-    config = {}  # Lokales Ergebnis-Dict
+    config = {}
 
     for test in include_tests:
         cfg = TEST_CONFIG[test].copy()
@@ -189,12 +192,16 @@ def get_test_config(include_tests=None, prob_test_repeats=None):
             idx = prob_tests.index(test)
             k = prob_test_repeats[idx]
             cfg["prob_test_repeats"] = k
-            cfg["runtime_function"] = partial(cfg["runtime_function"], k=k)
-            cfg["protocol_function"] = partial(cfg["protocol_function"], k=k)
+            cfg["runtime_function"] = partial(cfg["runtime_function"], k=k, seed=global_seed)
+            cfg["protocol_function"] = partial(cfg["protocol_function"], k=k, seed=global_seed)
             cfg["label"] = f"{test} (k = {k})"
         else:
+            cfg["runtime_function"] = partial(cfg["runtime_function"], seed=global_seed)
+            cfg["protocol_function"] = partial(cfg["protocol_function"], seed=global_seed)
             cfg["label"] = test
 
         config[test] = cfg
 
     return config
+
+

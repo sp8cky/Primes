@@ -41,12 +41,12 @@ def run_primetest_analysis(
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-    if seed is None:
-        seed = random.randint(1, 999999)
-        print(f"📌 Verwende zufälligen Seed: {seed}")
+    #if seed is None:
+        #seed = random.randint(1, 999999)
+        #print(f"📌 Verwende zufälligen Seed: {seed}")
 
     # Test-Konfiguration laden
-    test_config = get_test_config(include_tests, prob_test_repeats)
+    test_config = get_test_config(include_tests, prob_test_repeats, global_seed=seed)
 
     # Zahlengenerierung
     if variant == 1:
@@ -63,7 +63,7 @@ def run_primetest_analysis(
         numbers_per_test = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
-            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges
+            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges, seed=seed
         )
     else:
         raise ValueError("variant muss 1 oder 2 sein")
@@ -105,7 +105,7 @@ def run_primetest_analysis(
     # Protokolle
     if protocoll:
         measure_section("Protokoll-Tests", lambda: [
-            protocol_functions[test_name](n)
+            protocol_functions[test_name](n, seed=seed)
             for test_name in protocol_functions
             for n in numbers_per_test[test_name]
         ])
@@ -188,15 +188,15 @@ if __name__ == "__main__":
     #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     repeat_tests = [5,5,5]
     group_ranges={
-        "Probabilistische Tests":   {"n": 3, "start": 100, "end": 10_000},
-        "Lucas-Tests":              {"n": 3, "start": 100, "end": 10_000},
-        "Langsame Tests":           {"n": 3, "start": 100, "end": 10_000},
-        "Proth-Tests":              {"n": 3, "start": 100, "end": 10_000},
-        "Pocklington-Tests":        {"n": 3, "start": 100, "end": 10_000},
-        "Rao":                      {"n": 3, "start": 100, "end": 10_000},
-        "Ramzy":                    {"n": 3, "start": 100, "end": 10_000},
-        "Fermat-Zahlen":            {"n": 3, "start": 0,   "end": 10_000},
-        "Mersenne-Zahlen":          {"n": 3, "start": 0,   "end": 10_000},
+        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
+        "Rao":                      {"n": 10, "start": 100, "end": 10_000},
+        "Ramzy":                    {"n": 10, "start": 100, "end": 10_000},
+        "Fermat-Zahlen":            {"n": 10, "start": 0,   "end": 10_000},
+        "Mersenne-Zahlen":          {"n": 10, "start": 0,   "end": 10_000},
     }
 
     run_primetest_analysis(
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         test_repeats=5,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=7,
+        seed=9,
         protocoll=True,
         save_results=True,
         show_plot=True,

@@ -9,8 +9,8 @@ from src.analysis.dataset import extract_base_label
 from typing import List
 
 
-
-def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True):
+def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None):
+    r = random.Random(seed)
     group_to_numbers = {}
     numbers_per_test = defaultdict(list)
 
@@ -42,7 +42,7 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
         group_end = group_ranges.get(group, {}).get("end", end) if group_ranges else end
 
         try:
-            numbers = generate_numbers_for_test(group_n, group_start, group_end, number_type)
+            numbers = generate_numbers_for_test(group_n, group_start, group_end, number_type, r)
             if len(numbers) < group_n:
                 raise ValueError(f"Nicht genug {number_type}-Zahlen im Bereich [{group_start}, {group_end}] (nur {len(numbers)})")
         except ValueError as e:
@@ -62,15 +62,15 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
     return numbers_per_test
 
 
-
-
 # 1. Generische grobe Filterung
-def generate_numbers(n: int, start: int, end: int, number_type: str = "general", max_attempts=10000) -> List[int]:
+def generate_numbers(n: int, start: int, end: int, number_type: str = "general", max_attempts=10000, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     numbers = []
     attempts = 0
     while len(numbers) < n and (attempts < max_attempts):
         attempts += 1
-        candidate = random.randint(start, end)
+        candidate = r.randint(start, end)
         if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or helpers.is_real_potency(candidate):
             continue
         numbers.append(candidate)
@@ -79,7 +79,7 @@ def generate_numbers(n: int, start: int, end: int, number_type: str = "general",
     return sorted(numbers)
 
 # 2. Spezielle Generatoren:
-def generate_fermat_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     fermat_candidates = []
     k = 0
     while True:
@@ -89,12 +89,13 @@ def generate_fermat_numbers(n: int, start: int, end: int) -> List[int]:
         if f >= start:
             fermat_candidates.append(f)
         k += 1
-    # Statt Fehler werfen, gib alle gefundenen zurück, evtl. weniger als n
     if len(fermat_candidates) == 0:
         raise ValueError(f"Keine Fermat-Zahlen im Bereich [{start}, {end}] gefunden")
     return sorted(fermat_candidates[:n])
 
-def generate_mersenne_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_mersenne_numbers(n: int, start: int, end: int, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     mersenne_candidates = []
     p = 2
     while True:
@@ -106,17 +107,18 @@ def generate_mersenne_numbers(n: int, start: int, end: int) -> List[int]:
         p += 1
     if len(mersenne_candidates) < n:
         raise ValueError(f"Nicht genug Mersenne-Zahlen im Bereich [{start}, {end}] (nur {len(mersenne_candidates)})")
-    return sorted(random.sample(mersenne_candidates, n))
+    return sorted(r.sample(mersenne_candidates, n))
 
-# generate proth numbers N = k * 2**m + 1, where k is odd and 1 < k < 2**m
-def generate_proth_numbers(n: int, start: int, end: int) -> List[int]:
+def generate_proth_numbers(n: int, start: int, end: int, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     numbers = []
     attempts = 0
     max_attempts = n * 50
     while len(numbers) < n and attempts < max_attempts:
         attempts += 1
-        m = random.randint(3, int(log2(end)))
-        k = random.randint(1, 2**m - 1)
+        m = r.randint(3, int(log2(end)))
+        k = r.randint(1, 2**m - 1)
         N = k * 2**m + 1
         if start <= N <= end:
             numbers.append(N)
@@ -124,15 +126,16 @@ def generate_proth_numbers(n: int, start: int, end: int) -> List[int]:
         raise ValueError(f"Nicht genug Proth-Zahlen im Bereich [{start}, {end}] (nur {len(numbers)})")
     return sorted(numbers[:n])
 
-# generate pocklington numbers, which are of the form N = p * q + 1, where p is prime and q is a prime factor of N-1
-def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
     results = []
     attempts = 0
     while len(results) < n and attempts < max_attempts:
-        candidate = random.randint(start, end)
+        candidate = r.randint(start, end)
         if candidate in candidates:
             attempts += 1
             continue
@@ -141,20 +144,20 @@ def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None
         if decomposition is not None:
             results.append(candidate)
         attempts += 1
-
     if len(results) < n:
         raise ValueError(f"Nicht genug Pocklington-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return sorted(results)
 
-# generate rao numbers, which are of the form R = p * 2^n + 1, where p is prime and R - 1 is divisible by a power of 2
-def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
     results = []
     attempts = 0
     while len(results) < n and attempts < max_attempts:
-        candidate = random.randint(start, end)
+        candidate = r.randint(start, end)
         if candidate in candidates:
             attempts += 1
             continue
@@ -163,21 +166,20 @@ def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None) -> Lis
         if decomposition is not None:
             results.append(candidate)
         attempts += 1
-
     if len(results) < n:
         raise ValueError(f"Nicht genug Rao-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return sorted(results)
 
-
-# generate ramzy numbers, which are of the form N = K * p^n + 1 with a prime p and satisfying the Ramzy condition p^{n-1} >= K * p^j
-def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None) -> List[int]:
+def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
     results = []
     attempts = 0
     while len(results) < n and attempts < max_attempts:
-        candidate = random.randint(start, end)
+        candidate = r.randint(start, end)
         if candidate in candidates:
             attempts += 1
             continue
@@ -186,41 +188,40 @@ def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None) -> L
         if decomposition is not None:
             results.append(candidate)
         attempts += 1
-
     if len(results) < n:
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return sorted(results)
 
-# generate lucas primes with an easy factorization condition
-def generate_lucas_primes(n: int, start: int, end: int) -> List[int]:
+def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
+    if r is None:
+        r = random.Random()
     primes = list(primerange(start, end))
     lucas_primes = []
-
     for p in primes:
         max_allowed = int(log2(p)**2)
         factors = primefactors(p - 1)
         if all(f <= max_allowed for f in factors):
             lucas_primes.append(p)
-
-    if len(lucas_primes) < n: raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
-    return sorted(random.sample(lucas_primes, n))
+    if len(lucas_primes) < n:
+        raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
+    return sorted(r.sample(lucas_primes, n))
 
 
 # 3. Mapping Testtyp → Generator
-def generate_numbers_for_test(n: int, start: int, end: int, number_type: str) -> List[int]:
+def generate_numbers_for_test(n: int, start: int, end: int, number_type: str, r=None) -> List[int]:
     if number_type == "fermat":
-        return generate_fermat_numbers(n, start, end)
+        return generate_fermat_numbers(n, start, end, r)
     elif number_type == "mersenne":
-        return generate_mersenne_numbers(n, start, end)
+        return generate_mersenne_numbers(n, start, end, r)
     elif number_type == "proth":
-        return generate_proth_numbers(n, start, end)
+        return generate_proth_numbers(n, start, end, r)
     elif number_type == "pocklington":
-        return generate_pocklington_numbers(n, start, end)
+        return generate_pocklington_numbers(n, start, end, r=r)
     elif number_type == "ramzy":
-        return generate_ramzy_numbers(n, start, end)
+        return generate_ramzy_numbers(n, start, end, r=r)
     elif number_type == "rao":
-        return generate_rao_numbers(n, start, end)
+        return generate_rao_numbers(n, start, end, r=r)
     elif number_type == "lucas":
-        return generate_lucas_primes(n, start, end)
+        return generate_lucas_primes(n, start, end, r=r)
     else:
-        return generate_numbers(n, start, end, number_type)
+        return generate_numbers(n, start, end, number_type, r=r)

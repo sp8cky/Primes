@@ -61,41 +61,32 @@ def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
     total_errors = 0
 
     print("\nFehleranalyse pro Test:\n")
-
     for testname, numbers in test_data.items():
+        
         test_errors = 0
         test_runs = 0
         test_n = 0
 
         for n, data in numbers.items():
-            result = data.get("result")
-            if result is None:
-                continue
-
             true_prime = isprime(n)
             data["true_prime"] = true_prime
 
-            # Einzeltest-Fehler (letztes Ergebnis)
-            is_error = (result != true_prime)
-            data["is_error"] = is_error
-            data["false_positive"] = (not true_prime and result is True)
-            data["false_negative"] = (true_prime and result is False)
+            # Hole alle Wiederholungsergebnisse (falls vorhanden)
+            repeat_results = data.get("repeat_results", [data.get("result")])
+            repeat_count = len(repeat_results)
 
-            # Wiederholungen & Fehleranzahl aus gespeicherten Wiederholungen
-            rc = data.get("repeat_count", 1)
-            repeat_results = data.get("repeat_results", [result])
-            error_count = sum(r != true_prime for r in repeat_results)
-
-            # Fehlerquote
-            error_rate = round(error_count / rc, 3) if rc > 0 else 0.0
-
+            # Zähle, wie oft das Ergebnis falsch war
+            error_count = sum(1 for res in repeat_results if res != true_prime)
+            error_rate = error_count / repeat_count if repeat_count > 0 else 0.0
+            #print(f">>>>>>>>>>Test: {testname} - {n}: Wiederholungen: {repeat_count} - iserror: {error_count > 0} - error_count: {error_count} - error_rate: ({error_rate:.2%})")
+            # Speichere Fehlerdaten
             data["error_count"] = error_count
             data["error_rate"] = error_rate
+            data["is_error"] = (error_count > 0)  # Gesamtfehler für diese Zahl
+            data["false_positive"] = (not true_prime and any(repeat_results))
+            data["false_negative"] = (true_prime and not any(repeat_results))
 
-            if rc < error_count:
-                print(f"⚠️ Inkonsistenz bei n = {n} ({testname}): Fehleranzahl > Wiederholungen.")
-
-            test_runs += rc
+            test_runs += repeat_count
             test_errors += error_count
             test_n += 1
 

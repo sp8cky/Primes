@@ -73,10 +73,8 @@ def run_primetest_analysis(
         print(f"→ {test_name}: {len(nums)} Zahlen: {nums}")
 
     # 4. Testdaten initialisieren für alle Zahlen
-    all_numbers = set()
-    for nums in numbers_per_test.values():
-        all_numbers.update(nums)
-    measure_section("Initialisiere Testdaten", init_dictionary_fields, list(all_numbers))
+    for test_name, numbers in numbers_per_test.items():
+        measure_section(f"Initialisiere Testdaten für {test_name}", init_dictionary_fields, numbers, test_name)
 
     # Funktionsabbildungen
     runtime_functions = {}
@@ -88,7 +86,7 @@ def run_primetest_analysis(
     # Zeitmessung
     datasets = measure_section("Laufzeitmessung", lambda: {
         test_name: (
-            print(f"🔍 Messe Laufzeit für: {test_name}") or
+            print(f"🔍 Messe Laufzeit für: {test_name} mit n = {numbers_per_test[test_name]}") or
             measure_runtime(
                 runtime_functions[test_name],
                 numbers_per_test[test_name],
@@ -190,15 +188,15 @@ if __name__ == "__main__":
     #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     repeat_tests = [5,5,5]
     group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
-        "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
-        "Langsame Tests":           {"n": 10, "start": 100, "end": 10_000},
-        "Proth-Tests":              {"n": 10, "start": 100, "end": 10_000},
-        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 10_000},
-        "Rao":                      {"n": 10, "start": 100, "end": 10_000},
-        "Ramzy":                    {"n": 10, "start": 100, "end": 10_000},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,   "end": 10_000},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,   "end": 10_000},
+        "Probabilistische Tests":   {"n": 3, "start": 100, "end": 10_000},
+        "Lucas-Tests":              {"n": 3, "start": 100, "end": 10_000},
+        "Langsame Tests":           {"n": 3, "start": 100, "end": 10_000},
+        "Proth-Tests":              {"n": 3, "start": 100, "end": 10_000},
+        "Pocklington-Tests":        {"n": 3, "start": 100, "end": 10_000},
+        "Rao":                      {"n": 3, "start": 100, "end": 10_000},
+        "Ramzy":                    {"n": 3, "start": 100, "end": 10_000},
+        "Fermat-Zahlen":            {"n": 3, "start": 0,   "end": 10_000},
+        "Mersenne-Zahlen":          {"n": 3, "start": 0,   "end": 10_000},
     }
 
     run_primetest_analysis(
@@ -206,7 +204,7 @@ if __name__ == "__main__":
         num_type='p',
         start=100,
         end=10_000,
-        test_repeats=10,
+        test_repeats=5,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         seed=7,

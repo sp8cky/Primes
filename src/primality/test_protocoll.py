@@ -25,19 +25,19 @@ def init_dictionary() -> Dict[str, Any]:
         "result": None,          # True/False/None
         "reason": None,          # String oder None
     }
-def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, Any]]]:
-    """Initialisiert das globale `test_data`-Dictionary für alle Tests."""
+def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
+    """Initialisiert das globale `test_data`-Dictionary für einen bestimmten Test."""
     
-    # Liste aller Tests mit ihren spezifischen Anpassungen
-    tests = {
+    # Testspezifische Felder laden
+    test_config = {
         "Fermat": {"a_values": []},
         "Miller-Selfridge-Rabin": {"a_values": []},
         "Solovay-Strassen": {"a_values": []},
         "Initial Lucas": {"a_values": [], "other_fields": ()},
         "Lucas": {"a_values": [], "other_fields": ()},
-        "Optimized Lucas": {"a_values": {}},  # Als Dictionary für faktorabhängige Werte
-        "Wilson": {"a_values": None},  # Wilson benötigt keine a_values-Liste
-        "AKS": {"a_values": None, "other_fields": {}},  # AKS speichert Schritte als Dict
+        "Optimized Lucas": {"a_values": {}},
+        "Wilson": {"a_values": None},
+        "AKS": {"a_values": None, "other_fields": {}},
         "Proth": {"a_values": []},
         "Proth Variant": {"a_values": []},
         "Pocklington": {"a_values": []},
@@ -50,18 +50,17 @@ def init_dictionary_fields(numbers: List[int]) -> Dict[str, Dict[int, Dict[str, 
         "Rao": {"a_values": [], "other_fields": ()},
         "Pepin": {"a_values": None, "other_fields": ()},
         "Lucas-Lehmer": {"a_values": None, "other_fields": ()},
-    }
-    
-    for test_name, test_config in tests.items():
+    }.get(test_name, {})
+
+    if test_name not in test_data:
         test_data[test_name] = {}
-        for n in numbers:
-            entry = init_dictionary()
-            # Überschreibe Defaults mit testspezifischen Werten
-            for key, value in test_config.items():
-                entry[key] = value
-            test_data[test_name][n] = entry
-    
-    return test_data
+
+    for n in numbers:
+        entry = init_dictionary()
+        # Spezifische Defaults setzen
+        for key, value in test_config.items():
+            entry[key] = value
+        test_data[test_name][n] = entry
 
 ############################################################################################
 

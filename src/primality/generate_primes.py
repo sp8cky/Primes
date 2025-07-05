@@ -6,7 +6,6 @@ from math import log2
 import src.primality.helpers as helpers
 from src.primality.test_config import *
 from src.analysis.dataset import extract_base_label
-from typing import List
 
 
 def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None):
@@ -66,53 +65,53 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
 def generate_numbers(n: int, start: int, end: int, number_type: str = "general", max_attempts=10000, r=None) -> List[int]:
     if r is None:
         r = random.Random()
-    numbers = []
+    numbers = set()
     attempts = 0
     while len(numbers) < n and (attempts < max_attempts):
         attempts += 1
         candidate = r.randint(start, end)
         if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or helpers.is_real_potency(candidate):
             continue
-        numbers.append(candidate)
+        numbers.add(candidate)
     if len(numbers) < n:
         raise ValueError(f"Nur {len(numbers)} Zahlen generiert, weniger als benötigt ({n})")
     return sorted(numbers)
 
 # 2. Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
-    fermat_candidates = []
+    fermat_candidates = set()
     k = 0
     while True:
         f = 2 ** (2 ** k) + 1
         if f > end:
             break
         if f >= start:
-            fermat_candidates.append(f)
+            fermat_candidates.add(f)
         k += 1
     if len(fermat_candidates) == 0:
         raise ValueError(f"Keine Fermat-Zahlen im Bereich [{start}, {end}] gefunden")
-    return sorted(fermat_candidates[:n])
+    return sorted(list(fermat_candidates))[:n]
 
 def generate_mersenne_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     if r is None:
         r = random.Random()
-    mersenne_candidates = []
+    mersenne_candidates = set()
     p = 2
     while True:
         m = 2 ** p - 1
         if m > end:
             break
         if m >= start:
-            mersenne_candidates.append(m)
+            mersenne_candidates.add(m)
         p += 1
     if len(mersenne_candidates) < n:
         raise ValueError(f"Nicht genug Mersenne-Zahlen im Bereich [{start}, {end}] (nur {len(mersenne_candidates)})")
-    return sorted(r.sample(mersenne_candidates, n))
+    return sorted(r.sample(list(mersenne_candidates), n))
 
 def generate_proth_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     if r is None:
         r = random.Random()
-    numbers = []
+    numbers = set()
     attempts = 0
     max_attempts = n * 50
     while len(numbers) < n and attempts < max_attempts:
@@ -121,10 +120,10 @@ def generate_proth_numbers(n: int, start: int, end: int, r=None) -> List[int]:
         k = r.randint(1, 2**m - 1)
         N = k * 2**m + 1
         if start <= N <= end:
-            numbers.append(N)
+            numbers.add(N)
     if len(numbers) < n:
         raise ValueError(f"Nicht genug Proth-Zahlen im Bereich [{start}, {end}] (nur {len(numbers)})")
-    return sorted(numbers[:n])
+    return sorted(numbers)
 
 def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None, r=None) -> List[int]:
     if r is None:
@@ -132,7 +131,7 @@ def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
-    results = []
+    results = set()
     attempts = 0
     while len(results) < n and attempts < max_attempts:
         candidate = r.randint(start, end)
@@ -142,7 +141,7 @@ def generate_pocklington_numbers(n: int, start: int, end: int, max_attempts=None
         candidates.add(candidate)
         decomposition = helpers.find_pocklington_decomposition(candidate)
         if decomposition is not None:
-            results.append(candidate)
+            results.add(candidate)
         attempts += 1
     if len(results) < n:
         raise ValueError(f"Nicht genug Pocklington-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
@@ -154,7 +153,7 @@ def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None, r=None
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
-    results = []
+    results = set()
     attempts = 0
     while len(results) < n and attempts < max_attempts:
         candidate = r.randint(start, end)
@@ -164,7 +163,7 @@ def generate_rao_numbers(n: int, start: int, end: int, max_attempts=None, r=None
         candidates.add(candidate)
         decomposition = helpers.find_rao_decomposition(candidate)
         if decomposition is not None:
-            results.append(candidate)
+            results.add(candidate)
         attempts += 1
     if len(results) < n:
         raise ValueError(f"Nicht genug Rao-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
@@ -176,7 +175,7 @@ def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None, r=No
     if max_attempts is None:
         max_attempts = 100 * n
     candidates = set()
-    results = []
+    results = set()
     attempts = 0
     while len(results) < n and attempts < max_attempts:
         candidate = r.randint(start, end)
@@ -186,7 +185,7 @@ def generate_ramzy_numbers(n: int, start: int, end: int, max_attempts=None, r=No
         candidates.add(candidate)
         decomposition = helpers.find_ramzy_decomposition(candidate)
         if decomposition is not None:
-            results.append(candidate)
+            results.add(candidate)
         attempts += 1
     if len(results) < n:
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
@@ -204,7 +203,7 @@ def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
             lucas_primes.append(p)
     if len(lucas_primes) < n:
         raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
-    return sorted(r.sample(lucas_primes, n))
+    return sorted(r.sample(list(set(lucas_primes)), n))
 
 
 # 3. Mapping Testtyp → Generator

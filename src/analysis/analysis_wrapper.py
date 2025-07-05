@@ -41,25 +41,40 @@ def run_primetest_analysis(
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-    #if seed is None:
-        #seed = random.randint(1, 999999)
-        #print(f"📌 Verwende zufälligen Seed: {seed}")
-
     # Test-Konfiguration laden
     test_config = get_test_config(include_tests, prob_test_repeats, global_seed=seed)
 
     # Zahlengenerierung
     if variant == 1:
-        # 1. Eine gemeinsame Liste für alle Tests
         print(f"Generiere eine gemeinsame Liste von {n_numbers} Zahlen vom Typ '{num_type}' im Bereich [{start}, {end}]...")
+        # Hier nochmal explizit num_type ausgeben
+        if num_type.startswith("g"):
+            if ":" in num_type:
+                ratio = num_type.split(":")[1]
+                print(f"NumType ist 'g' mit prime_ratio = {ratio}")
+            else:
+                print(f"NumType ist 'g' mit default prime_ratio = 0.5")
+        else:
+            print(f"NumType ist '{num_type}' (kein spezielles prime_ratio)")
+
         numbers = measure_section(
             f"Zahlengenerierung für alle Tests ({num_type})",
             generate_numbers_for_test,
             n_numbers, start, end, num_type
         )
         numbers_per_test = {test_name: numbers for test_name in test_config.keys()}
+
     elif variant == 2:
-        # 2. Eigene Zahlen pro Test, wie bisher
+        print(f"Generiere eigene Zahlen pro Test, num_type='{num_type}'")
+        if num_type.startswith("g"):
+            if ":" in num_type:
+                ratio = num_type.split(":")[1]
+                print(f"NumType ist 'g' mit prime_ratio = {ratio}")
+            else:
+                print(f"NumType ist 'g' mit default prime_ratio = 0.5")
+        else:
+            print(f"NumType ist '{num_type}' (kein spezielles prime_ratio)")
+
         numbers_per_test = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
@@ -201,13 +216,13 @@ if __name__ == "__main__":
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='g',
+        num_type='g:0.3',
         start=100,
         end=10_000,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=15,
+        seed=20,
         protocoll=True,
         save_results=True,
         show_plot=True,

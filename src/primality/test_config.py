@@ -14,7 +14,7 @@ TEST_CONFIG = {
         "runtime_function": fermat_test,
         "protocol_function": fermat_test_protocoll,
         "prob_test": True,
-        "number_type": "large_prime",
+        "number_type": "large",
         "testgroup": "Probabilistische Tests",
         "plotgroup": "Probabilistische Tests"
     },
@@ -22,7 +22,7 @@ TEST_CONFIG = {
         "runtime_function": miller_selfridge_rabin_test,
         "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
-        "number_type": "large_prime",
+        "number_type": "large",
         "testgroup": "Probabilistische Tests",
         "plotgroup": "Probabilistische Tests"
     },
@@ -30,7 +30,7 @@ TEST_CONFIG = {
         "runtime_function": solovay_strassen_test,
         "protocol_function": solovay_strassen_test_protocoll,
         "prob_test": True,
-        "number_type": "large_prime",
+        "number_type": "large",
         "testgroup": "Probabilistische Tests",
         "plotgroup": "Probabilistische Tests"
     },
@@ -62,7 +62,7 @@ TEST_CONFIG = {
         "runtime_function": wilson_criterion,
         "protocol_function": wilson_criterion_protocoll,
         "prob_test": False,
-        "number_type": "small_prime",
+        "number_type": "small",
         "testgroup": "Langsame Tests",
         "plotgroup": "Langsame Tests"
     },
@@ -70,7 +70,7 @@ TEST_CONFIG = {
         "runtime_function": aks_test,
         "protocol_function": aks_test_protocoll,
         "prob_test": False,
-        "number_type": "small_prime",
+        "number_type": "small",
         "testgroup": "Langsame Tests",
         "plotgroup": "Langsame Tests"
     },

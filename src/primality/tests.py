@@ -60,7 +60,7 @@ def solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> boo
     return True
 
 
-def initial_lucas_test(n: int) -> bool:
+def initial_lucas_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     if n == 2: return True
 
@@ -77,7 +77,7 @@ def initial_lucas_test(n: int) -> bool:
     return False  # Kein a erfüllt beide Bedingungen
 
 
-def lucas_test(n: int) -> bool:
+def lucas_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     if n == 2: return True
 

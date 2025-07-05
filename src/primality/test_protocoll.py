@@ -171,7 +171,7 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: int | None = None)
     return True
 
 
-def initial_lucas_test_protocoll(n: int) -> bool:
+def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     test_data["Initial Lucas"][n]["a_values"] = []
 

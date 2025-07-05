@@ -92,7 +92,6 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     with open(path, mode="w", newline="", encoding="utf-8") as f:
         if metadata:
-            f.write("Konfiguration\n")
             for key, value in metadata.items():
                 if key == "group_ranges" and isinstance(value, dict):
                     for group, cfg in value.items():

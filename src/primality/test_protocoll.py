@@ -33,8 +33,8 @@ def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
         "Fermat": {"a_values": []},
         "Miller-Selfridge-Rabin": {"a_values": []},
         "Solovay-Strassen": {"a_values": []},
-        "Initial Lucas": {"a_values": [], "other_fields": ()},
-        "Lucas": {"a_values": [], "other_fields": ()},
+        "Initial Lucas": {"a_values": []},
+        "Lucas": {"a_values": []},
         "Optimized Lucas": {"a_values": {}},
         "Wilson": {"a_values": None},
         "AKS": {"a_values": None, "other_fields": {}},
@@ -83,11 +83,18 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
     for i in range(k):
         r = random.Random(get_global_seed(seed, n, "Fermat", i))
         a = r.randint(2, n - 1)
-        cond = gcd(a, n) == 1 and pow(a, n - 1, n) == 1
-        test_data["Fermat"][n]["a_values"].append((a, cond))
-        if not cond:
+        cond1 = gcd(a, n) == 1 
+        test_data["Fermat"][n]["a_values"].append((a, cond1, None))
+        if not cond1:
+            test_data["Fermat"][n]["reason"] = "ggT ≠ 1"
             test_data["Fermat"][n]["result"] = False
-            test_data["Fermat"][n]["reason"] = "GCD ≠ 1 or Fermat failed"
+            return False
+
+        cond2 = pow(a, n - 1, n) == 1
+        test_data["Fermat"][n]["a_values"].append((a, cond1, cond2))
+        if not cond2:
+            test_data["Fermat"][n]["reason"] = "a^{n-1} ≠ 1"
+            test_data["Fermat"][n]["result"] = False
             return False
 
     test_data["Fermat"][n]["result"] = True
@@ -310,6 +317,9 @@ def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+    if n == 3: 
+        test_data["Pepin"][n]["result"] = True
+        return True
     if not helpers.is_fermat_number(n):
         test_data["Pepin"][n]["result"] = False
         test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"

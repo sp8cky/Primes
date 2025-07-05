@@ -201,13 +201,13 @@ if __name__ == "__main__":
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='p',
+        num_type='g',
         start=100,
         end=10_000,
-        test_repeats=5,
+        test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=9,
+        seed=15,
         protocoll=True,
         save_results=True,
         show_plot=True,

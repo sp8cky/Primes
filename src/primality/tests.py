@@ -147,6 +147,7 @@ def aks_test(n: int, seed: Optional[int] = None) -> bool:
 
 # Prüft ob eine Fermat-Zahl n prim ist
 def pepin_test(n: int, seed: Optional[int] = None) -> bool:
+    if n == 3: return True
     if not helpers.is_fermat_number(n): return False
 
     if pow(3, (n - 1) // 2, n) != n - 1: 

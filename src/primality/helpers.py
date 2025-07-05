@@ -154,6 +154,7 @@ def cyclotomic_polynomial(n, x: int) -> int:
 # Prüft ob n eine Fermat-Zahl der Form n=2^(2^k) + 1 ist
 def is_fermat_number(n: int) -> bool:
     if n < 3: return False
+    if n < 3: return n == 3
     k = 0
     while True:
         fermat_candidate = (1 << (1 << k)) + 1  # Berechnet 2^(2^k) + 1 effizient
@@ -162,7 +163,6 @@ def is_fermat_number(n: int) -> bool:
         if fermat_candidate > n:  # Kein weiteres k kann n ergeben
             return False
         k += 1
-
 
 # Prüft ob n eine Mersenne-Zahl der Form n=2^p - 1 ist (für beliebiges p ≥ 2)
 def is_mersenne_number(n: int) -> bool:

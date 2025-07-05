@@ -60,32 +60,38 @@ def solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> boo
     return True
 
 
-def initial_lucas_test(n: int, seed: Optional[int] = None) -> bool:
+def initial_lucas_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     if n == 2: return True
 
-    r = random.Random(get_global_seed(seed, n, "Initial Lucas"))
-    a = r.randint(2, n - 1)
-    if pow(a, n - 1, n) != 1: return False
+    for a in range(2, n):
+        if pow(a, n - 1, n) != 1: continue  # Bedingung (i) nicht erfüllt
 
-    for m in range(1, n - 1):
-        if pow(a, m, n) == 1: return False
+        for m in range(1, n - 1):
+            if pow(a, m, n) == 1:
+                break  # Bedingung (ii) verletzt
+        else:
+            # Alle m getestet, kein Verstoß gegen Bedingung (ii)
+            return True  # EIN solches a gefunden → n ist prim
 
-    return True
+    return False  # Kein a erfüllt beide Bedingungen
 
 
-def lucas_test(n: int, seed: Optional[int] = None) -> bool:
+def lucas_test(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     if n == 2: return True
 
-    r = random.Random(get_global_seed(seed, n, "Lucas"))
-    a = r.randint(2, n - 1)
-    if pow(a, n - 1, n) != 1: return False
+    for a in range(2, n):
+        if pow(a, n - 1, n) != 1:
+            continue  # Bedingung (i) verletzt
 
-    for m in divisors(n - 1)[:-1]:
-        if pow(a, m, n) != 1: return False
+        for m in divisors(n - 1)[:-1]:
+            if pow(a, m, n) == 1:  # Bedingung (ii) verletzt
+                break
+        else:
+            return True  # a erfüllt beide Bedingungen
 
-    return True
+    return False  # Kein a gefunden
 
 def optimized_lucas_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")

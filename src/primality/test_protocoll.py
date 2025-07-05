@@ -171,7 +171,7 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: int | None = None)
     return True
 
 
-def initial_lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
+def initial_lucas_test_protocoll(n: int) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")
     test_data["Initial Lucas"][n]["a_values"] = []
 
@@ -179,26 +179,24 @@ def initial_lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
         test_data["Initial Lucas"][n]["result"] = True
         return True
 
-    r = random.Random(get_global_seed(seed, n, "Initial Lucas", 0))
-    a = r.randint(2, n - 1)
+    for a in range(2, n):
+        cond1 = pow(a, n - 1, n) == 1
+        test_data["Initial Lucas"][n]["a_values"].append((a, cond1, None))
 
-    cond1 = pow(a, n - 1, n) == 1
-    test_data["Initial Lucas"][n]["a_values"].append((a, cond1, None))
-    if not cond1:
-        test_data["Initial Lucas"][n]["result"] = False
-        test_data["Initial Lucas"][n]["reason"] = "a^{n-1} ≠ 1"
-        return False
+        if not cond1: continue  # Wichtig: nicht abbrechen, sondern nächstes a testen
 
-    for m in range(1, n - 1):
-        cond2 = pow(a, m, n) == 1
-        test_data["Initial Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
-        if cond2:
-            test_data["Initial Lucas"][n]["result"] = False
-            test_data["Initial Lucas"][n]["reason"] = f"a^{m} ≡ 1 mod n"
-            return False
+        for m in range(1, n - 1):
+            cond2 = pow(a, m, n) == 1
+            test_data["Initial Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
+            if cond2:
+                break  # a ist ungeeignet → nächstes a
+        else:
+            test_data["Initial Lucas"][n]["result"] = True
+            return True
 
-    test_data["Initial Lucas"][n]["result"] = True
-    return True
+    test_data["Initial Lucas"][n]["result"] = False
+    test_data["Initial Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
+    return False
 
 
 def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
@@ -207,26 +205,27 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
         test_data["Lucas"][n]["result"] = True
         return True
 
-    r = random.Random(get_global_seed(seed, n, "Lucas", 0))
-    a = r.randint(2, n - 1)
+    test_data["Lucas"][n]["a_values"] = []
 
-    cond1 = pow(a, n - 1, n) == 1
-    test_data["Lucas"][n]["a_values"] = [(a, cond1, None)]
-    if not cond1:
-        test_data["Lucas"][n]["result"] = False
-        test_data["Lucas"][n]["reason"] = "a^{n-1} ≠ 1"
-        return False
+    for a in range(2, n):
+        cond1 = pow(a, n - 1, n) == 1
+        test_data["Lucas"][n]["a_values"].append((a, cond1, None))
 
-    for m in divisors(n - 1)[:-1]:
-        cond2 = pow(a, m, n) == 1
-        test_data["Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
-        if cond2:
-            test_data["Lucas"][n]["result"] = False
-            test_data["Lucas"][n]["reason"] = f"a^{m} ≡ 1 mod n"
-            return False
+        if not cond1: continue  # nächstes a versuchen
 
-    test_data["Lucas"][n]["result"] = True
-    return True
+        for m in divisors(n - 1)[:-1]:
+            cond2 = pow(a, m, n) == 1
+            test_data["Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
+            if cond2:
+                break  # Bedingung (ii) verletzt, nächstes a
+        else:
+            test_data["Lucas"][n]["result"] = True
+            return True  # EIN gültiges a gefunden
+
+    test_data["Lucas"][n]["result"] = False
+    test_data["Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
+    return False
+
 
 def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n must be greater than 1")

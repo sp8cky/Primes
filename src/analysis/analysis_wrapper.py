@@ -216,7 +216,7 @@ if __name__ == "__main__":
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='z',
+        num_type='z', #TODO: anpassen
         start=100,
         end=10_000,
         test_repeats=10,

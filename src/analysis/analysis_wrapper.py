@@ -78,7 +78,7 @@ def run_primetest_analysis(
         numbers_per_test = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
-            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges, seed=seed
+            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges, seed=seed, num_type=num_type
         )
     else:
         raise ValueError("variant muss 1 oder 2 sein")
@@ -216,13 +216,13 @@ if __name__ == "__main__":
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='z', #TODO: anpassen
+        num_type='g:0.1', #TODO: anpassen
         start=100,
         end=10_000,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=23,
+        seed=25,
         protocoll=True,
         save_results=True,
         show_plot=True,

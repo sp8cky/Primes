@@ -7,13 +7,35 @@ import src.primality.helpers as helpers
 from src.primality.test_config import *
 from src.analysis.dataset import extract_base_label
 
+# calculate the distribution of prime and composite numbers based on the num_type
+def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]:
+    if num_type == "p":
+        prime_ratio = 1.0
+    elif num_type == "z":
+        prime_ratio = 0.0
+    elif num_type.startswith("g:"):
+        try:
+            prime_ratio = float(num_type.split(":")[1])
+            if not (0.0 <= prime_ratio <= 1.0):
+                raise ValueError
+        except (IndexError, ValueError):
+            raise ValueError(f"Ungültiges Format für num_type: '{num_type}' — erwartet 'g:x' mit x ∈ [0,1]")
+    else:
+        raise ValueError(f"Unbekannter num_type: '{num_type}' – erlaubt sind 'p', 'z' oder 'g:x'")
 
-def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None):
+    n_primes = round(n * prime_ratio)
+    n_composites = n - n_primes
+    return n_primes, n_composites, prime_ratio
+
+
+def is_valid_composite(candidate: int) -> bool:
+    return candidate >= 2 and candidate % 2 == 1 and not helpers.is_real_potency(candidate) and not isprime(candidate)
+
+def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None, num_type: str = "g:x"):
     r = random.Random(seed)
     group_to_numbers = {}
     numbers_per_test = defaultdict(list)
 
-    # Reihenfolge wie in TEST_GROUPS definiert, nach Auftreten der Keys
     seen_groups = []
     for conf in TEST_CONFIG.values():
         g = conf.get("testgroup")
@@ -23,7 +45,6 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
     print("Starte Abschnitt: Zahlengenerierung pro Test...")
 
     for group in seen_groups:
-        # Finde Tests, die zu dieser Gruppe gehören
         relevant_tests = [
             name for name, conf in TEST_CONFIG.items()
             if conf.get("testgroup") == group
@@ -31,82 +52,87 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
         if not relevant_tests:
             continue
 
-        # Hole Typ aus erster Testdefinition
-        example_test = TEST_CONFIG[relevant_tests[0]]
-        number_type = example_test["number_type"]
-
-        # Gruppenspezifische Parameter (oder Fallback auf global)
         group_n = group_ranges.get(group, {}).get("n", n) if group_ranges else n
         group_start = group_ranges.get(group, {}).get("start", start) if group_ranges else start
         group_end = group_ranges.get(group, {}).get("end", end) if group_ranges else end
 
         try:
-            desired_prime_ratio = 0.5  # Beispiel: Standardwert 50% Primzahlen
-            # Falls du den prime_ratio-Wert aus number_type auslesen willst, kannst du das vorher tun, z.B.:
-            if number_type.startswith("g") and ":" in number_type:
-                _, ratio_str = number_type.split(":")
-                try:
-                    desired_prime_ratio = float(ratio_str)
-                except ValueError:
-                    desired_prime_ratio = 0.5
+            p_count, z_count, _ = compute_number_distribution(group_n, num_type)
+            primes = set()
+            composites = set()
+            attempts = 0
+            max_attempts = 10000
 
-            numbers = generate_numbers_for_test(group_n, group_start, group_end, number_type, r, prime_ratio=desired_prime_ratio)
-            if len(numbers) < group_n:
-                raise ValueError(f"Nicht genug {number_type}-Zahlen im Bereich [{group_start}, {group_end}] (nur {len(numbers)})")
-        except ValueError as e:
-            if allow_partial_numbers and 'numbers' in locals() and len(numbers) > 0:
-                print(f"⚠️ Gruppe '{group}' bekommt nur {len(numbers)} von {group_n} Zahlen.")
+            while (len(primes) < p_count or len(composites) < z_count) and attempts < max_attempts:
+                attempts += 1
+                candidate = r.randint(group_start, group_end)
+                if isprime(candidate):
+                    if len(primes) < p_count:
+                        primes.add(candidate)
+                elif is_valid_composite(candidate):
+                    if len(composites) < z_count:
+                        composites.add(candidate)
+
+            total = len(primes) + len(composites)
+            if total < group_n:
+                print(f"⚠️ Gruppe '{group}' bekommt nur {total} von {group_n} Zahlen.")
             else:
-                print(f"⛔ Gruppe '{group}' wird komplett übersprungen: {e}")
+                print(f"Generiere {total} Zahlen für Gruppe '{group}'...")
+
+            numbers = sorted(primes.union(composites))
+            group_to_numbers[group] = numbers
+            for testname in relevant_tests:
+                numbers_per_test[testname] = numbers
+
+        except ValueError as e:
+            if allow_partial_numbers:
+                print(f"⚠️ Gruppe '{group}' wird nur teilweise ausgefüllt: {e}")
+            else:
+                print(f"⛔ Gruppe '{group}' wird übersprungen: {e}")
                 continue
-
-        print(f"Generiere {len(numbers)} Zahlen für Gruppe '{group}' vom Typ '{number_type}'...")
-        group_to_numbers[group] = numbers
-
-        for testname in relevant_tests:
-            numbers_per_test[testname] = numbers
 
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test
 
-def generate_numbers(n: int, start: int, end: int, number_type: str = "general", max_attempts=10000, r=None, prime_ratio: float = 0.5) -> List[int]:
+def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000) -> List[int]:
     if r is None:
         r = random.Random()
-    
-    primes_needed = round(n * prime_ratio)
-    comps_needed = n - primes_needed
+
+    # Wenn keine expliziten Werte gegeben, verwende Standardverteilung (50/50)
+    if p_count is None or z_count is None:
+        p_count = round(n * 0.5)
+        z_count = n - p_count
 
     primes = set()
     composites = set()
     attempts = 0
 
-    while (len(primes) < primes_needed or len(composites) < comps_needed) and attempts < max_attempts:
+    while (len(primes) < p_count or len(composites) < z_count) and attempts < max_attempts:
         attempts += 1
         candidate = r.randint(start, end)
         if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or helpers.is_real_potency(candidate):
             continue
         if isprime(candidate):
-            if len(primes) < primes_needed:
+            if len(primes) < p_count:
                 primes.add(candidate)
         else:
-            if len(composites) < comps_needed:
+            if is_valid_composite(candidate) and len(composites) < z_count:
                 composites.add(candidate)
 
     total_generated = len(primes) + len(composites)
-    if total_generated < n:
-        print(f"⚠️ WARNUNG: Nur {total_generated} Zahlen generiert (Prim: {len(primes)}, Zusammengesetzt: {len(composites)}) von {n} geforderten Zahlen.")
-        # Hier kein Error, weil allow_partial_numbers erlaubt ggf.
+    if total_generated < (p_count + z_count):
+        print(f"⚠️ WARNUNG: Nur {total_generated} Zahlen generiert (Prim: {len(primes)}, Zusammengesetzt: {len(composites)}) von {p_count + z_count} geforderten Zahlen.")
 
-    if len(primes) < primes_needed:
-        print(f"⚠️ WARNUNG: Nur {len(primes)} Primzahlen generiert, benötigt waren {primes_needed}")
-    if len(composites) < comps_needed:
-        print(f"⚠️ WARNUNG: Nur {len(composites)} zusammengesetzte Zahlen generiert, benötigt waren {comps_needed}")
+    if len(primes) < p_count:
+        print(f"⚠️ WARNUNG: Nur {len(primes)} Primzahlen generiert, benötigt waren {p_count}")
+    if len(composites) < z_count:
+        print(f"⚠️ WARNUNG: Nur {len(composites)} zusammengesetzte Zahlen generiert, benötigt waren {z_count}")
 
     print(f"Generierte Zahlen: {len(primes)} Primzahlen, {len(composites)} zusammengesetzte Zahlen, Gesamt: {total_generated}")
     print(f"Primzahlen: {sorted(primes)}")
     print(f"Zusammengesetzt: {sorted(composites)}")
 
-    return sorted(list(primes.union(composites)))
+    return sorted(primes.union(composites))
 
 # 2. Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
@@ -240,28 +266,11 @@ def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
 
 
 # 3. Mapping Testtyp → Generator
-def generate_numbers_for_test(n: int, start: int, end: int, number_type: str, r=None, prime_ratio: float = 0.5) -> List[int]:
+def generate_numbers_for_test(n: int, start: int, end: int, num_type: str = "g:x", r=None) -> List[int]:
     if r is None:
         r = random.Random()
-    
-    prime_ratio = 0.5  # default
-    if number_type.startswith("g"):
-        if ":" in number_type:
-            _, ratio_str = number_type.split(":")
-            try:
-                prime_ratio = float(ratio_str)
-            except ValueError:
-                raise ValueError(f"Ungültiges Format für number_type: {number_type} (z. B. 'g:0.3')")
-    # Lucas und Pepin immer nur Primzahlen, prime_ratio ignorieren
-    if number_type in ["lucas", "pepin"]:
-        return generate_lucas_primes(n, start, end, r) if number_type == "lucas" else generate_fermat_numbers(n, start, end, r)
 
-    if number_type in ["large", "small"]:
-        return generate_numbers(n, start, end, number_type="general", r=r, prime_ratio=1.0)
-
-    n_primes = round(n * prime_ratio)
-    n_comps = n - n_primes
-
+    # Mapping: spezielle Typen → Generatorfunktion
     prime_generators = {
         "fermat": generate_fermat_numbers,
         "mersenne": generate_mersenne_numbers,
@@ -269,26 +278,38 @@ def generate_numbers_for_test(n: int, start: int, end: int, number_type: str, r=
         "pocklington": generate_pocklington_numbers,
         "ramzy": generate_ramzy_numbers,
         "rao": generate_rao_numbers,
+        "lucas": generate_lucas_primes,
+        "pepin": generate_fermat_numbers,  # Pepin-Test nutzt Fermat-Zahlen
     }
 
-    if number_type in prime_generators:
-        primes = []
+    # Sonderfall: rein primzahlbasiert
+    if num_type in ["lucas", "pepin"]:
+        return prime_generators[num_type](n, start, end, r=r)
+
+    # Sonderfall: spezielle Formtypen (Fermat, Mersenne, etc.)
+    if num_type in prime_generators:
+        try:
+            p_count, z_count, _ = compute_number_distribution(n, "g:1.0")  # nur Primzahlen
+            primes = prime_generators[num_type](p_count, start, end, r=r)
+        except ValueError as e:
+            print(f"⚠️ Fehler bei Primzahl-Generierung für {num_type}: {e}")
+            primes = []
+
         composites = []
-        if n_primes > 0:
-            # Achtung: r als benanntes Argument übergeben!
+        if z_count > 0:
             try:
-                primes = prime_generators[number_type](n_primes, start, end, r=r)
-            except ValueError:
-                primes = []
-        if n_comps > 0:
-            try:
-                composites = generate_numbers(n_comps, start, end, number_type="general", r=r, prime_ratio=0.0)
-            except ValueError:
+                composites = generate_numbers(z_count, start, end, r=r, p_count=0, z_count=z_count)
+            except ValueError as e:
+                print(f"⚠️ Fehler bei zusammengesetzten Zahlen für {num_type}: {e}")
                 composites = []
 
-        numbers = primes + composites
-        if len(numbers) < n:
-            print(f"⚠️ WARNUNG: Nur {len(numbers)} Zahlen für {number_type} (prim={len(primes)}, comp={len(composites)}) von {n} gefordert")
-        return sorted(numbers)
+        return sorted(primes + composites)
 
-    return generate_numbers(n, start, end, number_type="general", r=r, prime_ratio=prime_ratio)
+    # Allgemeiner Fall: p, z, g:x
+    try:
+        p_count, z_count, _ = compute_number_distribution(n, num_type)
+    except ValueError as e:
+        print(f"❌ Ungültiger num_type '{num_type}': {e}")
+        return []
+
+    return generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count)

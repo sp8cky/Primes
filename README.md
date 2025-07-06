@@ -23,30 +23,30 @@ Python 3.13.3
 
 #### Allgemeine Primkriterien
 Folgende Tests wurden bereits implementiert und dokumentieren folgende Angaben:
-Folgende Tests wurden bereits implementiert und dokumentieren folgende Angaben:
 
-| Ergebnis | Test                         | Eingabe | Best Time | Avg Time | Worst Time | Std.abweichung | a_values                             | Other_fields                                      | Reason |
-|----------|------------------------------|---------|-----------|----------|------------|----------------|--------------------------------------|--------------------------------------------------|--------|
-|          | Fermat (k=)                  |         |           |          |            |                | [(a_1, result), (...)]               |                                                  |        |
-|          | Miller-Rabin (k=)            |         |           |          |            |                | [(a_1, result), (...)]               |                                                  |        |
-|          | Solovay-Strassen (k=)        |         |           |          |            |                | [(a_1, result), (...)]               |                                                  |        |
-|          | Initial Lucas                |         |           |          |            |                | [(a_1, cond1, cond2), (...)]         |                                                  |        |
-|          | Lucas                        |         |           |          |            |                | [(a_1, cond1, cond2), (...)]         |                                                  |        |
-|          | Optimized Lucas              |         |           |          |            |                | {q_1: (a_1, cond1, cond2), q2: (...)} |                                                 |        |
-|          | Pepin                        |         |           |          |            |                |                                      |                                                  |        |
-|          | Lucas-Lehmer                 |         |           |          |            |                |                                      | [p, sequence, S]                                 |        |
-|          | Wilson                       |         |           |          |            |                |                                      |                                                  |        |
-|          | AKS                          |         |           |          |            |                |                                      | [initial_check, find_r, prime_divisor_check, polynomial_check] |        |
-|          | Proth Variant                |         |           |          |            |                | [(a_1, result), (...)]               |                                                  |        |
-|          | Pocklington                  |         |           |          |            |                |                                      |                                                  |        |
-|          | Optimized Pocklington        |         |           |          |            |                |                                      |                                                  |        |
-|          | Optimized Pocklington Variant |        |           |          |            |                | {q_1: (a_1, cond1, cond2), q2: (...)}| [b, pow(b, (n - 1) // F, n)]                     |        |
-|          | Generalized Pocklington      |         |           |          |            |                | [(a_1, cond1, cond2), (...)]         | [K, p, n]                                        |        |
-|          | Grau                         |         |           |          |            |                | [a_1]                                | [K, p, n, phi]                                   |        |
-|          | Grau Probability             |         |           |          |            |                | [a_1]                                | [K, p, n, phi, j]                                |        |
+| Gr | Test                        | n   | res | TP | FP  | TN  | EC | ER  | Best  | Avg   | Worst | Std  | a_values                             | Other_fields                                      | Reason |
+|----|-----------------------------|-----|-----|----|-----|-----|----|-----|-------|-------|-------|------|--------------------------------------|--------------------------------------------------|--------|
+|    | Fermat (k=)                 |     |     |    |     |     |    |     |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
+|    | Miller-Rabin (k=)           |     |     |    |     |     |    |     |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
+|    | Solovay-Strassen (k=)       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Initial Lucas               |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Lucas                       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Optimized Lucas             |     |     |    |     |     |    |     |       |       |       |      | {q1: (a1, cond1, cond2), q2: (...)}  |                                                  |        |
+|    | Pepin                       |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
+|    | Lucas-Lehmer                |     |     |    |     |     |    |     |       |       |       |      |                                      | [p, sequence, S]                                 |        |
+|    | Wilson                      |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
+|    | AKS                         |     |     |    |     |     |    |     |       |       |       |      |                                      | [initial_check, find_r, prime_divisor_check, polynomial_check] |        |
+|    | Proth Variant               |     |     |    |     |     |    |     |       |       |       |      | [(a_1, result), (...)]               |                                                  |        |
+|    | Pocklington                 |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
+|    | Optimized Pocklington       |     |     |    |     |     |    |     |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} |                                                  |        |
+|    | Optimized Pocklington Var.  |     |     |    |     |     |    |     |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} | [b, pow(b, (n - 1) // F, n)]                     |        |
+|    | Generalized Pocklington     |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n]                                        |        |
+|    | Grau                        |     |     |    |     |     |    |     |       |       |       |      | [a1]                                 | [K, p, n, phi]                                   |        |
+|    | Grau Probability            |     |     |    |     |     |    |     |       |       |       |      | [a1]                                 | [K, p, n, phi, j]                                |        |
+|    | Rao                         |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [p, 2, n_exp]                                    |        |
+|    | Ramzy                       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n_exp]                                    |        |
 
 
----
 
 ### Implementierung
 #### DIC Struktur

@@ -126,7 +126,6 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
         a = r.randint(2, n - 1)
 
         if gcd(a, n) != 1:
-            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append(a, None, None)
             test_data["Miller-Selfridge-Rabin"][n]["result"] = False
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
             return False
@@ -387,15 +386,13 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
         return False
     
     # Test
-    a_values = []
     for a in range(2, n):
         cond = pow(a, (n - 1) // 2, n) == n - 1
-        a_values.append((a, cond))
         if cond:
-            test_data["Proth"][n]["a_values"] = a_values
+            test_data["Proth"][n]["a_values"].append((a, cond))
             test_data["Proth"][n]["result"] = True
             return True
-    test_data["Proth"][n]["a_values"] = a_values
+    test_data["Proth"][n]["a_values"].append((a, cond))
     test_data["Proth"][n]["result"] = False
     return False
 
@@ -417,17 +414,14 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
         test_data["Pocklington"][n]["reason"] = "q muss n - 1 genau m mal teilen"
         return False
     # Test
-    a_values = []
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
         cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
-        a_values.append((a, cond1, cond2))
         if cond1 and cond2:
-            test_data["Pocklington"][n]["a_values"] = a_values
+            test_data["Pocklington"][n]["a_values"].append((a, cond1, cond2))
             test_data["Pocklington"][n]["result"] = True
             return True
         
-    test_data["Pocklington"][n]["a_values"] = a_values
     test_data["Pocklington"][n]["result"] = False
     return False
 
@@ -449,14 +443,11 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
     test_data["Optimized Pocklington"][n]["a_values"] = {}
     for q in factors:
         found = False
-        test_data["Optimized Pocklington"][n]["a_values"][q] = []
-
         for a in range(2, n):
             cond1 = pow(a, n - 1, n) == 1
             cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
-            test_data["Optimized Pocklington"][n]["a_values"][q].append((a, cond1, cond2))
-
             if cond1 and cond2:
+                test_data["Optimized Pocklington"][n]["a_values"] = {q: [(a, cond1, cond2)]}
                 found = True
                 break
         if not found:
@@ -474,22 +465,17 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
         test_data["Proth Variant"][n]["reason"] = "n must be odd"
         return False
 
-    a_values = []
     for a in range(2, n):
         if pow(a, n - 1, n) != 1:
             test_data["Proth Variant"][n]["result"] = False
             test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
             return False
-        
+
         if pow(a, (n - 1) // 2, n) == n - 1:
-            a_values.append((a, True))
-            test_data["Proth Variant"][n]["a_values"] = a_values
+            test_data["Proth Variant"][n]["a_values"] = [(a, True)]
             test_data["Proth Variant"][n]["result"] = True
             return True
-        else:
-            a_values.append((a, False))
 
-    test_data["Proth Variant"][n]["a_values"] = a_values
     test_data["Proth Variant"][n]["result"] = False
     test_data["Proth Variant"][n]["reason"] = "Kein passendes a gefunden"
     return False
@@ -520,12 +506,11 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
     test_data["Optimized Pocklington Variant"][n]["a_values"] = {}
     for q in factors:
         found = False
-        test_data["Optimized Pocklington Variant"][n]["a_values"][q] = []
         for a in range(2, n):
             cond1 = pow(a, n - 1, n) == 1
             cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
-            test_data["Optimized Pocklington Variant"][n]["a_values"][q].append((a, cond1, cond2))
             if cond1 and cond2:
+                test_data["Optimized Pocklington Variant"][n]["a_values"][q] = [(a, cond1, cond2)]
                 found = True
                 break
         if not found:
@@ -561,9 +546,8 @@ def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
         cond2 = gcd(pow(a, (n - 1) // p, n) - 1, n) == 1
-        test_data["Generalized Pocklington"][n]["a_values"].append((a, cond1, cond2))
-
         if cond1 and cond2:
+            test_data["Generalized Pocklington"][n]["a_values"] = [(a, cond1, cond2)]
             test_data["Generalized Pocklington"][n]["result"] = True
             return True
 
@@ -680,12 +664,14 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     cond1 = pow(3, exponent, n) == (n - 1)
     if not cond1: 
         test_data["Rao"][n]["result"] = False
+        test_data["Rao"][n]["a_values"].append((3, False, None))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
         return False
     
-    cond2 = (pow(3, 1 << (n_exp - 1), n) + 1) % n
-    if cond2 == 0: 
+    cond2 = (pow(3, 1 << (n_exp - 1), n) + 1) % n == 0
+    if cond2: 
         test_data["Rao"][n]["result"] = True
+        test_data["Rao"][n]["a_values"].append((3, cond1, cond2))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
         return True
 

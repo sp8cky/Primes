@@ -284,12 +284,12 @@ def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         if n % p == 0:
             if p == n:
                 test_data["AKS"][n]["result"] = True
-                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor {p} (n selbst)"
+                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor p={p} (n selbst)"
                 return True
             else:
                 test_data["AKS"][n]["result"] = False
-                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Teiler {p} von n"
-                test_data["AKS"][n]["reason"] = f"n ist durch {p} teilbar"
+                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Teiler p={p} von n"
+                test_data["AKS"][n]["reason"] = f"n ist durch p={p} teilbar"
                 return False
 
     test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"

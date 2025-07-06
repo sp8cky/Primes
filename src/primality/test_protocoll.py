@@ -126,14 +126,14 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
         a = r.randint(2, n - 1)
 
         if gcd(a, n) != 1:
-            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append({"a": a, "gcd": False})
+            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append(a, None, None)
             test_data["Miller-Selfridge-Rabin"][n]["result"] = False
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
             return False
 
         cond1 = pow(a, m, n) == 1
         if cond1:
-            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append({"a": a, "cond1": True, "cond2": None})
+            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, True, None))
             continue
 
         found = False
@@ -142,9 +142,7 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
                 found = True
                 break
 
-        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append({
-            "a": a, "cond1": cond1, "cond2": found
-        })
+        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1, found))
 
         if not found:
             test_data["Miller-Selfridge-Rabin"][n]["result"] = False

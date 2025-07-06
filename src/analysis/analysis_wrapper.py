@@ -221,31 +221,35 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", 
+                 "Initial Lucas", "Lucas", "Optimized Lucas", 
+                 "Wilson", "AKS", "Proth", 
+                 "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", 
+                 "Ramzy", "Rao",  "Pepin", "Lucas-Lehmer"]
     repeat_tests = [5,5,5]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
 
     group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 1000, "end": 100_000},
-        "Lucas-Tests":              {"n": 10, "start": 1000, "end": 100_000},
-        "Langsame Tests":           {"n": 10, "start": 1000, "end": 100_000},
-        "Proth-Tests":              {"n": 10, "start": 1000, "end": 100_000},
-        "Pocklington-Tests":        {"n": 10, "start": 1000, "end": 100_000},
-        "Rao":                      {"n": 10, "start": 1000, "end": 100_000},
-        "Ramzy":                    {"n": 10, "start": 1000, "end": 100_000},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": 100_000},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 100_000},
+        "Probabilistische Tests":   {"n": 100, "start": 1000_000, "end": 100_000_000},
+        "Lucas-Tests":              {"n": 20, "start": 100_000, "end": 1_000_000},
+        "Langsame Tests":           {"n": 20, "start": 1000, "end": 1_000_000},
+        "Proth-Tests":              {"n": 20, "start": 1000, "end": 1_000_000},
+        "Pocklington-Tests":        {"n": 20, "start": 1000, "end": 1_000_000},
+        "Rao":                      {"n": 20,"start": 1000, "end": 1_000_000},
+        "Ramzy":                    {"n": 20, "start": 1000, "end": 1_000_000},
+        "Fermat-Zahlen":            {"n": 20, "start": 0,    "end": 1_000_000},
+        "Mersenne-Zahlen":          {"n": 20, "start": 0,    "end": 1_000_000},
     }
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='g:0.8',
+        num_type='g:0.7',
         start=1000,
-        end=100_000,
+        end=100_000_000,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=41,
+        seed=42,
         protocoll=True,
         save_results=True,
         show_plot=True,

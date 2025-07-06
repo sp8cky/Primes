@@ -7,6 +7,31 @@ import src.primality.helpers as helpers
 from src.primality.test_config import *
 from src.analysis.dataset import extract_base_label
 
+def assign_custom_numbers_to_group(
+    group_name: str,
+    number_list: List[int],
+    TEST_CONFIG: dict
+) -> Dict[str, List[int]]:
+    """
+    Weist eine benutzerdefinierte Liste von Zahlen allen Tests einer bestimmten Gruppe zu.
+
+    Args:
+        group_name (str): Name der Zielgruppe (z. B. "MillerTests")
+        number_list (List[int]): Liste von Zahlen, die zugewiesen werden sollen
+        TEST_CONFIG (dict): Konfiguration aller Tests
+
+    Returns:
+        Dict[str, List[int]]: Mapping von Testnamen zu der gemeinsam zugewiesenen Liste
+    """
+    assigned = {}
+    for testname, conf in TEST_CONFIG.items():
+        if conf.get("testgroup") == group_name:
+            assigned[testname] = number_list
+            print(f"✅ Benutzerdefinierte Zahlen an Test '{testname}' der Gruppe '{group_name}' zugewiesen.")
+    if not assigned:
+        print(f"⚠️ Keine Tests mit der Gruppe '{group_name}' gefunden.")
+    return assigned
+
 # calculate the distribution of prime and composite numbers based on the num_type
 def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]:
     # num_type bleibt so wie bisher (p, z, g:x)

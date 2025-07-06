@@ -36,7 +36,8 @@ def run_primetest_analysis(
     show_plot: bool = True,
     variant: int = 2,  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
     allow_partial_numbers = False,
-    group_ranges: Dict[str, Dict[str, int]] = None
+    group_ranges: Dict[str, Dict[str, int]] = None,
+    custom_group_numbers: Dict[str, List[int]] = None
 ) -> Dict[str, List[Dict]]:
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -63,7 +64,6 @@ def run_primetest_analysis(
             n_numbers, start, end, num_type
         )
         numbers_per_test = {test_name: numbers for test_name in test_config.keys()}
-
     elif variant == 2:
         print(f"Generiere eigene Zahlen pro Test, num_type='{num_type}'")
         if num_type.startswith("g"):
@@ -75,11 +75,32 @@ def run_primetest_analysis(
         else:
             print(f"NumType ist '{num_type}' (kein spezielles prime_ratio)")
 
-        numbers_per_test = measure_section(
+        numbers_per_test = {}
+
+        # 1. Benutzerdefinierte Gruppen übernehmen
+        if custom_group_numbers:
+            for group_name, number_list in custom_group_numbers.items():
+                assigned = assign_custom_numbers_to_group(group_name, number_list, test_config)
+                numbers_per_test.update(assigned)
+
+        # 2. Für übrige Gruppen: automatische Generierung
+        auto_generated = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
-            n_numbers, start, end, test_config, allow_partial_numbers=allow_partial_numbers, group_ranges=group_ranges, seed=seed, num_type=num_type
+            n_numbers,
+            start,
+            end,
+            test_config,
+            allow_partial_numbers=allow_partial_numbers,
+            group_ranges=group_ranges,
+            seed=seed,
+            num_type=num_type
         )
+
+        # 3. Manuelle Gruppen nicht überschreiben
+        for test_name, number_list in auto_generated.items():
+            if test_name not in numbers_per_test:
+                numbers_per_test[test_name] = number_list
     else:
         raise ValueError("variant muss 1 oder 2 sein")
 
@@ -200,8 +221,10 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    repeat_tests = [5,5,5]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    repeat_tests = [3,3,3]
+    #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
+
     group_ranges={
         "Probabilistische Tests":   {"n": 10, "start": 100, "end": 10_000},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 10_000},
@@ -219,14 +242,15 @@ if __name__ == "__main__":
         num_type='g:0.5',
         start=100,
         end=10_000,
-        test_repeats=10,
-        #include_tests=run_tests,
+        test_repeats=5,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=33,
+        seed=35,
         protocoll=True,
         save_results=True,
         show_plot=True,
         allow_partial_numbers = True,
         variant=2,
-        group_ranges=group_ranges
+        group_ranges=group_ranges,
+        #custom_group_numbers=custom_group_numbers
     )

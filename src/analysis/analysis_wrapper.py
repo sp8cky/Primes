@@ -222,7 +222,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=21,
+        seed=23,
         protocoll=True,
         save_results=True,
         show_plot=True,

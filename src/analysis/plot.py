@@ -8,15 +8,15 @@ from src.primality.test_config import *
 
 
 def fixed_step_range(x_min, x_max, steps=10):
-    step = math.ceil((x_max - x_min) / steps)
-    x_min_rounded = round_down(x_min, step)
-    x_max_rounded = round_up(x_max, step)
+    step = choose_step_range(x_min, x_max)  # ← nutze deine eigene Logik!
+    x_min_rounded = 0                      # wir wollen bei 0 starten
+    x_max_rounded = round_up(x_max, step)  # nächsthöherer runder Wert
     return x_min_rounded, x_max_rounded, step
 
 
 def choose_step_range(x_min, x_max):
     range_ = x_max - x_min
-    rough_step = max(1, range_ // 8)  # ca. 8 Intervalle
+    rough_step = max(1, range_ // 10)  # ca. 8 Intervalle
     base_candidates = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 
     # Finde das kleinste base_candidate >= rough_step
@@ -105,11 +105,14 @@ def plot_runtime(
         plt.xscale("linear")
         plt.yscale("log")
         all_x = [x for entry in entries for x in entry[3]]
-        xmin, xmax = min(all_x), max(all_x)
+        xmin, xmax = 0, max(all_x)
         x_min, x_max, step = fixed_step_range(xmin, xmax)
         ticks = list(range(x_min, x_max + 1, step))
-        plt.gca().set_xticks(ticks)
-        plt.gca().xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+
+        ax = plt.gca()
+        ax.set_xticks(ticks)
+        ax.set_xlim(x_min, x_max)
+        ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
     else:
         plt.xscale("linear")
         plt.yscale("linear")
@@ -231,12 +234,13 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-        x_min_raw = min(all_n_values)
+        x_min_raw = 0
         x_max_raw = max(all_n_values)
         x_min, x_max, step = fixed_step_range(x_min_raw, x_max_raw)
+
         ax1.set_xscale("linear")
         ax1.set_xlim(x_min, x_max)
-        ax1.set_xticks(range(x_min, x_max + 1, step))
+        ax1.set_xticks(list(range(x_min, x_max + 1, step)))
         ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
 
         if show_errors:

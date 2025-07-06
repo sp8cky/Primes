@@ -216,13 +216,13 @@ if __name__ == "__main__":
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='g:0.1', #TODO: anpassen
+        num_type='p', #TODO: anpassen
         start=100,
         end=10_000,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=25,
+        seed=28,
         protocoll=True,
         save_results=True,
         show_plot=True,

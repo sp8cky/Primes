@@ -79,10 +79,18 @@ def generate_numbers_per_group(n, start, end, TEST_CONFIG, group_ranges=None, al
             else:
                 print(f"Generiere {total} Zahlen für Gruppe '{group}'...")
 
-            numbers = sorted(primes.union(composites))
-            group_to_numbers[group] = numbers
+            # Generiere Zahlen für jeden Test separat mit dem zentralen Generator
             for testname in relevant_tests:
-                numbers_per_test[testname] = numbers
+                try:
+                    numbers = generate_numbers_for_test(group_n, group_start, group_end, num_type=num_type, r=r, testname=testname)
+                    numbers_per_test[testname] = numbers
+                    group_to_numbers[group] = numbers  # gleiche Gruppe, gleiche Zahlen für alle zugehörigen Tests
+                except ValueError as e:
+                    if allow_partial_numbers:
+                        print(f"⚠️ Fehler bei Zahlengenerierung für Test '{testname}': {e}")
+                    else:
+                        print(f"⛔ Test '{testname}' wird übersprungen: {e}")
+                    continue
 
         except ValueError as e:
             if allow_partial_numbers:
@@ -136,6 +144,7 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
 
 # 2. Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
+    print(f"🧮 Aufruf: Fermat-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     fermat_candidates = set()
@@ -152,6 +161,7 @@ def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     return sorted(list(fermat_candidates))[:n]
 
 def generate_mersenne_numbers(n: int, start: int, end: int, r=None) -> List[int]:
+    print(f"🧮 Aufruf: Mersenne-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     mersenne_candidates = set()
@@ -168,6 +178,7 @@ def generate_mersenne_numbers(n: int, start: int, end: int, r=None) -> List[int]
     return sorted(r.sample(list(mersenne_candidates), n))
 
 def generate_proth_numbers(n: int, start: int, end: int, r=None) -> List[int]:
+    print(f"🧮 Aufruf: Proth-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     numbers = set()
@@ -185,6 +196,7 @@ def generate_proth_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     return sorted(numbers)
 
 def generate_pocklington_numbers(n: int, start: int, end: int, r=None, max_attempts=None) -> List[int]:
+    print(f"🧮 Aufruf: Pocklington-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     if max_attempts is None:
@@ -207,6 +219,7 @@ def generate_pocklington_numbers(n: int, start: int, end: int, r=None, max_attem
     return sorted(results)
 
 def generate_rao_numbers(n: int, start: int, end: int, r=None, max_attempts=None) -> List[int]:
+    print(f"🧮 Aufruf: Rao-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     if max_attempts is None:
@@ -229,6 +242,7 @@ def generate_rao_numbers(n: int, start: int, end: int, r=None, max_attempts=None
     return sorted(results)
 
 def generate_ramzy_numbers(n: int, start: int, end: int, r=None, max_attempts=None) -> List[int]:
+    print(f"🧮 Aufruf: Ramzy-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     if max_attempts is None:
@@ -251,6 +265,7 @@ def generate_ramzy_numbers(n: int, start: int, end: int, r=None, max_attempts=No
     return sorted(results)
 
 def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
+    print(f"🧮 Aufruf: Lucas-Generator (n={n}, start={start}, end={end})")
     if r is None:
         r = random.Random()
     primes = list(primerange(start, end))
@@ -266,9 +281,11 @@ def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
 
 
 # 3. Mapping Testtyp → Generator
-def generate_numbers_for_test(n: int, start: int, end: int, num_type: str = "g:x", r=None) -> List[int]:
+def generate_numbers_for_test(n: int, start: int, end: int, num_type: str = "g:x", r=None, testname: str = "") -> List[int]:
     if r is None:
         r = random.Random()
+
+    print(f"\n🔍 Starte Zahlengenerierung für Test '{testname}' mit num_type='{num_type}'")
 
     # Mapping: spezielle Typen → Generatorfunktion
     prime_generators = {
@@ -284,32 +301,42 @@ def generate_numbers_for_test(n: int, start: int, end: int, num_type: str = "g:x
 
     # Sonderfall: rein primzahlbasiert
     if num_type in ["lucas", "pepin"]:
-        return prime_generators[num_type](n, start, end, r=r)
+        print(f"ℹ️  Verwende speziellen Generator '{num_type}' für Test '{testname}'")
+        result = prime_generators[num_type](n, start, end, r=r)
+        print(f"✅ {len(result)} Zahlen für '{testname}' erzeugt: {result}")
+        return result
 
     # Sonderfall: spezielle Formtypen (Fermat, Mersenne, etc.)
     if num_type in prime_generators:
+        print(f"ℹ️  Verwende Generator '{num_type}' + Zufalls-Komposita für '{testname}'")
         try:
             p_count, z_count, _ = compute_number_distribution(n, "g:1.0")  # nur Primzahlen
             primes = prime_generators[num_type](p_count, start, end, r=r)
+            print(f"✅ {len(primes)} Primzahlen für '{testname}': {primes}")
         except ValueError as e:
-            print(f"⚠️ Fehler bei Primzahl-Generierung für {num_type}: {e}")
+            print(f"⚠️ Fehler bei Primzahl-Generierung für {testname}: {e}")
             primes = []
 
         composites = []
         if z_count > 0:
             try:
                 composites = generate_numbers(z_count, start, end, r=r, p_count=0, z_count=z_count)
+                print(f"✅ {len(composites)} Komposita für '{testname}': {composites}")
             except ValueError as e:
-                print(f"⚠️ Fehler bei zusammengesetzten Zahlen für {num_type}: {e}")
+                print(f"⚠️ Fehler bei Komposita-Generierung für {testname}: {e}")
                 composites = []
 
-        return sorted(primes + composites)
+        result = sorted(primes + composites)
+        print(f"➡️  Gesamtzahlen für '{testname}': {len(result)}")
+        return result
 
     # Allgemeiner Fall: p, z, g:x
     try:
         p_count, z_count, _ = compute_number_distribution(n, num_type)
     except ValueError as e:
-        print(f"❌ Ungültiger num_type '{num_type}': {e}")
+        print(f"❌ Ungültiger num_type '{num_type}' für Test '{testname}': {e}")
         return []
 
-    return generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count)
+    result = generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count)
+    print(f"✅ {len(result)} Zufallszahlen (p: {p_count}, z: {z_count}) für '{testname}': {result}")
+    return result

@@ -55,7 +55,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                 "false_positive": details.get("false_positive"),
                 "false_negative": details.get("false_negative"),
                 "error_count": details.get("error_count", ""),
-                "error_rate": round(details.get("error_rate", 0), 3) if "error_rate" in details else "",
+                "error_rate": round(details.get("error_rate") or 0, 3) if "error_rate" in details else "",
                 "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
                 "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
                 "worst_time": f"{details.get('worst_time', 0)*1000:.3f} ms",

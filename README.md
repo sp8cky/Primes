@@ -19,6 +19,28 @@ Python 3.13.3
 - Diese Jupyter-Datei dient als Dokumentation und explorative Umgebung.
 
 
+
+url mit commit
+
+---
+plotten was theoretische laufzeit ist und vergleichen
+methode kleinster quadrate - ausgleichgerade
+
+sonst loaufzeit berechnen über werte - in exponentialzeit darzustellen
+
+
+flußdiagramm
+
+
+---
+unterteilung diskussion
+erst implementierung
+und dann generell
+
+
+
+---
+
 ### Theoretischer Stand
 
 #### Allgemeine Primkriterien

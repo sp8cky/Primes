@@ -4,7 +4,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -114,9 +114,44 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
     result = math.factorial(p - 1) % p == p - 1
     return result
 
+def aks04_test(n: int, seed: Optional[int] = None) -> bool:
+    if n <= 1: raise ValueError("n muss > 1 sein")
+    if helpers.is_real_potency(n): return False  # echte Potenz => nicht prim
+
+    # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
+    log_n = math.log2(n)
+    r = 2
+    while True:
+        if gcd(n, r) == 1 and helpers.order(n, r) > log_n ** 2:
+            break
+        r += 1
+
+    # Schritt 2: Prüfe ggT(n, a) für a <= r
+    for a in range(2, r + 1):
+        d = gcd(a, n)
+        if 1 < d < n:
+            return False  # echter Teiler => nicht prim
+
+    # Schritt 3: n <= r => n ist prim
+    if n <= r: return True
+
+    # Schritt 4: Polynomprüfung für a <= sqrt(phi(r)) * log n
+    phi_r = totient(r)
+    max_a = math.floor(math.sqrt(phi_r) * log_n)
+    domain = ZZ
+
+    mod_poly = Poly(X**r - 1, X, domain=domain)
+    for a in range(1, max_a + 1):
+        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
+        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
+        if left != right:
+            return False
+
+    return True
 
 
-def aks_test(n: int, seed: Optional[int] = None) -> bool:
+
+def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1 or helpers.is_real_potency(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     l = math.ceil(math.log2(n))

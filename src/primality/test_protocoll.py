@@ -1,6 +1,6 @@
 import src.primality.helpers as helpers
 import random, math, hashlib
-from math import gcd
+from math import gcd, log2
 from sympy import factorint
 from statistics import mean
 from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors
@@ -37,7 +37,8 @@ def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
         "Lucas": {"a_values": []},
         "Optimized Lucas": {"a_values": {}},
         "Wilson": {"a_values": None},
-        "AKS": {"a_values": None, "other_fields": {}},
+        "AKS04": {"a_values": None, "other_fields": {}},
+        "AKS10": {"a_values": None, "other_fields": {}},
         "Proth": {"a_values": []},
         "Proth Variant": {"a_values": []},
         "Pocklington": {"a_values": []},
@@ -271,14 +272,82 @@ def wilson_criterion_protocoll(p: int, seed: Optional[int] = None) -> bool:
     return result
 
 
-def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+    testname = "AKS04"
+
     if n <= 1 or helpers.is_real_potency(n):
-        test_data["AKS"][n]["other_fields"]["initial_check"] = False
-        test_data["AKS"][n]["result"] = False
+        test_data[testname][n]["other_fields"]["initial_check"] = False
+        test_data[testname][n]["result"] = False
+        test_data[testname][n]["reason"] = "Ungültige Eingabe: ≤ 1 oder echte Potenz"
+        raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
+
+    # Initialisiere Protokollstruktur
+    test_data[testname][n]["other_fields"] = {
+        "initial_check": True,
+        "find_r": None,
+        "gcd_check": [],
+        "early_prime_check": None,
+        "polynomial_check": []
+    }
+
+    logn = log2(n)
+    logn_squared = logn ** 2
+    r = 2
+    while True:
+        ord_val = helpers.order(n, r)
+        if gcd(n, r) == 1 and ord_val > logn_squared:
+            test_data[testname][n]["other_fields"]["find_r"] = r
+            break
+        r += 1
+
+    # GCD-Prüfungen: 1 < (a, n) < n für a ≤ r
+    found_gcd_witness = False
+    for a in range(2, r + 1):
+        g = gcd(a, n)
+        test_data[testname][n]["other_fields"]["gcd_check"].append((a, g))
+        if 1 < g < n:
+            test_data[testname][n]["result"] = False
+            test_data[testname][n]["reason"] = f"Nichttrivialer Teiler gefunden: gcd({a}, {n}) = {g}"
+            return False
+
+    # Frühausstieg, falls n ≤ r
+    if n <= r:
+        test_data[testname][n]["other_fields"]["early_prime_check"] = True
+        test_data[testname][n]["result"] = True
+        return True
+    else:
+        test_data[testname][n]["other_fields"]["early_prime_check"] = False
+
+    # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
+    max_a = int((helpers.order(n, r) ** 0.5) * logn)
+    domain = ZZ
+    mod_poly = Poly(X**r - 1, X, domain=domain)
+
+    for a in range(1, max_a + 1):
+        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
+        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
+
+        passed = (left == right)
+        test_data[testname][n]["other_fields"]["polynomial_check"].append((a, passed))
+
+        if not passed:
+            test_data[testname][n]["result"] = False
+            test_data[testname][n]["reason"] = f"Polynomprüfung für a={a} fehlgeschlagen"
+            return False
+
+    test_data[testname][n]["result"] = True
+    return True
+
+
+
+def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+    if n <= 1 or helpers.is_real_potency(n):
+        test_data["AKS10"][n]["other_fields"]["initial_check"] = False
+        test_data["AKS10"][n]["result"] = False
         raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     # Reset steps if test has to be run again
-    test_data["AKS"][n]["other_fields"] = {
+    test_data["AKS10"][n]["other_fields"] = {
         "initial_check": True,
         "find_r": None,
         "prime_divisor_check": None,
@@ -289,7 +358,7 @@ def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     r = 2
     while True:
         if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
-            test_data["AKS"][n]["other_fields"]["find_r"] = r
+            test_data["AKS10"][n]["other_fields"]["find_r"] = r
             break
         r += 1
 
@@ -297,16 +366,16 @@ def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     for p in primerange(2, l ** 5 + 1):
         if n % p == 0:
             if p == n:
-                test_data["AKS"][n]["result"] = True
-                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor p={p} (n selbst)"
+                test_data["AKS10"][n]["result"] = True
+                test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor p={p} (n selbst)"
                 return True
             else:
-                test_data["AKS"][n]["result"] = False
-                test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = f"Teiler p={p} von n"
-                test_data["AKS"][n]["reason"] = f"n ist durch p={p} teilbar"
+                test_data["AKS10"][n]["result"] = False
+                test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = f"Teiler p={p} von n"
+                test_data["AKS10"][n]["reason"] = f"n ist durch p={p} teilbar"
                 return False
 
-    test_data["AKS"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
+    test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
@@ -318,15 +387,14 @@ def aks_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
 
         test_passed = (left == right)
-        test_data["AKS"][n]["other_fields"]["polynomial_check"].append((a, test_passed))
+        test_data["AKS10"][n]["other_fields"]["polynomial_check"].append((a, test_passed))
 
         if not test_passed:
-            test_data["AKS"][n]["result"] = False
+            test_data["AKS10"][n]["result"] = False
             return False
 
-    test_data["AKS"][n]["result"] = True
+    test_data["AKS10"][n]["result"] = True
     return True
-
 
 
 def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:

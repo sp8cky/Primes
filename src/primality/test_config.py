@@ -66,9 +66,17 @@ TEST_CONFIG = {
         "testgroup": "Langsame Tests",
         "plotgroup": "Langsame Tests"
     },
-    "AKS": {
-        "runtime_function": aks_test,
-        "protocol_function": aks_test_protocoll,
+    "AKS04": {
+        "runtime_function": aks04_test,
+        "protocol_function": aks04_test_protocoll,
+        "prob_test": False,
+        "number_type": "small",
+        "testgroup": "Langsame Tests",
+        "plotgroup": "Langsame Tests"
+    },
+    "AKS10": {
+        "runtime_function": aks10_test,
+        "protocol_function": aks10_test_protocoll,
         "prob_test": False,
         "number_type": "small",
         "testgroup": "Langsame Tests",

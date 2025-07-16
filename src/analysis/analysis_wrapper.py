@@ -220,7 +220,7 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Initial Lucas", "Lucas", "Optimized Lucas"]
+    run_tests = ["Wilson", "AKS04", "AKS10"]
     repeat_tests = [5,5,5]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
     k10     = 10**4
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     my_group_ranges={
         "Probabilistische Tests":   {"n": 10, "start": 100,"end": k10},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
-        "Langsame Tests":           {"n": 10, "start": 100, "end": k10},
+        "Langsame Tests":           {"n": 2, "start": 10, "end": 1000},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
         "Pocklington-Tests":        {"n": 10, "start": 100, "end": k10},
         "Rao":                      {"n": 10, "start": 100, "end": k10},
@@ -268,7 +268,7 @@ if __name__ == "__main__":
         start=1_000,
         end=100_000,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         seed=3,
         protocoll=True,

@@ -3,7 +3,7 @@ import random, math, hashlib
 from math import gcd, log2
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, n_order, perfect_power, cyclotomic_poly
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -106,7 +106,7 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
     return True
 
 def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n):
+    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n):
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
 
     if n in (2, 3):
@@ -275,7 +275,7 @@ def wilson_criterion_protocoll(p: int, seed: Optional[int] = None) -> bool:
 def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     testname = "AKS04"
 
-    if n <= 1 or helpers.is_real_potency(n):
+    if n <= 1 or perfect_power(n):
         test_data[testname][n]["other_fields"]["initial_check"] = False
         test_data[testname][n]["result"] = False
         test_data[testname][n]["reason"] = "Ungültige Eingabe: ≤ 1 oder echte Potenz"
@@ -294,7 +294,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     logn_squared = logn ** 2
     r = 2
     while True:
-        ord_val = helpers.order(n, r)
+        ord_val = n_order(n, r)
         if gcd(n, r) == 1 and ord_val > logn_squared:
             test_data[testname][n]["other_fields"]["find_r"] = r
             break
@@ -319,7 +319,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
     # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
-    max_a = int((helpers.order(n, r) ** 0.5) * logn)
+    max_a = int((n_order(n, r) ** 0.5) * logn)
     domain = ZZ
     mod_poly = Poly(X**r - 1, X, domain=domain)
 
@@ -341,7 +341,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1 or helpers.is_real_potency(n):
+    if n <= 1 or perfect_power(n):
         test_data["AKS10"][n]["other_fields"]["initial_check"] = False
         test_data["AKS10"][n]["result"] = False
         raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
@@ -357,7 +357,7 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     l = math.ceil(math.log2(n))
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and n_order(n, r) > l ** 2:
             test_data["AKS10"][n]["other_fields"]["find_r"] = r
             break
         r += 1
@@ -642,7 +642,7 @@ def grau_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.13
 
     exponent = (n - 1) // p
     base = pow(a, exponent, n)
-    phi_p = helpers.cyclotomic_polynomial(p, base) % n
+    phi_p = cyclotomic_poly(p, base) % n
     is_prime = (phi_p == 0)
     test_data["Grau"][n]["a_values"] = [a]
     test_data["Grau"][n]["other_fields"] = [K, p, n_exp, phi_p]
@@ -670,7 +670,7 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     for j in range(n_exp - 1, -1, -1):
         phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
-        phi_p = helpers.cyclotomic_polynomial(p, phi_value) % n
+        phi_p = cyclotomic_poly(p, phi_value) % n
 
         cond1 = (phi_p == 0)
         cond2 = (2 * (n_exp - j) > math.log(K, p) + n_exp)

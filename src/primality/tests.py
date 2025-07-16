@@ -4,7 +4,7 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly
 from sympy.abc import X
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
@@ -23,7 +23,7 @@ def fermat_test(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
     return True
 
 def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_real_potency(n): 
+    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): 
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     if n in (2, 3): return True
     # Zerlegung von n - 1 in 2^s * m
@@ -116,13 +116,13 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
 
 def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: raise ValueError("n muss > 1 sein")
-    if helpers.is_real_potency(n): return False  # echte Potenz => nicht prim
+    if perfect_power(n): return False  # echte Potenz => nicht prim
 
     # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
     log_n = math.log2(n)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > log_n ** 2:
+        if gcd(n, r) == 1 and n_order(n, r) > log_n ** 2:
             break
         r += 1
 
@@ -152,12 +152,12 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
 
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1 or helpers.is_real_potency(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
+    if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     l = math.ceil(math.log2(n))
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and n_order(n, r) > l ** 2:
             break
         r += 1
 
@@ -340,7 +340,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
 
     exponent = (n - 1) // p
     base = pow(a, exponent, n)
-    phi_p = helpers.cyclotomic_polynomial(p, base) % n
+    phi_p = cyclotomic_poly(p, base) % n
     return phi_p == 0
 
 
@@ -358,7 +358,7 @@ def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
 
     for j in range(n_exp - 1, -1, -1):
         phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
-        phi_p = helpers.cyclotomic_polynomial(p, phi_value) % n
+        phi_p = cyclotomic_poly(p, phi_value) % n
         if (phi_p == 0) and (2 * (n_exp - j) > log_p_K + n_exp):
             return True
     return False

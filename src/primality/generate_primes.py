@@ -1,7 +1,7 @@
 import random
 from typing import List, Dict
 from collections import defaultdict
-from sympy import isprime, primerange, primefactors
+from sympy import isprime, primerange, primefactors, perfect_power
 from math import log2
 import src.primality.helpers as helpers
 from src.primality.test_config import *
@@ -55,7 +55,7 @@ def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]
 
 
 def is_valid_composite(candidate: int) -> bool:
-    return candidate >= 2 and candidate % 2 == 1 and not helpers.is_real_potency(candidate) and not isprime(candidate)
+    return candidate >= 2 and candidate % 2 == 1 and not perfect_power(candidate) and not isprime(candidate)
 
 def generate_numbers_per_group(
     n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None, num_type: str = "g:x"
@@ -144,7 +144,7 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
     while (len(primes) < p_count or len(composites) < z_count) and attempts < max_attempts:
         attempts += 1
         candidate = r.randint(start, end)
-        if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or helpers.is_real_potency(candidate):
+        if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
             continue
         if isprime(candidate):
             if len(primes) < p_count:

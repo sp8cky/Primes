@@ -7,18 +7,6 @@ def divides(a: int, b: int) -> bool:
     if a == 0: raise ValueError("Division by 0.")
     return b % a == 0
 
-# Check if n is a real potency, i.e., n = a^b with a, b > 1
-def is_real_potency(n: int) -> bool:
-    result = perfect_power(n)
-    return isinstance(result, tuple) and result[1] > 1
-
-# calculate the order of n modulo r
-def order(n: int, r: int) -> int:
-    try:
-        return n_order(n, r)
-    except ValueError:
-        return 0  # Wenn gcd(n, r) ≠ 1 oder Ordnung nicht definiert
-
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:
     if n <= 2: return None
@@ -139,7 +127,6 @@ def compute_all_valid_decompositions(N):
     return decompositions if decompositions else [None]
 
 
-
 # Find smallest quadratic non-residue modulo p
 def find_quadratic_non_residue(p: int) -> int:
     for a in range(2, p):
@@ -147,9 +134,6 @@ def find_quadratic_non_residue(p: int) -> int:
             return a
     return None
 
-# Compute nth cyclotomic polynomial at x
-def cyclotomic_polynomial(n, x: int) -> int:
-    return cyclotomic_poly(n, x)
 
 # Prüft ob n eine Fermat-Zahl der Form n=2^(2^k) + 1 ist
 def is_fermat_number(n: int) -> bool:

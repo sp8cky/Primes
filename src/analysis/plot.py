@@ -136,8 +136,18 @@ def plot_runtime(
         ax = plt.gca()
         ax.set_xticks(ticks)
         ax.set_xlim(x_min, x_max)
-        #ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
-        ax.xaxis.set_major_formatter(FuncFormatter(human_format))
+        
+        # Neue wissenschaftliche Formatierung für X-Achse
+        def scientific_format(x, pos):
+            if x == 0:
+                return "0"
+            exponent = int(math.log10(x))
+            coefficient = x / (10**exponent)
+            if coefficient.is_integer():
+                coefficient = int(coefficient)
+            return fr"${coefficient}\times10^{{{exponent}}}$"
+        
+        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
     else:
         plt.xscale("linear")
         plt.yscale("linear")
@@ -205,7 +215,6 @@ def plot_runtime(
     plt.close()
 
 
-
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -266,8 +275,18 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_xscale("linear")
         ax1.set_xlim(x_min, x_max)
         ax1.set_xticks(list(range(x_min, x_max + 1, step)))
-        #ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
-        ax1.xaxis.set_major_formatter(FuncFormatter(human_format))
+        
+        # Neue wissenschaftliche Formatierung für X-Achse
+        def scientific_format(x, pos):
+            if x == 0:
+                return "0"
+            exponent = int(math.log10(x))
+            coefficient = x / (10**exponent)
+            if coefficient.is_integer():
+                coefficient = int(coefficient)
+            return fr"${coefficient}\times10^{{{exponent}}}$"
+        
+        ax1.xaxis.set_major_formatter(FuncFormatter(scientific_format))
 
         if show_errors:
             ax2 = ax1.twinx()

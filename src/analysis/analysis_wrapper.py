@@ -224,9 +224,23 @@ if __name__ == "__main__":
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     repeat_tests = [5,5,5]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
+    t10     = 10_000
+    t100    = 100_000
+    mio1    = 1_000_000
+    mio10   = 10_000_000
+    mio100  = 100_000_000
+    mrd1    = 1_000_000_000
+    mrd10   = 10_000_000_000
+    mrd100  = 100_000_000_000
+    b1      = 1_000_000_000_000
+    b10     = 10_000_000_000_000
+    b100    = 100_000_000_000_000
+    brd1    = 1_000_000_000_000_000
+    brd10   = 10_000_000_000_000_000
+    brd100  = 100_000_000_000_000_000
 
     group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 1_000, "end": 100_000},
+        "Probabilistische Tests":   {"n": 10, "start": 1_000, "end": b10},
         "Lucas-Tests":              {"n": 20, "start": 100_000, "end": 1_000_000},
         "Langsame Tests":           {"n": 20, "start": 1000, "end": 1_000_000},
         "Proth-Tests":              {"n": 20, "start": 1000, "end": 1_000_000},

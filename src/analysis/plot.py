@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
 import matplotlib.ticker as ticker
+from matplotlib.ticker import FuncFormatter
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
@@ -14,16 +15,21 @@ def fixed_step_range(x_min, x_max, steps=10):
     return x_min_rounded, x_max_rounded, step
 
 
-def choose_step_range(x_min, x_max):
+def choose_step_range(x_min, x_max, target_steps=10):
     range_ = x_max - x_min
-    rough_step = max(1, range_ // 10)  # ca. 8 Intervalle
-    base_candidates = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
+    if range_ <= 0:
+        return 1  # fallback bei ungültigem Bereich
 
-    # Finde das kleinste base_candidate >= rough_step
-    for base in base_candidates:
-        if base >= rough_step:
-            return base
-    return base_candidates[-1]  # fallback auf max base
+    rough_step = range_ // target_steps
+    magnitude = 10 ** int(math.floor(math.log10(rough_step)))
+    multiples = [1, 2, 5, 10]
+
+    for m in multiples:
+        step = m * magnitude
+        if range_ // step <= target_steps:
+            return step
+
+    return 10 * magnitude  # fallback
 
 
 def round_down(x, base):
@@ -32,6 +38,24 @@ def round_down(x, base):
 def round_up(x, base):
     return ((x + base - 1) // base) * base
 
+def human_format(x, pos):
+    if x >= 1_000_000_000:
+        return f"{x/1_000_000_000:.0f} Mrd"
+    elif x >= 1_000_000:
+        return f"{x/1_000_000:.0f} Mio"
+    elif x >= 1_000:
+        return f"{x/1_000:.0f} Tsd"
+    else:
+        return str(int(x))
+    
+def log_base_10_label(x, pos):
+    if x <= 0:
+        return "0"
+    exponent = int(math.log10(x))
+    if 10 ** exponent == x:
+        return rf"$10^{{{exponent}}}$"
+    else:
+        return f"{int(x)}"  # fallback, z. B. für unglatte Werte
 
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
@@ -112,7 +136,8 @@ def plot_runtime(
         ax = plt.gca()
         ax.set_xticks(ticks)
         ax.set_xlim(x_min, x_max)
-        ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+        #ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+        ax.xaxis.set_major_formatter(FuncFormatter(human_format))
     else:
         plt.xscale("linear")
         plt.yscale("linear")
@@ -241,7 +266,8 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_xscale("linear")
         ax1.set_xlim(x_min, x_max)
         ax1.set_xticks(list(range(x_min, x_max + 1, step)))
-        ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+        #ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+        ax1.xaxis.set_major_formatter(FuncFormatter(human_format))
 
         if show_errors:
             ax2 = ax1.twinx()

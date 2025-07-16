@@ -194,7 +194,11 @@ def run_primetest_analysis(
             show_errors=True,
             timestamp=timestamp,
             seed=seed,
-            variant=variant
+            variant=variant,
+            total_numbers=n_numbers,
+            runs_per_n=test_repeats,
+            start=start,
+            end=end
         )
 
     # CSV-Export

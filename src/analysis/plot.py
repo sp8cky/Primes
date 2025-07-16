@@ -7,6 +7,11 @@ from matplotlib.ticker import FuncFormatter
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
+# graph: avg runtime über alle wiederholungen in ms
+# balken oben/unten: fehlerbalken, die standardabweichung zeigt
+# schattierung: bereich zwischen best/worst case
+
+
 
 def fixed_step_range(x_min, x_max, steps=10):
     step = choose_step_range(x_min, x_max)  # ← nutze deine eigene Logik!
@@ -122,8 +127,8 @@ def plot_runtime(
         if best and worst:
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
-    plt.xlabel("Getestete Zahl n")
-    plt.ylabel("Laufzeit (ms)")
+    plt.xlabel("Testzahl n")
+    plt.ylabel("Laufzeit [ms] (logarithmisch)" if use_log else "Laufzeit [ms] (linear)")
 
     if use_log:
         plt.xscale("linear")
@@ -155,9 +160,9 @@ def plot_runtime(
     # Titel
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = f"Variante 1, n = {total_numbers}, Wiederholungen = {runs_per_n}, start = {start}, end = {end}, Seed = {seed}"
+        subtitle = fr"Variante 1: Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     elif variant == 2:
-        subtitle = f"Variante 2, Seed = {seed}"
+        subtitle = fr"Variante 2: Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     else:
         subtitle = f"Seed = {seed}"
 
@@ -226,6 +231,8 @@ def plot_runtime(
     plt.savefig(path)
     plt.close()
 
+
+
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -235,6 +242,10 @@ def plot_runtime_and_errorrate_by_group(
     timestamp: str = None,
     seed: int = None,
     variant: int = None,
+    total_numbers=None, 
+    runs_per_n=None, 
+    start=None, 
+    end=None
 ):
     os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -277,10 +288,12 @@ def plot_runtime_and_errorrate_by_group(
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
-
-        ax1.set_title(f"Laufzeitverhalten der Gruppe: {group}")
-        ax1.set_xlabel("Getestete Zahl n")
-        ax1.set_ylabel("Durchschnittliche Laufzeit (ms)")
+        title = f"Laufzeitverhalten der Gruppe: {group}"
+        subtitle = fr"Variante 2: Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        #ax1.set_title(f"Laufzeitverhalten der Gruppe: {group}")
+        ax1.set_title(f"{title}\n{subtitle}")
+        ax1.set_xlabel("Testzahl n")
+        ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)")
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 

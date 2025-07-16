@@ -61,7 +61,7 @@ def generate_numbers_per_group(
     n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None, num_type: str = "g:x"
 ):
     r = random.Random(seed)
-    numbers_per_test = defaultdict(list)
+    numbers_per_test = defaultdict(list)    
     seen_groups = []
 
     for conf in TEST_CONFIG.values():
@@ -88,7 +88,7 @@ def generate_numbers_per_group(
         unique_number_type = group_number_types.pop() if len(group_number_types) == 1 else ""
 
         if unique_number_type and unique_number_type in {
-            "lucas", "fermat", "mersenne", "proth", "pocklington", "rao", "ramzy"
+            "fermat", "mersenne", "proth", "pocklington", "rao", "ramzy" #"lucas", 
         }:
             try:
                 result = generate_numbers_for_test(
@@ -101,7 +101,7 @@ def generate_numbers_per_group(
                 for testname in relevant_tests:
                     numbers_per_test[testname] = result
                     p_count, z_count, _ = compute_number_distribution(group_n, "g:1.0")
-                    print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='{unique_number_type}': {len(result)} Zahlen (p: {p_count}, z: {z_count}): {result}")
+                    print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='{unique_number_type}': {len(result)} Zahlen (p: {p_count}, z: {z_count}): ZAHL1 {result}")
             except ValueError as e:
                 print(f"⚠️ Fehler bei Gruppengenerierung für '{group}': {e}")
                 if not allow_partial_numbers:
@@ -119,7 +119,7 @@ def generate_numbers_per_group(
             )
             for testname in relevant_tests:
                 numbers_per_test[testname] = shared_numbers
-                print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='': {len(shared_numbers)} Zufallszahlen (p: {p_count}, z: {z_count}): {shared_numbers}")
+                print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='': {len(shared_numbers)} Zufallszahlen (p: {p_count}, z: {z_count}): ZAHL2 {shared_numbers}")
         except ValueError as e:
             print(f"⚠️ Fehler bei Zahlengenerierung für Gruppe '{group}': {e}")
             if not allow_partial_numbers:
@@ -311,7 +311,7 @@ def generate_numbers_for_test(
         "pocklington": generate_pocklington_numbers,
         "ramzy": generate_ramzy_numbers,
         "rao": generate_rao_numbers,
-        "lucas": generate_lucas_primes,
+        #"lucas": generate_lucas_primes,
     }
 
     try:

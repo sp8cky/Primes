@@ -39,7 +39,6 @@ def run_primetest_analysis(
     group_ranges: Dict[str, Dict[str, int]] = None,
     custom_group_numbers: Dict[str, List[int]] = None
 ) -> Dict[str, List[Dict]]:
-
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
     # Test-Konfiguration laden
@@ -175,7 +174,7 @@ def run_primetest_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(18, 9),
+            figsize=(20, 14),
             total_numbers=n_numbers,
             runs_per_n=test_repeats,
             group_ranges=group_ranges,
@@ -191,7 +190,7 @@ def run_primetest_analysis(
             datasets=datasets,
             test_data=test_data,
             group_ranges=group_ranges,
-            figsize=(12, 7),
+            figsize=(20, 14),
             show_errors=True,
             timestamp=timestamp,
             seed=seed,
@@ -221,34 +220,46 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Initial Lucas", "Lucas", "Optimized Lucas"]
     repeat_tests = [5,5,5]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
-    t10     = 10_000
-    t100    = 100_000
-    mio1    = 1_000_000
-    mio10   = 10_000_000
-    mio100  = 100_000_000
-    mrd1    = 1_000_000_000
-    mrd10   = 10_000_000_000
-    mrd100  = 100_000_000_000
-    b1      = 1_000_000_000_000
-    b10     = 10_000_000_000_000
-    b100    = 100_000_000_000_000
-    brd1    = 1_000_000_000_000_000
-    brd10   = 10_000_000_000_000_000
-    brd100  = 100_000_000_000_000_000
+    k10     = 10**4
+    k100    = 10**5
+    m1      = 10**6
+    m10     = 10**7
+    m100    = 10**8
+    md1     = 10**9
+    md10    = 10**10
+    md100   = 10**11
+    b1      = 10**12
+    b10     = 10**13
+    b100    = 10**14
+    bd1     = 10**15
+    bd10    = 10**16
+    bd100   = 10**17
+    t1      = 10**18
+    t10     = 10**19
+    t100    = 10**20
+    td1     = 10**21
+    td10    = 10**22
+    td100   = 10**23
+    q1      = 10**24
+    q10     = 10**25
+    q100    = 10**26
+    qd1     = 10**27
+    qd10    = 10**28
+    qd100   = 10**29
 
-    group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 1_000, "end": b10},
-        "Lucas-Tests":              {"n": 20, "start": 100_000, "end": 1_000_000},
-        "Langsame Tests":           {"n": 20, "start": 1000, "end": 1_000_000},
-        "Proth-Tests":              {"n": 20, "start": 1000, "end": 1_000_000},
-        "Pocklington-Tests":        {"n": 20, "start": 1000, "end": 1_000_000},
-        "Rao":                      {"n": 20,"start": 1000, "end": 1_000_000},
-        "Ramzy":                    {"n": 20, "start": 1000, "end": 1_000_000},
-        "Fermat-Zahlen":            {"n": 20, "start": 0,    "end": 1_000_000},
-        "Mersenne-Zahlen":          {"n": 20, "start": 0,    "end": 1_000_000},
+    my_group_ranges={
+        "Probabilistische Tests":   {"n": 10, "start": 100,"end": k10},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
+        "Langsame Tests":           {"n": 10, "start": 100, "end": k10},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": k10},
+        "Rao":                      {"n": 10, "start": 100, "end": k10},
+        "Ramzy":                    {"n": 10, "start": 100, "end": k10},
+        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": k10},
+        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": k10},
     }
 
     run_primetest_analysis(
@@ -257,14 +268,14 @@ if __name__ == "__main__":
         start=1_000,
         end=100_000,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=58,
+        seed=3,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        allow_partial_numbers = True,
         variant=2,
-        group_ranges=group_ranges,
+        allow_partial_numbers = True,
+        group_ranges=my_group_ranges,
         #custom_group_numbers=custom_group_numbers
     )

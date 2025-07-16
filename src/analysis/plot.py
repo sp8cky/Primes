@@ -182,7 +182,19 @@ def plot_runtime(
         range_str = ""
         if variant == 2 and group_ranges and group in group_ranges:
             r = group_ranges[group]
-            range_str = f" (n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
+            # Wissenschaftliche Formatierung für die Range in der Legende
+            def format_range_value(v):
+                if v == 0:
+                    return "0"
+                exponent = int(math.log10(v))
+                coefficient = v / (10**exponent)
+                if coefficient.is_integer():
+                    coefficient = int(coefficient)
+                return fr"${coefficient}\times10^{{{exponent}}}$"
+            
+            start_fmt = format_range_value(r.get('start', 0))
+            end_fmt = format_range_value(r.get('end', 0))
+            range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
 
         legend_elements.append(Line2D(
             [0], [0], linestyle='none', label=f"{group}{range_str}",
@@ -203,7 +215,7 @@ def plot_runtime(
             handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
             legend_elements.append(handle)
 
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=9)
+    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=12)
 
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
@@ -316,13 +328,26 @@ def plot_runtime_and_errorrate_by_group(
                 color = color_map.get(test_name, "gray")
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
 
-            ax2.legend(loc="upper right", fontsize=8)
+            ax2.legend(loc="upper right", fontsize=12)
 
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
-            range_str = f"(n={r.get('n','?')}, start={r.get('start','?')}, end={r.get('end','?')})"
-        ax1.legend(title=f"{group} {range_str}", fontsize=9)
+            # Wissenschaftliche Formatierung für die Range in der Legende
+            def format_range_value(v):
+                if v == 0:
+                    return "0"
+                exponent = int(math.log10(v))
+                coefficient = v / (10**exponent)
+                if coefficient.is_integer():
+                    coefficient = int(coefficient)
+                return fr"${coefficient}\times10^{{{exponent}}}$"
+            
+            start_fmt = format_range_value(r.get('start', 0))
+            end_fmt = format_range_value(r.get('end', 0))
+            range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
+
+        ax1.legend(title=f"{group}{range_str}", fontsize=12)
 
         fig.tight_layout()
 

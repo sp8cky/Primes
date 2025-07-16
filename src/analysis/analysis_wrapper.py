@@ -253,7 +253,7 @@ if __name__ == "__main__":
     my_group_ranges={
         "Probabilistische Tests":   {"n": 10, "start": 100,"end": k10},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
-        "Langsame Tests":           {"n": 10, "start": 10, "end": 1000},
+        "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
         "Pocklington-Tests":        {"n": 10, "start": 100, "end": k10},
         "Rao":                      {"n": 10, "start": 100, "end": k10},

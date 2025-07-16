@@ -7,6 +7,14 @@ def divides(a: int, b: int) -> bool:
     if a == 0: raise ValueError("Division by 0.")
     return b % a == 0
 
+def order(n: int, r: int) -> int:
+    if gcd(n, r) != 1:
+        return 0  # Ordnung nicht definiert
+    try:
+        return n_order(n, r)
+    except ValueError:
+        return 0  # Andere Fehler
+
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:
     if n <= 2: return None

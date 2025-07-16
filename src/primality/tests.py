@@ -122,7 +122,7 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     log_n = math.log2(n)
     r = 2
     while True:
-        if gcd(n, r) == 1 and n_order(n, r) > log_n ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > log_n ** 2:
             break
         r += 1
 
@@ -157,7 +157,7 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     l = math.ceil(math.log2(n))
     r = 2
     while True:
-        if gcd(n, r) == 1 and n_order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
             break
         r += 1
 

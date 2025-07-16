@@ -1,4 +1,4 @@
-import os, math
+import os, math, statistics
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
@@ -226,7 +226,6 @@ def plot_runtime(
     plt.savefig(path)
     plt.close()
 
-
 def plot_runtime_and_errorrate_by_group(
     datasets: dict,
     test_data: dict,
@@ -270,6 +269,11 @@ def plot_runtime_and_errorrate_by_group(
             color = line_handle.get_color()
             color_map[test_name] = color
 
+            # Add average runtime marker on left y-axis
+            avg_runtime = statistics.mean(avg_times) if avg_times else 0
+            ax1.plot(0, avg_runtime, 'x', markersize=10, color=color,
+                    markeredgewidth=2, transform=ax1.get_yaxis_transform())
+
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
@@ -288,7 +292,6 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_xlim(x_min, x_max)
         ax1.set_xticks(list(range(x_min, x_max + 1, step)))
         
-        # Neue wissenschaftliche Formatierung für X-Achse
         def scientific_format(x, pos):
             if x == 0:
                 return "0"
@@ -327,13 +330,17 @@ def plot_runtime_and_errorrate_by_group(
 
                 color = color_map.get(test_name, "gray")
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
+                
+                # Add average error rate marker on right y-axis
+                avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
+                ax2.plot(1, avg_error, 'x', markersize=10, color=color,
+                         markeredgewidth=2, transform=ax2.get_yaxis_transform())
 
             ax2.legend(loc="upper right", fontsize=12)
 
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
-            # Wissenschaftliche Formatierung für die Range in der Legende
             def format_range_value(v):
                 if v == 0:
                     return "0"

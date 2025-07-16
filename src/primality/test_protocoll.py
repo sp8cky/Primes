@@ -294,7 +294,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     logn_squared = logn ** 2
     r = 2
     while True:
-        ord_val = n_order(n, r)
+        ord_val = helpers.order(n, r)
         if gcd(n, r) == 1 and ord_val > logn_squared:
             test_data[testname][n]["other_fields"]["find_r"] = r
             break
@@ -319,7 +319,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
     # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
-    max_a = int((n_order(n, r) ** 0.5) * logn)
+    max_a = int((helpers.order(n, r) ** 0.5) * logn)
     domain = ZZ
     mod_poly = Poly(X**r - 1, X, domain=domain)
 
@@ -357,7 +357,7 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     l = math.ceil(math.log2(n))
     r = 2
     while True:
-        if gcd(n, r) == 1 and n_order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
             test_data["AKS10"][n]["other_fields"]["find_r"] = r
             break
         r += 1

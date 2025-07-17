@@ -256,7 +256,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 1000, "start": t1,"end": qd100},
+        "Probabilistische Tests":   {"n": 100, "start": m1,"end": b1},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     }
 
     run_primetest_analysis(
-        n_numbers=1000,
+        n_numbers=100,
         num_type='p',
         start=0,
         end=100,

@@ -224,7 +224,8 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Wilson", "AKS04", "AKS10"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_tests = [5,5,5]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
     k10     = 10**4
@@ -255,7 +256,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100,"end": k10},
+        "Probabilistische Tests":   {"n": 1000, "start": t1,"end": qd100},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
@@ -267,14 +268,14 @@ if __name__ == "__main__":
     }
 
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=1000,
         num_type='p',
         start=0,
-        end=k10,
+        end=100,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=4,
+        seed=6,
         protocoll=True,
         save_results=True,
         show_plot=True,

@@ -61,6 +61,18 @@ def log_base_10_label(x, pos):
         return rf"$10^{{{exponent}}}$"
     else:
         return f"{int(x)}"  # fallback, z. B. für unglatte Werte
+    
+# Neue wissenschaftliche Formatierung für X-Achse
+def scientific_format(x, pos):
+    if x == 0:
+        return "0"
+    exponent = int(math.log10(x))
+    coefficient = x / (10**exponent)
+    if coefficient.is_integer():
+        coefficient = int(coefficient)
+    return fr"${coefficient}\times10^{{{exponent}}}$"
+
+
 
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
@@ -142,16 +154,6 @@ def plot_runtime(
         ax.set_xticks(ticks)
         ax.set_xlim(x_min, x_max)
         
-        # Neue wissenschaftliche Formatierung für X-Achse
-        def scientific_format(x, pos):
-            if x == 0:
-                return "0"
-            exponent = int(math.log10(x))
-            coefficient = x / (10**exponent)
-            if coefficient.is_integer():
-                coefficient = int(coefficient)
-            return fr"${coefficient}\times10^{{{exponent}}}$"
-        
         ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
     else:
         plt.xscale("linear")
@@ -160,9 +162,10 @@ def plot_runtime(
     # Titel
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     elif variant == 2:
-        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        #subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     else:
         subtitle = f"Seed = {seed}"
 
@@ -289,8 +292,8 @@ def plot_runtime_and_errorrate_by_group(
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
         title = f"Laufzeitverhalten der Gruppe: {group}"
-        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-        #ax1.set_title(f"Laufzeitverhalten der Gruppe: {group}")
+        #subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         ax1.set_title(f"{title}\n{subtitle}")
         ax1.set_xlabel("Testzahl n")
         ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)")
@@ -304,15 +307,6 @@ def plot_runtime_and_errorrate_by_group(
         ax1.set_xscale("linear")
         ax1.set_xlim(x_min, x_max)
         ax1.set_xticks(list(range(x_min, x_max + 1, step)))
-        
-        def scientific_format(x, pos):
-            if x == 0:
-                return "0"
-            exponent = int(math.log10(x))
-            coefficient = x / (10**exponent)
-            if coefficient.is_integer():
-                coefficient = int(coefficient)
-            return fr"${coefficient}\times10^{{{exponent}}}$"
         
         ax1.xaxis.set_major_formatter(FuncFormatter(scientific_format))
 

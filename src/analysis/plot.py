@@ -160,9 +160,9 @@ def plot_runtime(
     # Titel
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = fr"Variante 1: Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     elif variant == 2:
-        subtitle = fr"Variante 2: Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     else:
         subtitle = f"Seed = {seed}"
 
@@ -289,7 +289,7 @@ def plot_runtime_and_errorrate_by_group(
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
         title = f"Laufzeitverhalten der Gruppe: {group}"
-        subtitle = fr"Variante 2: Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         #ax1.set_title(f"Laufzeitverhalten der Gruppe: {group}")
         ax1.set_title(f"{title}\n{subtitle}")
         ax1.set_xlabel("Testzahl n")

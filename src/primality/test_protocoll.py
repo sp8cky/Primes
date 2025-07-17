@@ -290,12 +290,12 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         "polynomial_check": []
     }
 
-    logn = log2(n)
-    logn_squared = logn ** 2
+    log_n = log2(n)
+    log_sq = pow(log_n, 2)
     r = 2
     while True:
         ord_val = helpers.order(n, r)
-        if gcd(n, r) == 1 and ord_val > logn_squared:
+        if gcd(n, r) == 1 and ord_val > log_sq:
             test_data[testname][n]["other_fields"]["find_r"] = r
             break
         r += 1
@@ -319,13 +319,13 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
     # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
-    max_a = int((helpers.order(n, r) ** 0.5) * logn)
-    domain = ZZ
-    mod_poly = Poly(X**r - 1, X, domain=domain)
+    max_a = int((helpers.order(n, r) ** 0.5) * log_n)
+    mod_poly = Poly(X**r - 1, X, domain=ZZ)
 
     for a in range(1, max_a + 1):
-        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
-        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
+        X_plus_a = Poly(X + a, X)
+        left = X_plus_a.pow(n, mod_poly)
+        right = Poly(pow(X, n, mod_poly) + a, X)
 
         passed = (left == right)
         test_data[testname][n]["other_fields"]["polynomial_check"].append((a, passed))
@@ -355,15 +355,17 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     }
 
     l = math.ceil(math.log2(n))
+    l_sq = pow(l, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
             test_data["AKS10"][n]["other_fields"]["find_r"] = r
             break
         r += 1
 
     # Prüfe kleine Primteiler
-    for p in primerange(2, l ** 5 + 1):
+    l_pow5 = pow(l, 5)
+    for p in primerange(2, l_pow5 + 1):
         if n % p == 0:
             if p == n:
                 test_data["AKS10"][n]["result"] = True
@@ -379,18 +381,16 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
-    domain = ZZ
+    mod_poly = Poly(X**r - 1, X, domain=ZZ)
 
     for a in range(1, max_a + 1):
-        mod_poly = Poly(X**r - 1, X, domain=domain)
-        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
-        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
+        X_plus_a = Poly(X + a, X)
+        left = X_plus_a.pow(n, mod_poly)
+        right = Poly(pow(X, n, mod_poly) + a, X)
 
-        test_passed = (left == right)
-        test_data["AKS10"][n]["other_fields"]["polynomial_check"].append((a, test_passed))
-
-        if not test_passed:
+        if left != right:
             test_data["AKS10"][n]["result"] = False
+            test_data["AKS10"][n]["reason"] = f"Polynomprüfung für a={a} fehlgeschlagen"
             return False
 
     test_data["AKS10"][n]["result"] = True
@@ -431,7 +431,7 @@ def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     S = 4
     sequence = [S]
     for _ in range(p - 2):
-        S = (S**2 - 2) % n
+        S = (pow(S, 2, n) - 2) % n
         sequence.append(S)
     is_prime = (S == 0)
     test_data["Lucas-Lehmer"][n]["other_fields"] = [p, sequence, S]
@@ -554,7 +554,7 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
-    F = math.prod(p**e for p, e in factors.items())
+    F = math.prod(pow(p, e) for p, e in factors.items())
     R = (n - 1) // F
 
     if B is None:
@@ -669,7 +669,7 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         return False
 
     for j in range(n_exp - 1, -1, -1):
-        phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
+        phi_value = pow(a, K * pow(p, n_exp - j - 1), n)
         phi_p = cyclotomic_poly(p, phi_value) % n
 
         cond1 = (phi_p == 0)
@@ -683,35 +683,6 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         
     test_data["Grau Probability"][n]["result"] = False
     test_data["Grau Probability"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
-    return False
-
-def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
-    if n <= 1: raise ValueError("n must be greater than 1")
-    decomposition = helpers.find_pocklington_decomposition(n)
-    if not decomposition:
-        test_data["Ramzy"][n]["result"] = False
-        test_data["Ramzy"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
-        return False
-
-    K, p, n_exp = decomposition  # N = K*p^n + 1
-    test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
-    
-    for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
-        if p**(n_exp - 1) >= K * (p**j):
-            for a in range(2, n):
-                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
-                exponent = K * (p ** (n_exp - j - 1))
-                L = pow(a, exponent, n)
-                cond1 = (L != 1)
-                cond2 = (pow(L, p**(j+1), n) == 1)
-                
-                if cond1 and cond2:
-                    test_data["Ramzy"][n]["a_values"].append((a, cond1, cond2))
-                    test_data["Ramzy"][n]["result"] = True
-                    return True
-    
-    test_data["Ramzy"][n]["result"] = False
-    test_data["Ramzy"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
     return False
 
 
@@ -736,8 +707,8 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
         return False
     
-    cond2 = (pow(3, 1 << (n_exp - 1), n) + 1) % n == 0
-    if cond2: 
+    cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
+    if not cond2: 
         test_data["Rao"][n]["result"] = True
         test_data["Rao"][n]["a_values"].append((3, cond1, cond2))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
@@ -746,3 +717,34 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     test_data["Rao"][n]["result"] = False
     test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R | GF(3, n-1) → R ist primover"
     return False
+
+
+def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
+    if n <= 1: raise ValueError("n must be greater than 1")
+    decomposition = helpers.find_pocklington_decomposition(n)
+    if not decomposition:
+        test_data["Ramzy"][n]["result"] = False
+        test_data["Ramzy"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
+        return False
+
+    K, p, n_exp = decomposition  # N = K*p^n + 1
+    test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
+    
+    for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
+        if pow(p, n_exp - 1) >= K * pow(p, j):
+            for a in range(2, n):
+                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
+                exponent = K * pow(p, n_exp - j - 1)
+                L = pow(a, exponent, n)
+                cond1 = (L != 1)
+                cond2 = (pow(L, pow(p, j+1), n) == 1)
+
+                if cond1 and cond2:
+                    test_data["Ramzy"][n]["a_values"].append((a, cond1, cond2))
+                    test_data["Ramzy"][n]["result"] = True
+                    return True
+    
+    test_data["Ramzy"][n]["result"] = False
+    test_data["Ramzy"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
+    return False
+

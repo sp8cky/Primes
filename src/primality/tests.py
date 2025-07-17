@@ -120,9 +120,10 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
     # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
     log_n = math.log2(n)
+    log_sq = pow(log_n, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > log_n ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > log_sq:
             break
         r += 1
 
@@ -138,12 +139,12 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     # Schritt 4: Polynomprüfung für a <= sqrt(phi(r)) * log n
     phi_r = totient(r)
     max_a = math.floor(math.sqrt(phi_r) * log_n)
-    domain = ZZ
+    mod_poly = Poly(X**r - 1, X, domain=ZZ)
 
-    mod_poly = Poly(X**r - 1, X, domain=domain)
     for a in range(1, max_a + 1):
-        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
-        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
+        X_plus_a = Poly(X + a, X)
+        left = X_plus_a.pow(n, mod_poly)
+        right = Poly(pow(X, n, mod_poly) + a, X)
         if left != right:
             return False
 
@@ -155,33 +156,28 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     l = math.ceil(math.log2(n))
+    l_sq = pow(l, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l ** 2:
+        if gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
             break
         r += 1
 
     # Prüfe kleine Primteiler
-    for p in primerange(2, l ** 5 + 1):
+    l_pow5 = pow(l, 5)
+    for p in primerange(2, l_pow5 + 1):
         if n % p == 0:
-            if p == n:
-                return True
-            else:
-                return False
+            return p == n
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
-    domain = ZZ
+    mod_poly = Poly(X**r - 1, X, domain=ZZ)
 
     for a in range(1, max_a + 1):
-        mod_poly = Poly(X**r - 1, X, domain=domain)
-        left = Poly((X + a) ** n, X, domain=domain).trunc(n).rem(mod_poly)
-        right = Poly(X ** n + a, X, domain=domain).trunc(n).rem(mod_poly)
-
-        test_passed = (left == right)
-
-        if not test_passed:
-            return False
+        X_plus_a = Poly(X + a, X)
+        left = X_plus_a.pow(n, mod_poly)
+        right = Poly(pow(X, n, mod_poly) + a, X)
+        if left != right: return False
 
     return True
 
@@ -207,7 +203,7 @@ def lucas_lehmer_test(n: int, seed: Optional[int] = None) -> bool:
     S = 4
     sequence = [S]
     for _ in range(p - 2):
-        S = (S**2 - 2) % n
+        S = (pow(S, 2, n) - 2) % n
         sequence.append(S)
     return (S == 0)
 
@@ -288,7 +284,7 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
-    F = math.prod(p**e for p, e in factors.items())
+    F = math.prod(pow(p, e) for p, e in factors.items())
     R = (n - 1) // F
 
     if B is None: B = int(math.isqrt(n) // F) + 1
@@ -357,29 +353,10 @@ def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
     log_p_K = math.log(K, p) if K != 0 else float("-inf")
 
     for j in range(n_exp - 1, -1, -1):
-        phi_value = pow(a, K * (p ** (n_exp - j - 1)), n)
+        phi_value = pow(a, K * pow(p, n_exp - j - 1), n)
         phi_p = cyclotomic_poly(p, phi_value) % n
         if (phi_p == 0) and (2 * (n_exp - j) > log_p_K + n_exp):
             return True
-    return False
-
-def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
-    if n <= 1: raise ValueError("n must be greater than 1")
-    decomposition = helpers.find_ramzy_decomposition(n)
-    if not decomposition: 
-        return False
-
-    K, p, n_exp = decomposition  # N = K*p^n + 1
-    
-    for j in range(0, n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
-        if p**(n_exp - 1) >= K * (p**j):
-            for a in range(2, n):
-                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
-                exponent = K * (p ** (n_exp - j - 1))
-                L = pow(a, exponent, n)
-                if L == 1: continue
-                if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
-                    return True
     return False
 
 def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
@@ -391,11 +368,29 @@ def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
     p, n_exp = decomposition 
 
     exponent = (n - 1) // 2
-    cond1 = pow(3, exponent, n) == (n - 1)
-    if not cond1: return False
-    cond2 = (pow(3, 1 << (n_exp - 1), n) + 1) % n
-    if cond2 == 0: return True
+    if pow(3, exponent, n) != (n - 1): return False
+    cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
+    if not cond2: return True
 
     return False
 
+
+def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
+    if n <= 1: raise ValueError("n must be greater than 1")
+    decomposition = helpers.find_ramzy_decomposition(n)
+    if not decomposition: 
+        return False
+
+    K, p, n_exp = decomposition  # N = K*p^n + 1
+    
+    for j in range(0, n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
+        if pow(p, n_exp - 1) >= K * pow(p, j):
+            for a in range(2, n):
+                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
+                exponent = K * pow(p, n_exp - j - 1)
+                L = pow(a, exponent, n)
+                if L == 1: continue
+                if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
+                    return True
+    return False
 

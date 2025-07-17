@@ -195,10 +195,7 @@ def run_primetest_analysis(
             timestamp=timestamp,
             seed=seed,
             variant=variant,
-            total_numbers=n_numbers,
             runs_per_n=test_repeats,
-            start=start,
-            end=end
         )
 
     # CSV-Export
@@ -256,7 +253,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 100, "start": m1,"end": b1},
+        "Probabilistische Tests":   {"n": 100, "start": k100,"end": t1},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
@@ -271,11 +268,11 @@ if __name__ == "__main__":
         n_numbers=100,
         num_type='p',
         start=0,
-        end=100,
+        end=10,
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=6,
+        seed=7,
         protocoll=True,
         save_results=True,
         show_plot=True,

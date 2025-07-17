@@ -74,6 +74,20 @@ def scientific_format(x, pos):
 
 
 
+def format_scientific_str(x):
+    if x == 0:
+        return "0"
+    exponent = int(math.floor(math.log10(x)))
+    coefficient = x / (10**exponent)
+    # Falls Koeffizient ganzzahlig ist, als int formatieren
+    if coefficient.is_integer():
+        coefficient = int(coefficient)
+    return fr"${coefficient}\times10^{{{exponent}}}$"
+
+
+
+
+
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(18, 9), use_log=True,
@@ -162,10 +176,9 @@ def plot_runtime(
     # Titel
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     elif variant == 2:
-        #subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit angepassten Werten für n, start und end pro Gruppe, jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     else:
         subtitle = f"Seed = {seed}"
 
@@ -189,20 +202,14 @@ def plot_runtime(
     for group in group_order:
         range_str = ""
         if variant == 2 and group_ranges and group in group_ranges:
-            r = group_ranges[group]
-            # Wissenschaftliche Formatierung für die Range in der Legende
-            def format_range_value(v):
-                if v == 0:
-                    return "0"
-                exponent = int(math.log10(v))
-                coefficient = v / (10**exponent)
-                if coefficient.is_integer():
-                    coefficient = int(coefficient)
-                return fr"${coefficient}\times10^{{{exponent}}}$"
+            gr = group_ranges[group]
+            n = gr.get('n', '?')
+            start = gr.get('start', 0)
+            end = gr.get('end', 0)
             
-            start_fmt = format_range_value(r.get('start', 0))
-            end_fmt = format_range_value(r.get('end', 0))
-            range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
+            start_fmt = format_scientific_str(start)
+            end_fmt = format_scientific_str(end)
+            range_str = f" (n={n}, start={start_fmt}, end={end_fmt})"
 
         legend_elements.append(Line2D(
             [0], [0], linestyle='none', label=f"{group}{range_str}",
@@ -245,10 +252,7 @@ def plot_runtime_and_errorrate_by_group(
     timestamp: str = None,
     seed: int = None,
     variant: int = None,
-    total_numbers=None, 
     runs_per_n=None, 
-    start=None, 
-    end=None
 ):
     os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -291,10 +295,24 @@ def plot_runtime_and_errorrate_by_group(
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
+        
+        # Werte aus group_ranges holen
+        if group_ranges and group in group_ranges:
+            gr = group_ranges[group]
+            n = gr.get('n', '?')
+            start = gr.get('start', 0)
+            end = gr.get('end', max(all_n_values) if all_n_values else 1)
+        else:
+            n = '?'
+            start = 0
+            end = max(all_n_values) if all_n_values else 1
+
+        # Subtitle mit allen Infos
+        subtitle = fr"Gruppenauswertug mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         title = f"Laufzeitverhalten der Gruppe: {group}"
-        #subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{start}, {end}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-        subtitle = fr"Gruppenauswertung mit {total_numbers}, zufällig gewählte Zahlen im Bereich [{scientific_format(start, None)}, {scientific_format(end, None)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         ax1.set_title(f"{title}\n{subtitle}")
+        
+
         ax1.set_xlabel("Testzahl n")
         ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)")
         ax1.set_yscale("log")
@@ -348,17 +366,9 @@ def plot_runtime_and_errorrate_by_group(
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
-            def format_range_value(v):
-                if v == 0:
-                    return "0"
-                exponent = int(math.log10(v))
-                coefficient = v / (10**exponent)
-                if coefficient.is_integer():
-                    coefficient = int(coefficient)
-                return fr"${coefficient}\times10^{{{exponent}}}$"
             
-            start_fmt = format_range_value(r.get('start', 0))
-            end_fmt = format_range_value(r.get('end', 0))
+            start_fmt = format_scientific_str(r.get('start', 0))
+            end_fmt = format_scientific_str(r.get('end', 0))
             range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
 
         ax1.legend(title=f"{group}{range_str}", fontsize=12)

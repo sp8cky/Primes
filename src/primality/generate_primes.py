@@ -130,7 +130,7 @@ def generate_numbers_per_group(
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test 
 
-def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, intervals: int = 10, use_log_intervals: bool = False) -> List[int]:
+def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, intervals: int = 10, use_log_intervals: bool = True) -> List[int]:
     if r is None:
         r = random.Random()
 

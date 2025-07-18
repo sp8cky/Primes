@@ -253,7 +253,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100000,"end": m1},
+        "Probabilistische Tests":   {"n": 10, "start": 100000,"end": t1},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": k10},

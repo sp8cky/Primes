@@ -71,24 +71,6 @@ def round_down(x, base):
 def round_up(x, base):
     return ((x + base - 1) // base) * base
 
-def human_format(x, pos):
-    if x >= 1_000_000_000:
-        return f"{x/1_000_000_000:.0f} Mrd"
-    elif x >= 1_000_000:
-        return f"{x/1_000_000:.0f} Mio"
-    elif x >= 1_000:
-        return f"{x/1_000:.0f} Tsd"
-    else:
-        return str(int(x))
-    
-def log_base_10_label(x, pos):
-    if x <= 0:
-        return "0"
-    exponent = int(math.log10(x))
-    if 10 ** exponent == x:
-        return rf"$10^{{{exponent}}}$"
-    else:
-        return f"{int(x)}"  # fallback, z. B. für unglatte Werte
     
 # Neue wissenschaftliche Formatierung für X-Achse
 def scientific_format(x, pos):
@@ -181,8 +163,8 @@ def plot_runtime(
         if best and worst:
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
-    plt.xlabel("Testzahl n")
-    plt.ylabel("Laufzeit [ms] (logarithmisch)" if use_log else "Laufzeit [ms] (linear)")
+    plt.xlabel("Testzahl n", fontsize=14)
+    plt.ylabel("Laufzeit [ms] (logarithmisch)" if use_log else "Laufzeit [ms] (linear)", fontsize=14)
 
     if use_log:
         plt.xscale("linear")
@@ -259,7 +241,8 @@ def plot_runtime(
             legend_elements.append(handle)
 
     plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
-
+    # Setze Tick-Label-Größe explizit für beide Achsen
+    plt.tick_params(axis='both', which='major', labelsize=12)
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 
@@ -337,8 +320,8 @@ def plot_runtime_and_errorrate_by_group(
         subtitle = fr"Gruppenauswertug mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         title = f"Laufzeitverhalten der Gruppe: {group}"
         ax1.set_title(f"{title}\n{subtitle}")
-
-        ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)")
+        ax1.set_xlabel("Testzahl n", fontsize=14)
+        ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)", fontsize=14)
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -351,7 +334,7 @@ def plot_runtime_and_errorrate_by_group(
 
         if show_errors:
             ax2 = ax1.twinx()
-            ax2.set_ylabel("Fehlerrate")
+            ax2.set_ylabel("Fehlerrate", fontsize=14)
             ax2.set_ylim(0, 1)
             ax2.grid(False)
 
@@ -390,7 +373,9 @@ def plot_runtime_and_errorrate_by_group(
             end_fmt = format_scientific_str(r.get('end', 0))
             range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
 
-        ax1.legend(title=f"{group}{range_str}", fontsize=14)
+        ax1.legend(title=f"{group}{range_str}", title_fontsize=14, fontsize=14)
+        ax1.tick_params(axis='both', which='major', labelsize=12)
+        ax2.tick_params(axis='both', which='major', labelsize=12) if show_errors else None
 
         fig.tight_layout()
 

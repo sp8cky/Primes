@@ -4,8 +4,9 @@ import random, math, pytest
 from math import gcd
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, symbols
 from sympy.abc import X
+from sympy.polys import rem
 from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
 from typing import Optional, List, Dict, Tuple, Any, Union
@@ -139,12 +140,14 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     # Schritt 4: Polynomprüfung für a <= sqrt(phi(r)) * log n
     phi_r = totient(r)
     max_a = math.floor(math.sqrt(phi_r) * log_n)
-    mod_poly = Poly(X**r - 1, X, domain=ZZ)
+    mod_poly = X**r - 1
 
     for a in range(1, max_a + 1):
-        X_plus_a = Poly(X + a, X)
-        left = X_plus_a.pow(n, mod_poly)
-        right = Poly(pow(X, n, mod_poly) + a, X)
+        X_plus_a = X + a
+        # Berechne (X + a)^n mod (X^r - 1)
+        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        # Berechne X^n + a mod (X^r - 1)
+        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
         if left != right:
             return False
 
@@ -171,12 +174,14 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
-    mod_poly = Poly(X**r - 1, X, domain=ZZ)
+    mod_poly = X**r - 1
 
     for a in range(1, max_a + 1):
-        X_plus_a = Poly(X + a, X)
-        left = X_plus_a.pow(n, mod_poly)
-        right = Poly(pow(X, n, mod_poly) + a, X)
+        X_plus_a = X + a
+        # Berechne (X + a)^n mod (X^r - 1)
+        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        # Berechne X^n + a mod (X^r - 1)
+        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
         if left != right: return False
 
     return True

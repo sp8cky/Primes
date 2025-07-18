@@ -224,7 +224,7 @@ if __name__ == "__main__":
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_tests = [5,5,5]
-    #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
+    custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
     k10     = 10**4
     k100    = 10**5
     m1      = 10**6
@@ -253,24 +253,24 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 100, "start": 100,"end": t1},
-        "Lucas-Tests":              {"n": 10, "start": 100, "end": k10},
+        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m100},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
-        "Proth-Tests":              {"n": 10, "start": 100, "end": k10},
-        "Pocklington-Tests":        {"n": 10, "start": 100, "end": k10},
-        "Rao":                      {"n": 10, "start": 100, "end": k10},
-        "Ramzy":                    {"n": 10, "start": 100, "end": k10},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": k10},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": k10},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 1000},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 1000},
+        "Rao":                      {"n": 10, "start": 100, "end": 1000},
+        "Ramzy":                    {"n": 10, "start": 100, "end": 1000},
+        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": 1000},
+        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 1000},
     }
 
     run_primetest_analysis(
-        n_numbers=100,
+        n_numbers=10,
         num_type='p',
         start=0,
         end=10,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
         seed=10,
         protocoll=True,

@@ -175,25 +175,29 @@ def plot_runtime(
         if best and worst:
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
-    plt.xlabel("Testzahl n", fontsize=14)
+    plt.xlabel("Testzahl n (linear)", fontsize=14)
     plt.ylabel("Laufzeit [ms] (logarithmisch)" if use_log else "Laufzeit [ms] (linear)", fontsize=14)
 
-    if use_log:
-        plt.xscale("linear")
-        plt.yscale("log")
-        all_x = [x for entry in entries for x in entry[3]]
-        xmin, xmax = 0, max(all_x)
-        x_min, x_max, step = fixed_step_range(xmin, xmax)
-        ticks = list(range(x_min, x_max + 1, step))
+    ax = plt.gca()
+    all_x = [x for entry in entries for x in entry[3]]
+    xmin = min(all_x) if all_x else 1
+    xmax = max(all_x) if all_x else 10
+    x_min, x_max, _ = fixed_step_range(0, xmax)
 
-        ax = plt.gca()
-        ax.set_xticks(ticks)
-        ax.set_xlim(x_min, x_max)
-        
-        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
+    if use_log:
+        plt.yscale("log")
+        set_adaptive_xaxis(ax, start if start is not None else xmin, end if end is not None else xmax)
     else:
-        plt.xscale("linear")
         plt.yscale("linear")
+        ax.set_xscale("linear")
+        mid = (xmin + xmax) / 2
+        left_mid = (xmin + mid) / 2
+        right_mid = (mid + xmax) / 2
+        ticks = [xmin, left_mid, mid, right_mid, xmax]
+        ax.set_xticks(ticks)
+        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
+
+    ax.set_xlim(x_min, x_max)
 
     # Titel
     title = "Laufzeitanalyse"
@@ -329,10 +333,10 @@ def plot_runtime_and_errorrate_by_group(
             start = 0
             end = max(all_n_values) if all_n_values else 1
 
-        subtitle = fr"Gruppenauswertug mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         title = f"Laufzeitverhalten der Gruppe: {group}"
         ax1.set_title(f"{title}\n{subtitle}")
-        ax1.set_xlabel("Testzahl n", fontsize=14)
+        ax1.set_xlabel("Testzahl n (linear)", fontsize=14)
         ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)", fontsize=14)
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)

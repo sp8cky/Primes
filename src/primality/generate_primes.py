@@ -115,7 +115,9 @@ def generate_numbers_per_group(
                 group_n, group_start, group_end,
                 r=r,
                 p_count=p_count,
-                z_count=z_count
+                z_count=z_count,
+                max_attempts=10000,
+                intervals=10,
             )
             for testname in relevant_tests:
                 numbers_per_test[testname] = shared_numbers
@@ -128,7 +130,7 @@ def generate_numbers_per_group(
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test 
 
-def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000) -> List[int]:
+def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, intervals: int = 10, use_log_intervals: bool = False) -> List[int]:
     if r is None:
         r = random.Random()
 
@@ -141,26 +143,36 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
     composites = set()
     attempts = 0
 
-    while (len(primes) < p_count or len(composites) < z_count) and attempts < max_attempts:
-        attempts += 1
-        candidate = r.randint(start, end)
-        if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
-            continue
-        if isprime(candidate):
-            if len(primes) < p_count:
-                primes.add(candidate)
-        else:
-            if is_valid_composite(candidate) and len(composites) < z_count:
-                composites.add(candidate)
+    # Intervallgrenzen berechnen
+    if use_log_intervals:
+        log_start = log2(start)
+        log_end = log2(end)
+        boundaries = [int(2 ** (log_start + i * (log_end - log_start) / intervals)) for i in range(intervals + 1)]
+    else:
+        boundaries = [int(start + i * (end - start) / intervals) for i in range(intervals + 1)]
+
+    max_interval_attempts = max_attempts // intervals
+
+    # Pro Intervall anteilig Zahlen generieren
+    for i in range(intervals):
+        interval_start = boundaries[i]
+        interval_end = boundaries[i + 1] - 1
+        local_attempts = 0
+        while ((len(primes) < p_count or len(composites) < z_count) and local_attempts < max_interval_attempts):
+            local_attempts += 1
+            candidate = r.randint(interval_start, interval_end)
+            if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
+                continue
+            if isprime(candidate):
+                if len(primes) < p_count:
+                    primes.add(candidate)
+            elif is_valid_composite(candidate):
+                if len(composites) < z_count:
+                    composites.add(candidate)
 
     total_generated = len(primes) + len(composites)
     if total_generated < (p_count + z_count):
         print(f"⚠️ WARNUNG: Nur {total_generated} Zahlen generiert (Prim: {len(primes)}, Zusammengesetzt: {len(composites)}) von {p_count + z_count} geforderten Zahlen.")
-
-    if len(primes) < p_count:
-        print(f"⚠️ WARNUNG: Nur {len(primes)} Primzahlen generiert, benötigt waren {p_count}")
-    if len(composites) < z_count:
-        print(f"⚠️ WARNUNG: Nur {len(composites)} zusammengesetzte Zahlen generiert, benötigt waren {z_count}")
 
     return sorted(primes.union(composites))
 
@@ -325,7 +337,7 @@ def generate_numbers_for_test(
                 pass
             try:
                 if z_count > 0:
-                    composites = generate_numbers(z_count, start, end, r=r, p_count=0, z_count=z_count)
+                    composites = generate_numbers(z_count, start, end, r=r, p_count=0, z_count=z_count, max_attempts=10000, intervals=10)
             except ValueError:
                 pass
             result = sorted(primes + composites)
@@ -334,7 +346,7 @@ def generate_numbers_for_test(
 
         else:
             p_count, z_count, _ = compute_number_distribution(n, num_type)
-            result = generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count)
+            result = generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count, max_attempts=10000, intervals=10)
             #print(f"44🔍 Test '{testname}' num_type='{num_type}', number_type='{number_type}': {len(result)} Zufallszahlen (p: {p_count}, z: {z_count}): {result}")
             return result
 

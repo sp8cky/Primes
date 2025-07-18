@@ -3,10 +3,38 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
 import matplotlib.ticker as ticker
-from matplotlib.ticker import FuncFormatter
+import numpy as np
+from matplotlib.ticker import FuncFormatter, LogLocator, ScalarFormatter, MaxNLocator
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
+
+def log_base_10_label(x, _):
+    if x == 0:
+        return "0"
+    exp = int(np.log10(x))
+    base = round(x / (10 ** exp))
+    if base == 1:
+        return f"$10^{{{exp}}}$"
+    else:
+        return f"${base} \\times 10^{{{exp}}}$"
+
+def set_adaptive_xaxis(ax, xmin, xmax, force_log=None):
+    if force_log is not None:
+        use_log = force_log
+    else:
+        use_log = (np.log10(xmax) - np.log10(max(xmin, 1))) >= 3
+
+    if use_log:
+        ax.set_xscale("log")
+        ax.set_xticks([10 ** i for i in range(int(np.log10(xmin)), int(np.log10(xmax)) + 1)])
+        ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
+        ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs=range(2, 10), numticks=100))
+    else:
+        ax.set_xscale("linear")
+        ax.xaxis.set_major_locator(MaxNLocator(nbins=6, prune='both', integer=True))
+        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
+    
 # graph: avg runtime über alle wiederholungen in ms
 # balken oben/unten: fehlerbalken, die standardabweichung zeigt
 # schattierung: bereich zwischen best/worst case
@@ -230,7 +258,7 @@ def plot_runtime(
             handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
             legend_elements.append(handle)
 
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=12)
+    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
 
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
@@ -240,6 +268,7 @@ def plot_runtime(
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
     plt.close()
+
 
 
 
@@ -287,7 +316,6 @@ def plot_runtime_and_errorrate_by_group(
             color = line_handle.get_color()
             color_map[test_name] = color
 
-            # Add average runtime marker on left y-axis
             avg_runtime = statistics.mean(avg_times) if avg_times else 0
             ax1.plot(0, avg_runtime, 'x', markersize=10, color=color,
                     markeredgewidth=2, transform=ax1.get_yaxis_transform())
@@ -295,8 +323,7 @@ def plot_runtime_and_errorrate_by_group(
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
-        
-        # Werte aus group_ranges holen
+
         if group_ranges and group in group_ranges:
             gr = group_ranges[group]
             n = gr.get('n', '?')
@@ -307,26 +334,20 @@ def plot_runtime_and_errorrate_by_group(
             start = 0
             end = max(all_n_values) if all_n_values else 1
 
-        # Subtitle mit allen Infos
         subtitle = fr"Gruppenauswertug mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         title = f"Laufzeitverhalten der Gruppe: {group}"
         ax1.set_title(f"{title}\n{subtitle}")
-        
 
-        ax1.set_xlabel("Testzahl n")
         ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)")
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
         x_min_raw = 0
         x_max_raw = max(all_n_values)
-        x_min, x_max, step = fixed_step_range(x_min_raw, x_max_raw)
+        x_min, x_max, _ = fixed_step_range(x_min_raw, x_max_raw)
 
-        ax1.set_xscale("linear")
+        set_adaptive_xaxis(ax1, start, end)
         ax1.set_xlim(x_min, x_max)
-        ax1.set_xticks(list(range(x_min, x_max + 1, step)))
-        
-        ax1.xaxis.set_major_formatter(FuncFormatter(scientific_format))
 
         if show_errors:
             ax2 = ax1.twinx()
@@ -355,23 +376,21 @@ def plot_runtime_and_errorrate_by_group(
 
                 color = color_map.get(test_name, "gray")
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
-                
-                # Add average error rate marker on right y-axis
+
                 avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
                 ax2.plot(1, avg_error, 'x', markersize=10, color=color,
                          markeredgewidth=2, transform=ax2.get_yaxis_transform())
 
-            ax2.legend(loc="upper right", fontsize=12)
+            ax2.legend(loc="upper right", fontsize=14)
 
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
-            
             start_fmt = format_scientific_str(r.get('start', 0))
             end_fmt = format_scientific_str(r.get('end', 0))
             range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
 
-        ax1.legend(title=f"{group}{range_str}", fontsize=12)
+        ax1.legend(title=f"{group}{range_str}", fontsize=14)
 
         fig.tight_layout()
 

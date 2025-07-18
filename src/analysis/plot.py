@@ -108,13 +108,11 @@ def format_scientific_str(x):
 
 
 
-
-
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
-    labels=None, colors=None, figsize=(18, 9), use_log=True,
+    labels=None, colors=None, figsize=(24, 14), use_log=True,
     total_numbers=None, runs_per_n=None, group_ranges=None,
-    seed=None, timestamp=None, variant=None, start=None, end=None
+    seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None
 ):
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
@@ -175,29 +173,27 @@ def plot_runtime(
         if best and worst:
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
-    plt.xlabel("Testzahl n (linear)", fontsize=14)
-    plt.ylabel("Laufzeit [ms] (logarithmisch)" if use_log else "Laufzeit [ms] (linear)", fontsize=14)
+    plt.xlabel("Testzahl n (logarithmisch)", fontsize=16)
+    plt.ylabel("Laufzeit [ms]", fontsize=16)
 
     ax = plt.gca()
     all_x = [x for entry in entries for x in entry[3]]
     xmin = min(all_x) if all_x else 1
     xmax = max(all_x) if all_x else 10
-    x_min, x_max, _ = fixed_step_range(0, xmax)
 
-    if use_log:
-        plt.yscale("log")
-        set_adaptive_xaxis(ax, start if start is not None else xmin, end if end is not None else xmax)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    if custom_xticks:
+        ax.set_xticks(custom_xticks)
+        ax.set_xlim(min(custom_xticks), max(custom_xticks))
+        if 0 in custom_xticks:
+            # Definiere benutzerdefinierte Tick-Labels, um "0" anzuzeigen
+            ax.get_xaxis().set_major_formatter(FuncFormatter(lambda x, _: "0" if x == 0 else log_base_10_label(x, _)))
     else:
-        plt.yscale("linear")
-        ax.set_xscale("linear")
-        mid = (xmin + xmax) / 2
-        left_mid = (xmin + mid) / 2
-        right_mid = (mid + xmax) / 2
-        ticks = [xmin, left_mid, mid, right_mid, xmax]
-        ax.set_xticks(ticks)
-        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
+        x_min, x_max, _ = fixed_step_range(0, xmax)
+        ax.set_xlim(x_min, x_max)
 
-    ax.set_xlim(x_min, x_max)
+    ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
 
     # Titel
     title = "Laufzeitanalyse"
@@ -232,7 +228,7 @@ def plot_runtime(
             n = gr.get('n', '?')
             start = gr.get('start', 0)
             end = gr.get('end', 0)
-            
+
             start_fmt = format_scientific_str(start)
             end_fmt = format_scientific_str(end)
             range_str = f" (n={n}, start={start_fmt}, end={end_fmt})"
@@ -256,11 +252,10 @@ def plot_runtime(
             handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
             legend_elements.append(handle)
 
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
-    # Setze Tick-Label-Größe explizit für beide Achsen
-    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
-    plt.tight_layout(rect=[0, 0, 0.85, 1])
+    plt.tight_layout(rect=[0, 0, 0.9, 1])
 
     filename = f"{timestamp}-test-plot-seed{seed}-v{variant}.png" if timestamp else f"test-plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
@@ -336,8 +331,8 @@ def plot_runtime_and_errorrate_by_group(
         subtitle = fr"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
         title = f"Laufzeitverhalten der Gruppe: {group}"
         ax1.set_title(f"{title}\n{subtitle}")
-        ax1.set_xlabel("Testzahl n (linear)", fontsize=14)
-        ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)", fontsize=14)
+        ax1.set_xlabel("Testzahl n (linear)", fontsize=16)
+        ax1.set_ylabel("Laufzeit [ms] (logarithmisch)" if show_errors else "Laufzeit [ms] (linear)", fontsize=16)
         ax1.set_yscale("log")
         ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -350,7 +345,7 @@ def plot_runtime_and_errorrate_by_group(
 
         if show_errors:
             ax2 = ax1.twinx()
-            ax2.set_ylabel("Fehlerrate", fontsize=14)
+            ax2.set_ylabel("Fehlerrate", fontsize=16)
             ax2.set_ylim(0, 1)
             ax2.grid(False)
 
@@ -380,7 +375,7 @@ def plot_runtime_and_errorrate_by_group(
                 ax2.plot(1, avg_error, 'x', markersize=10, color=color,
                          markeredgewidth=2, transform=ax2.get_yaxis_transform())
 
-            ax2.legend(loc="upper right", fontsize=14)
+            ax2.legend(loc="upper right", fontsize=16)
 
         range_str = ""
         if group_ranges and group in group_ranges:
@@ -394,9 +389,9 @@ def plot_runtime_and_errorrate_by_group(
             # Anpassung der x-Achse mit der neuen Funktion
             set_adaptive_xaxis(ax1, start, end)
 
-        ax1.legend(title=f"{group}{range_str}", title_fontsize=14, fontsize=14)
-        ax1.tick_params(axis='both', which='major', labelsize=12)
-        ax2.tick_params(axis='both', which='major', labelsize=12) if show_errors else None
+        ax1.legend(title=f"{group}{range_str}", title_fontsize=16, fontsize=16)
+        ax1.tick_params(axis='both', which='major', labelsize=14)
+        ax2.tick_params(axis='both', which='major', labelsize=14) if show_errors else None
 
         fig.tight_layout()
 

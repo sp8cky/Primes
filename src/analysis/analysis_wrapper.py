@@ -174,7 +174,7 @@ def run_primetest_analysis(
             worst_lists=plot_data["worst_times"],
             labels=plot_data["labels"],
             colors=plot_data["colors"],
-            figsize=(20, 14),
+            figsize=(24, 14),
             total_numbers=n_numbers,
             runs_per_n=test_repeats,
             group_ranges=group_ranges,
@@ -182,7 +182,8 @@ def run_primetest_analysis(
             timestamp=timestamp,
             variant=variant,
             start=start,
-            end=end
+            end=end,
+            custom_xticks=custom_ticks
         )
             # Gruppierten Plot aufrufen
         measure_section("Gruppierte Laufzeit- und Fehleranalyse",
@@ -253,7 +254,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m100},
+        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m1},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 1000},
@@ -264,6 +265,8 @@ if __name__ == "__main__":
         "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 1000},
     }
 
+    custom_ticks = [0, 10**3, 10**5, 10**6]
+
     run_primetest_analysis(
         n_numbers=10,
         num_type='p',
@@ -272,7 +275,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=10,
+        seed=11,
         protocoll=True,
         save_results=True,
         show_plot=True,

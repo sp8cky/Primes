@@ -9,6 +9,15 @@ from src.analysis.dataset import *
 from src.primality.test_config import *
 
 
+
+   
+# graph: avg runtime über alle wiederholungen in ms
+# balken oben/unten: fehlerbalken, die standardabweichung zeigt
+# schattierung: bereich zwischen best/worst case
+
+
+
+
 def log_base_10_label(x, _):
     if x == 0:
         return "0"
@@ -19,27 +28,34 @@ def log_base_10_label(x, _):
     else:
         return f"${base} \\times 10^{{{exp}}}$"
 
-def set_adaptive_xaxis(ax, xmin, xmax, force_log=None):
-    if force_log is not None:
-        use_log = force_log
-    else:
-        use_log = (np.log10(xmax) - np.log10(max(xmin, 1))) >= 3
+def set_adaptive_xaxis(ax, start, end, force_log=None):
+    start = float(start)
+    end = float(end)
+    use_log = force_log if force_log is not None else (np.log10(end) - np.log10(max(start, 1))) >= 3
 
     if use_log:
         ax.set_xscale("log")
-        ax.set_xticks([10 ** i for i in range(int(np.log10(xmin)), int(np.log10(xmax)) + 1)])
         ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
         ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs=range(2, 10), numticks=100))
+
+        ticks = [start]
+        mid = np.sqrt(start * end)  # log-mittig
+        left_mid = np.sqrt(start * mid)
+        right_mid = np.sqrt(mid * end)
+        ticks += [left_mid, mid, right_mid, end]
+        ticks = sorted(set(ticks))
+        ax.set_xticks(ticks)
     else:
         ax.set_xscale("linear")
-        ax.xaxis.set_major_locator(MaxNLocator(nbins=6, prune='both', integer=True))
         ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
-    
-# graph: avg runtime über alle wiederholungen in ms
-# balken oben/unten: fehlerbalken, die standardabweichung zeigt
-# schattierung: bereich zwischen best/worst case
 
+        mid = (start + end) / 2
+        left_mid = (start + mid) / 2
+        right_mid = (mid + end) / 2
+        ticks = [start, left_mid, mid, right_mid, end]
+        ax.set_xticks(ticks)
 
+ 
 
 def fixed_step_range(x_min, x_max, steps=10):
     step = choose_step_range(x_min, x_max)  # ← nutze deine eigene Logik!
@@ -71,8 +87,6 @@ def round_down(x, base):
 def round_up(x, base):
     return ((x + base - 1) // base) * base
 
-    
-# Neue wissenschaftliche Formatierung für X-Achse
 def scientific_format(x, pos):
     if x == 0:
         return "0"
@@ -81,8 +95,6 @@ def scientific_format(x, pos):
     if coefficient.is_integer():
         coefficient = int(coefficient)
     return fr"${coefficient}\times10^{{{exponent}}}$"
-
-
 
 def format_scientific_str(x):
     if x == 0:
@@ -369,9 +381,14 @@ def plot_runtime_and_errorrate_by_group(
         range_str = ""
         if group_ranges and group in group_ranges:
             r = group_ranges[group]
-            start_fmt = format_scientific_str(r.get('start', 0))
-            end_fmt = format_scientific_str(r.get('end', 0))
-            range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
+            #start_fmt = format_scientific_str(r.get('start', 0))
+            #end_fmt = format_scientific_str(r.get('end', 0))
+            #range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
+            start = r.get("start", 0)
+            end = r.get("end", 0)
+
+            # Anpassung der x-Achse mit der neuen Funktion
+            set_adaptive_xaxis(ax1, start, end)
 
         ax1.legend(title=f"{group}{range_str}", title_fontsize=14, fontsize=14)
         ax1.tick_params(axis='both', which='major', labelsize=12)

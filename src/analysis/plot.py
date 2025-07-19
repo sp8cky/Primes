@@ -314,8 +314,7 @@ def plot_runtime_and_errorrate_by_group(
             color_map[test_name] = color
 
             avg_runtime = statistics.mean(avg_times) if avg_times else 0
-            ax1.plot(0, avg_runtime, 'x', markersize=10, color=color,
-                    markeredgewidth=2, transform=ax1.get_yaxis_transform())
+            ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform())
 
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
@@ -398,8 +397,7 @@ def plot_runtime_and_errorrate_by_group(
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
 
                 avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
-                ax2.plot(1, avg_error, 'x', markersize=10, color=color,
-                         markeredgewidth=2, transform=ax2.get_yaxis_transform())
+                ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform())
 
             ax2.legend(loc="upper right", fontsize=16)
 

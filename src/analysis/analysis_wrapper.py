@@ -226,6 +226,8 @@ if __name__ == "__main__":
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_tests = [5,5,5]
     custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
+    h1      = 10**2
+    k1      = 10**3
     k10     = 10**4
     k100    = 10**5
     m1      = 10**6
@@ -254,15 +256,17 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m1},
-        "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000},
-        "Langsame Tests":           {"n": 10, "start": 10, "end": 100},
-        "Proth-Tests":              {"n": 10, "start": 100, "end": 1000},
-        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 1000},
-        "Rao":                      {"n": 10, "start": 100, "end": 1000},
-        "Ramzy":                    {"n": 10, "start": 100, "end": 1000},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": 1000},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 1000},
+        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m1,       "xticks": [h1, k1, k10, k100, m1]},
+        "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+        "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
+        "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+        "Rao":                      {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+        "Ramzy":                    {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
+        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
+        "Spezielle Tests":          {"n": 10, "start": 0,   "end": 1000,    "xticks": [1, 500, k1]},
+        "Zusammengesetzte":         {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
     }
 
     custom_ticks = [0, 10**3, 10**5, 10**6]
@@ -275,7 +279,7 @@ if __name__ == "__main__":
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_tests,
-        seed=11,
+        seed=13,
         protocoll=True,
         save_results=True,
         show_plot=True,

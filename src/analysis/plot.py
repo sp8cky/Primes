@@ -4,7 +4,7 @@ from collections import defaultdict
 from matplotlib.lines import Line2D
 import matplotlib.ticker as ticker
 import numpy as np
-from matplotlib.ticker import FuncFormatter, LogLocator, ScalarFormatter, MaxNLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, ScalarFormatter, MaxNLocator, NullLocator
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
@@ -70,6 +70,9 @@ def choose_step_range(x_min, x_max, target_steps=10):
         return 1  # fallback bei ungültigem Bereich
 
     rough_step = range_ // target_steps
+    if rough_step <= 0:
+        return 1  # Schutz gegen log10(0) oder negatives
+
     magnitude = 10 ** int(math.floor(math.log10(rough_step)))
     multiples = [1, 2, 5, 10]
 
@@ -317,12 +320,17 @@ def plot_runtime_and_errorrate_by_group(
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
+        if group_ranges and group not in group_ranges:
+            print(f"[FEHLT] Gruppe nicht in group_ranges: →{group}←")
 
         if group_ranges and group in group_ranges:
             gr = group_ranges[group]
             n = gr.get('n', '?')
             start = gr.get('start', 0)
             end = gr.get('end', max(all_n_values) if all_n_values else 1)
+            xticks = gr.get('xticks', None)
+            for test_name, *_ in tests:
+                print(f"[DEBUG]{group}; {test_name}; {start}; {end}; {xticks}")
         else:
             n = '?'
             start = 0
@@ -340,8 +348,26 @@ def plot_runtime_and_errorrate_by_group(
         x_max_raw = max(all_n_values)
         x_min, x_max, _ = fixed_step_range(x_min_raw, x_max_raw)
 
-        set_adaptive_xaxis(ax1, start, end)
-        ax1.set_xlim(x_min, x_max)
+        # Prüfe auf custom_xticks
+        custom_xticks = None
+        if group_ranges and group in group_ranges:
+            gr = group_ranges[group]
+            custom_xticks = gr.get("xticks", None)
+
+        if custom_xticks:
+            ax1.set_xscale("log")
+            ax1.set_xticks(custom_xticks)
+            ax1.set_xlim(min(custom_xticks), max(custom_xticks))
+
+            ax1.xaxis.set_minor_locator(NullLocator())
+
+            if 0 in custom_xticks:
+                ax1.xaxis.set_major_formatter(FuncFormatter(lambda x, _: "0" if x == 0 else log_base_10_label(x, _)))
+            else:
+                ax1.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
+        else:
+            set_adaptive_xaxis(ax1, start, end)
+            ax1.set_xlim(x_min, x_max)
 
         if show_errors:
             ax2 = ax1.twinx()
@@ -386,8 +412,6 @@ def plot_runtime_and_errorrate_by_group(
             start = r.get("start", 0)
             end = r.get("end", 0)
 
-            # Anpassung der x-Achse mit der neuen Funktion
-            set_adaptive_xaxis(ax1, start, end)
 
         ax1.legend(title=f"{group}{range_str}", title_fontsize=16, fontsize=16)
         ax1.tick_params(axis='both', which='major', labelsize=14)

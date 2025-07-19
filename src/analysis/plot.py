@@ -166,15 +166,12 @@ def plot_runtime(
         worst_ms = [w * 1000 for w in worst] if worst else None
 
         color, linestyle = group_style_map.get(group, ('black', '-'))
-        if user_color is not None:
-            color = user_color
+        if user_color is not None: color = user_color
 
         plt.plot(n, t_ms, marker="o", label=label, color=color, linestyle=linestyle)
 
-        if std:
-            plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
-        if best and worst:
-            plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
+        if std: plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
+        if best and worst: plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
     plt.xlabel("Testzahl n (logarithmisch)", fontsize=16)
     plt.ylabel("Laufzeit [ms]", fontsize=16)
@@ -216,8 +213,7 @@ def plot_runtime(
 
     for base_label, group, label, *_ in entries:
         grouped_entries[group].append((test_index.get(base_label, 999), label, base_label))
-        if group not in group_order:
-            group_order.append(group)
+        if group not in group_order:  group_order.append(group)
 
     for group in grouped_entries:
         grouped_entries[group].sort(key=lambda x: x[0])
@@ -281,7 +277,7 @@ def plot_runtime_and_errorrate_by_group(
     runs_per_n=None, 
 ):
     os.makedirs(DATA_DIR, exist_ok=True)
-
+     
     grouped_data = defaultdict(list)
     for test_name, data in datasets.items():
         if test_name not in TEST_CONFIG:
@@ -289,8 +285,7 @@ def plot_runtime_and_errorrate_by_group(
             continue
 
         group = TEST_CONFIG[test_name].get("plotgroup", TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe"))
-        if not data:
-            continue
+        if not data: continue
 
         n_values = [entry["n"] for entry in data]
         avg_times = [entry["avg_time"] * 1000 for entry in data]
@@ -314,22 +309,17 @@ def plot_runtime_and_errorrate_by_group(
             color_map[test_name] = color
 
             avg_runtime = statistics.mean(avg_times) if avg_times else 0
-            ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform())
+            ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
 
             ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
             ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
             all_n_values.extend(n_values)
-        if group_ranges and group not in group_ranges:
-            print(f"[FEHLT] Gruppe nicht in group_ranges: →{group}←")
 
         if group_ranges and group in group_ranges:
             gr = group_ranges[group]
             n = gr.get('n', '?')
             start = gr.get('start', 0)
             end = gr.get('end', max(all_n_values) if all_n_values else 1)
-            xticks = gr.get('xticks', None)
-            for test_name, *_ in tests:
-                print(f"[DEBUG]{group}; {test_name}; {start}; {end}; {xticks}")
         else:
             n = '?'
             start = 0
@@ -357,7 +347,6 @@ def plot_runtime_and_errorrate_by_group(
             ax1.set_xscale("log")
             ax1.set_xticks(custom_xticks)
             ax1.set_xlim(min(custom_xticks), max(custom_xticks))
-
             ax1.xaxis.set_minor_locator(NullLocator())
 
             if 0 in custom_xticks:
@@ -376,8 +365,7 @@ def plot_runtime_and_errorrate_by_group(
 
             for test_name, avg_times, n_values, *_ in tests:
                 test_entries = test_data.get(test_name, {})
-                if not test_entries:
-                    continue
+                if not test_entries: continue
 
                 error_rates_per_n = []
                 for n in n_values:
@@ -386,8 +374,7 @@ def plot_runtime_and_errorrate_by_group(
                     if rate is not None:
                         error_rates_per_n.append((n, rate))
 
-                if not error_rates_per_n:
-                    continue
+                if not error_rates_per_n: continue
 
                 error_rates_per_n.sort()
                 n_sorted = [n for n, _ in error_rates_per_n]
@@ -397,21 +384,59 @@ def plot_runtime_and_errorrate_by_group(
                 ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
 
                 avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
-                ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform())
+                ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
 
-            ax2.legend(loc="upper right", fontsize=16)
+        # Neue gemeinsame Legende
+        if show_errors:
+            handles1, labels1 = ax1.get_legend_handles_labels()
+            handles2, labels2 = ax2.get_legend_handles_labels()
 
-        range_str = ""
-        if group_ranges and group in group_ranges:
-            r = group_ranges[group]
-            #start_fmt = format_scientific_str(r.get('start', 0))
-            #end_fmt = format_scientific_str(r.get('end', 0))
-            #range_str = f" (n={r.get('n','?')}, start={start_fmt}, end={end_fmt})"
-            start = r.get("start", 0)
-            end = r.get("end", 0)
+            # Bereinige Fehlerraten-Labels
+            labels2_clean = [label.replace(" Fehlerrate", "") for label in labels2]
 
+            # Mapping von Testname → Handle
+            time_dict = dict(zip(labels1, handles1))
+            error_dict = dict(zip(labels2_clean, handles2))
 
-        ax1.legend(title=f"{group}{range_str}", title_fontsize=16, fontsize=16)
+            # Gemeinsame, alphabetisch sortierte Testnamen
+            test_names_sorted = sorted(set(labels1) | set(labels2_clean))
+
+            # Erst alle Laufzeiten, dann alle Fehlerraten (gleiche Testreihenfolge)
+            handles_laufzeit = []
+            labels_laufzeit = []
+            handles_fehler = []
+            labels_fehler = []
+
+            for test in test_names_sorted:
+                color = color_map.get(test, "gray")
+                time_handle = time_dict.get(test, Line2D([], [], linestyle='-', color=color))
+                error_handle = error_dict.get(test, Line2D([], [], linestyle='--', color=color))
+
+                handles_laufzeit.append(time_handle)
+                labels_laufzeit.append(f"{test} Laufzeit")
+
+                handles_fehler.append(error_handle)
+                labels_fehler.append(f"{test} Fehlerrate")
+
+            # Kombinieren für zweispaltige Legende
+            combined_handles = handles_laufzeit + handles_fehler
+            combined_labels = labels_laufzeit + labels_fehler
+
+            fig.legend(
+                combined_handles,
+                combined_labels,
+                loc="upper right",
+                bbox_to_anchor=(0.9, 0.95),
+                ncol=2,
+                fontsize=12,
+                title="Legende",
+                title_fontsize=13,
+                columnspacing=2.5,
+                handletextpad=1.2,
+                borderaxespad=0.8,
+                frameon=True
+            )
+
         ax1.tick_params(axis='both', which='major', labelsize=14)
         ax2.tick_params(axis='both', which='major', labelsize=14) if show_errors else None
 

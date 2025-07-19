@@ -20,25 +20,6 @@ Python 3.13.3
 
 
 
-url mit commit
-
----
-plotten was theoretische laufzeit ist und vergleichen
-methode kleinster quadrate - ausgleichgerade
-
-sonst loaufzeit berechnen über werte - in exponentialzeit darzustellen
-
-
-flußdiagramm
-
-
----
-unterteilung diskussion
-erst implementierung
-und dann generell
-
-
-
 ---
 
 ### Theoretischer Stand
@@ -86,11 +67,13 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
 - `other_fields`: Testspezifische Angaben von Zwischenergebnissen
 
 
-### Nächste Schritte
-- Implementierung erster Laufzeitanalysen (`time`, `timeit`, `cProfile`)
-- Vergleich der Laufzeiten für verschiedene `n`
-- Visualisierung der Laufzeitkomplexität
-- Erweiterung um probabilistische Tests zur Gegenüberstellung (z. B. Miller–Rabin)
+### TODOs
+- große Zahlen - mathplotlib Fehler
+- Aufruf der Testgroups, nicht Plotgroups (funktioniert aber)
+- Reproduzierbarkeit überprüfen
+- Fehlerrate bei Fermat/Lucas überprüfen
+- Graphen einfügen
+- Farben ändern
 
 ---
 

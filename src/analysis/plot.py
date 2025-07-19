@@ -391,17 +391,12 @@ def plot_runtime_and_errorrate_by_group(
             handles1, labels1 = ax1.get_legend_handles_labels()
             handles2, labels2 = ax2.get_legend_handles_labels()
 
-            # Bereinige Fehlerraten-Labels
             labels2_clean = [label.replace(" Fehlerrate", "") for label in labels2]
-
-            # Mapping von Testname → Handle
             time_dict = dict(zip(labels1, handles1))
             error_dict = dict(zip(labels2_clean, handles2))
 
-            # Gemeinsame, alphabetisch sortierte Testnamen
             test_names_sorted = sorted(set(labels1) | set(labels2_clean))
 
-            # Erst alle Laufzeiten, dann alle Fehlerraten (gleiche Testreihenfolge)
             handles_laufzeit = []
             labels_laufzeit = []
             handles_fehler = []
@@ -412,13 +407,35 @@ def plot_runtime_and_errorrate_by_group(
                 time_handle = time_dict.get(test, Line2D([], [], linestyle='-', color=color))
                 error_handle = error_dict.get(test, Line2D([], [], linestyle='--', color=color))
 
+                # Mittelwerte ermitteln
+                avg_time = 0
+                avg_error = 0
+
+                for tname, avg_times, n_values, std_devs, best_times, worst_times in tests:
+                    if tname == test:
+                        avg_time = statistics.mean(avg_times) if avg_times else 0
+                        break
+
+                test_entries = test_data.get(test, {})
+                error_rates = []
+                for n in test_entries:
+                    rate = test_entries[n].get("error_rate", None)
+                    if rate is not None:
+                        error_rates.append(rate)
+                if error_rates:
+                    avg_error = statistics.mean(error_rates)
+
+                # Formatierung
+                avg_time_str = f"{avg_time:.3f} ms"
+                avg_error_str = f"{avg_error:.4g}"
+
+                # Labels mit Durchschnittswerten
+                labels_laufzeit.append(f"{test} Laufzeit [avg: {avg_time_str}]")
+                labels_fehler.append(f"{test} Fehlerrate [avg: {avg_error_str}]")
+
                 handles_laufzeit.append(time_handle)
-                labels_laufzeit.append(f"{test} Laufzeit")
-
                 handles_fehler.append(error_handle)
-                labels_fehler.append(f"{test} Fehlerrate")
 
-            # Kombinieren für zweispaltige Legende
             combined_handles = handles_laufzeit + handles_fehler
             combined_labels = labels_laufzeit + labels_fehler
 
@@ -428,10 +445,10 @@ def plot_runtime_and_errorrate_by_group(
                 loc="upper right",
                 bbox_to_anchor=(0.9, 0.95),
                 ncol=2,
-                fontsize=12,
-                title="Legende",
-                title_fontsize=13,
-                columnspacing=2.5,
+                fontsize=11,
+                title="Testvergleich",
+                title_fontsize=12,
+                columnspacing=2.8,
                 handletextpad=1.2,
                 borderaxespad=0.8,
                 frameon=True

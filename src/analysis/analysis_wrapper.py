@@ -256,7 +256,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 500, "start": 100,"end": m1,       "xticks": [h1, k1, k10, k100, m1]},
+        "Probabilistische Tests":   {"n": 200, "start": 10,"end": m1,       "xticks": [10, k1, k10, k100, m1]},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},

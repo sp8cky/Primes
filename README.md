@@ -72,8 +72,10 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
 - Aufruf der Testgroups, nicht Plotgroups (funktioniert aber)
 - Reproduzierbarkeit überprüfen
 - Fehlerrate bei Fermat/Lucas überprüfen
+  - anscheinend nur ungünstige werte 
 - Graphen einfügen
 - Farben ändern
+- sst ist schneller, da jacobi von sympy effizienter als pow ist
 
 ---
 

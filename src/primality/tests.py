@@ -24,9 +24,7 @@ def fermat_test(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
     return True
 
 def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): 
-        print(f"(Miller-Selfridge-Rabin) n={n} ist falsche Eingabe")
-        raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
+    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
     if n in (2, 3): return True
     # Zerlegung von n - 1 in 2^s * m
     m = n - 1
@@ -48,9 +46,7 @@ def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) 
 
 
 def solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
-    if n < 2 or (n % 2 == 0 and n > 2): 
-        print(f"(Solovay-Strassen) n={n} ist falsche Eingabe")
-        raise ValueError("n must be greater than 1")
+    if n < 2 or (n % 2 == 0 and n > 2): raise ValueError("n must be greater than 1")
     if n == 2: return True
 
     for i in range(k):

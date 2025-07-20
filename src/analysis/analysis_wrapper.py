@@ -223,46 +223,43 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Lucas"]
-    #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [1,2,3]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
     pseudopimes = {"Probabilistische Tests": [341, 561, 645, 1105, 1387, 1729, 1905, 2047, 2465, 2701, 2821, 3277, 4033, 4369, 4371, 4681, 5461, 6601, 7957, 8321,  8481, 8911, 10261, 10585, 11305, 12801, 13741, 13747, 13981, 14491,
         15709, 15841, 16705, 18705, 29341, 41041, 42799, 46657, 49141, 52633, 57727, 62745, 63973, 65281, 74665, 75361, 80581, 85489, 88357, 90751, 101101, 104653, 115921, 126217, 130561, 162401, 172081, 188461, 196093,
         220729, 252601, 256999, 271951, 278545, 280601, 294409, 314821, 334153, 340561, 357761, 390937, 399001, 410041, 449065, 458989, 476971, 486737, 488881, 490841,
         512461, 530881, 552721, 656601, 825265, 1024651, 1033669, 1045505, 1152271, 1193221, 1299961, 1487161, 1524601, 1588261, 1773289, 1857241, 1909001, 2044501, 2096125]}
     
-    h1      = 10**2
-    k1      = 10**3
-    k10     = 10**4
-    k100    = 10**5
-    m1      = 10**6
-    m10     = 10**7
-    m100    = 10**8
-    md1     = 10**9
-    md10    = 10**10
-    md100   = 10**11
-    b1      = 10**12
-    b10     = 10**13
-    b100    = 10**14
-    bd1     = 10**15
-    bd10    = 10**16
-    bd100   = 10**17
-    t1      = 10**18
-    t10     = 10**19
-    t100    = 10**20
-    td1     = 10**21
-    td10    = 10**22
-    td100   = 10**23
-    q1      = 10**24
-    q10     = 10**25
-    q100    = 10**26
-    qd1     = 10**27
-    qd10    = 10**28
-    qd100   = 10**29
+    h1 = 10**2
+    k1 = 10**3
+    k10 = 10**4
+    k100 = 10**5
+    m1 = 10**6
+    m10 = 10**7
+    m100 = 10**8
+    md1 = 10**9
+    md10 = 10**10
+    md100 = 10**11
+    b1 = 10**12
+    b10 = 10**13
+    b100 = 10**14
+    bd1 = 10**15
+    bd10 = 10**16
+    bd100 = 10**17
+    t1 = 10**18
+    t10 = 10**19
+    t100 = 10**20
+    td1 = 10**21
+    td10 = 10**22
+    td100 = 10**23
+    q1 = 10**24
+    q10 = 10**25
+    q100 = 10**26
+    qd1 = 10**27
+    qd10 = 10**28
+    qd100 = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 100, "start": 100,"end": 2000000, "xticks": [k1, k10, k100, m1, 2100000]},
+        "Probabilistische Tests":   {"n": 500, "start": 100,"end": m1, "xticks": [k1, k10, k100, m1]},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
@@ -276,16 +273,19 @@ if __name__ == "__main__":
     }
 
     custom_ticks = [0, 10**3, 10**5, 10**6]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    #run_tests2 = ["Wilson", "AKS04", "AKS10"]
+    repeat_prob_tests = [1,1,1]
 
     run_primetest_analysis(
         n_numbers=10,
-        num_type='g:0.4',
+        num_type='g:0.5',
         start=0,
         end=10,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=14,
+        seed=16,
         protocoll=True,
         save_results=True,
         show_plot=True,

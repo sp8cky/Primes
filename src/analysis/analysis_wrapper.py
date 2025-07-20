@@ -197,6 +197,7 @@ def run_primetest_analysis(
             seed=seed,
             variant=variant,
             runs_per_n=test_repeats,
+            prob_test_repeats=repeat_prob_tests,
         )
 
     # CSV-Export
@@ -222,9 +223,9 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Lucas"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [1,1,1]
+    repeat_prob_tests = [1,2,3]
     #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
     pseudopimes = {"Probabilistische Tests": [341, 561, 645, 1105, 1387, 1729, 1905, 2047, 2465, 2701, 2821, 3277, 4033, 4369, 4371, 4681, 5461, 6601, 7957, 8321,  8481, 8911, 10261, 10585, 11305, 12801, 13741, 13747, 13981, 14491,
         15709, 15841, 16705, 18705, 29341, 41041, 42799, 46657, 49141, 52633, 57727, 62745, 63973, 65281, 74665, 75361, 80581, 85489, 88357, 90751, 101101, 104653, 115921, 126217, 130561, 162401, 172081, 188461, 196093,
@@ -261,7 +262,7 @@ if __name__ == "__main__":
     qd100   = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 100, "start": 100,"end": 2000000,       "xticks": [k1, k10, k100, m1, 2100000]},
+        "Probabilistische Tests":   {"n": 100, "start": 100,"end": 2000000, "xticks": [k1, k10, k100, m1, 2100000]},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
@@ -282,7 +283,7 @@ if __name__ == "__main__":
         start=0,
         end=10,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
         seed=14,
         protocoll=True,
@@ -291,5 +292,5 @@ if __name__ == "__main__":
         variant=2,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
-        custom_group_numbers=pseudopimes
+        #custom_group_numbers=pseudopimes
     )

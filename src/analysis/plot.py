@@ -274,10 +274,11 @@ def plot_runtime_and_errorrate_by_group(
     timestamp: str = None,
     seed: int = None,
     variant: int = None,
-    runs_per_n=None, 
+    runs_per_n=None,
+    prob_test_repeats=None,
 ):
     os.makedirs(DATA_DIR, exist_ok=True)
-     
+    config = get_test_config(prob_test_repeats=prob_test_repeats, global_seed=seed)
     grouped_data = defaultdict(list)
     for test_name, data in datasets.items():
         if test_name not in TEST_CONFIG:
@@ -301,10 +302,18 @@ def plot_runtime_and_errorrate_by_group(
         fig, ax1 = plt.subplots(figsize=figsize)
         all_n_values = []
 
+        testname_to_label = {
+            test_name: config[test_name]["label"]
+            for test_name, *_ in tests
+            if test_name in config
+        }
+
         color_map = {}
 
         for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
-            line_handle, = ax1.plot(n_values, avg_times, marker='o', label=test_name)
+            label = testname_to_label.get(test_name, test_name)
+            print(f"Plotting {test_name} with label '{label}'")
+            line_handle, = ax1.plot(n_values, avg_times, marker='o', label=label)
             color = line_handle.get_color()
             color_map[test_name] = color
 
@@ -363,7 +372,8 @@ def plot_runtime_and_errorrate_by_group(
             ax2.set_ylim(0, 1)
             ax2.grid(False)
 
-            for test_name, avg_times, n_values, *_ in tests:
+            
+            for i, (test_name, avg_times, n_values, *_ ) in enumerate(tests):
                 test_entries = test_data.get(test_name, {})
                 if not test_entries: continue
 
@@ -381,7 +391,9 @@ def plot_runtime_and_errorrate_by_group(
                 rates_sorted = [rate for _, rate in error_rates_per_n]
 
                 color = color_map.get(test_name, "gray")
-                ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{test_name} Fehlerrate")
+                label_error = testname_to_label.get(test_name, test_name)
+                print(f"Fehlerrate Plot Label: '{label_error} Fehlerrate'")
+                ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{label_error} Fehlerrate")
 
                 avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
                 ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
@@ -395,43 +407,28 @@ def plot_runtime_and_errorrate_by_group(
             time_dict = dict(zip(labels1, handles1))
             error_dict = dict(zip(labels2_clean, handles2))
 
-            test_names_sorted = sorted(set(labels1) | set(labels2_clean))
-
             handles_laufzeit = []
             labels_laufzeit = []
             handles_fehler = []
             labels_fehler = []
 
-            for test in test_names_sorted:
+            for i, (test, avg_times, n_values, std_devs, best_times, worst_times) in enumerate(tests):
                 color = color_map.get(test, "gray")
-                time_handle = time_dict.get(test, Line2D([], [], linestyle='-', color=color))
-                error_handle = error_dict.get(test, Line2D([], [], linestyle='--', color=color))
+                label = testname_to_label.get(test, test)
 
-                # Mittelwerte ermitteln
-                avg_time = 0
-                avg_error = 0
+                time_handle = time_dict.get(label, Line2D([], [], linestyle='-', color=color))
+                error_handle = error_dict.get(label, Line2D([], [], linestyle='--', color=color))
 
-                for tname, avg_times, n_values, std_devs, best_times, worst_times in tests:
-                    if tname == test:
-                        avg_time = statistics.mean(avg_times) if avg_times else 0
-                        break
-
+                avg_time = statistics.mean(avg_times) if avg_times else 0
                 test_entries = test_data.get(test, {})
-                error_rates = []
-                for n in test_entries:
-                    rate = test_entries[n].get("error_rate", None)
-                    if rate is not None:
-                        error_rates.append(rate)
-                if error_rates:
-                    avg_error = statistics.mean(error_rates)
+                error_rates = [entry.get("error_rate") for entry in test_entries.values() if entry.get("error_rate") is not None]
+                avg_error = statistics.mean(error_rates) if error_rates else 0
 
-                # Formatierung
                 avg_time_str = f"{avg_time:.3f} ms"
                 avg_error_str = f"{avg_error:.4g}"
 
-                # Labels mit Durchschnittswerten
-                labels_laufzeit.append(f"{test} Laufzeit [avg: {avg_time_str}]")
-                labels_fehler.append(f"{test} Fehlerrate [avg: {avg_error_str}]")
+                labels_laufzeit.append(f"{label} Laufzeit [avg: {avg_time_str}]")
+                labels_fehler.append(f"{label} Fehlerrate [avg: {avg_error_str}]")
 
                 handles_laufzeit.append(time_handle)
                 handles_fehler.append(error_handle)
@@ -446,7 +443,7 @@ def plot_runtime_and_errorrate_by_group(
                 bbox_to_anchor=(0.9, 0.95),
                 ncol=2,
                 fontsize=11,
-                title="Testvergleich",
+                title="Legende",
                 title_fontsize=12,
                 columnspacing=2.8,
                 handletextpad=1.2,

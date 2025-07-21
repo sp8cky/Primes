@@ -454,3 +454,96 @@ def plot_runtime_and_errorrate_by_group(
         path = os.path.join(DATA_DIR, fname)
         plt.savefig(path)
         plt.close()
+
+
+
+
+        # === Theoretische Laufzeit ===
+        fig, ax = plt.subplots(figsize=figsize)
+        all_n_values = []
+        all_y_values = []  # Für y-Achsenbereich
+
+        for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
+            label = testname_to_label.get(test_name, test_name)
+            color = color_map.get(test_name, None)
+            
+            # Empirische Werte (Punkte + Linien)
+            if avg_times and n_values:
+                if test_name == "fermat":
+                    ax.plot(n_values, avg_times, marker='o', linestyle='-', color='red', linewidth=3, label=f"{label} (empirisch)")
+                else:
+                    ax.plot(n_values, avg_times, marker='o', linestyle='-', color=color, alpha=0.3, label=f"{label} (empirisch)")
+                all_n_values.extend(n_values)
+                all_y_values.extend(avg_times)
+            
+            # Theoretische Werte berechnen
+            fn_theory = TEST_CONFIG[test_name].get("runtime_theoretical_fn")
+            if fn_theory:
+                try:
+                    theory_vals = []
+                    for x in n_values:
+                        m = int(math.log2(x)) + 1
+                        val = fn_theory(m)
+                        try:
+                            val = float(val.evalf())
+                        except Exception:
+                            val = float(val)
+                        val = val * 1000  # ms
+                        theory_vals.append(val)
+                    ax.plot(n_values, theory_vals, linestyle='--', linewidth=2, color=color, label=f"{label} (theoretisch)")
+                    all_y_values.extend(theory_vals)
+                except Exception as e:
+                    print(f"⚠️Fehler bei Theoriefunktion {test_name}: {e}")
+
+        # --- HIER: Empirische Kurve zeichnen ---
+        empirical_color = "red" if test_name == "Fermat" else color
+        empirical_linewidth = 2.5 if test_name == "Fermat" else 1.5
+        ax.plot(n_values, avg_times, marker='o', linestyle='-', linewidth=empirical_linewidth,color=empirical_color, label=f"{label} (empirisch)")
+        all_y_values.extend(avg_times)
+
+        # Achsenbereich bestimmen
+        min_y = max(min(all_y_values) * 0.5, 1e-4)  # kleiner Puffer, min > 0
+        print(f"Min Y: {min_y}, Max Y: {max(all_y_values)}")
+        max_y = max(all_y_values) * 2  # Puffer oben
+
+        ax.set_yscale("log")
+        ax.set_ylim(min_y, max_y)
+
+        # x-Achsenbereich (analog zu vorher)
+        if group_ranges and group in group_ranges:
+            gr = group_ranges[group]
+            start = gr.get('start', 0)
+            end = gr.get('end', max(all_n_values) if all_n_values else 1)
+            custom_xticks = gr.get("xticks")
+        else:
+            start = 0
+            end = max(all_n_values) if all_n_values else 1
+            custom_xticks = None
+
+        ax.set_xlim(start, end)
+
+        if custom_xticks:
+            ax.set_xscale("log")
+            ax.set_xticks(custom_xticks)
+            ax.set_xlim(min(custom_xticks), max(custom_xticks))
+            ax.xaxis.set_minor_locator(NullLocator())
+            if 0 in custom_xticks:
+                ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: "0" if x == 0 else log_base_10_label(x, _)))
+            else:
+                ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
+        else:
+            set_adaptive_xaxis(ax, start, end)
+
+        # Achsenbeschriftungen und Titel
+        ax.set_title(f"Laufzeitverhalten Gruppe: {group}\n{subtitle}")
+        ax.set_xlabel("Testzahl n (linear)", fontsize=16)
+        ax.set_ylabel("Laufzeit [ms] (logarithmisch)", fontsize=16)
+        ax.grid(True, which='both', linestyle='--', alpha=0.5)
+        ax.legend(fontsize=10, loc='upper left', ncol=1)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+
+        fig.tight_layout()
+        fname = f"{timestamp}-group-{safe_group}-theory-seed{seed}-v{variant}.png"
+        path = os.path.join(DATA_DIR, fname)
+        plt.savefig(path)
+        plt.close()

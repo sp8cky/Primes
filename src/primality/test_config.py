@@ -1,7 +1,7 @@
 from src.primality.tests import *
 from src.primality.test_protocoll import *
 from functools import partial
-from sympy import log, sqrt
+from math import log, sqrt
 
 
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen

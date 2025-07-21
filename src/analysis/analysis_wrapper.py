@@ -261,7 +261,7 @@ if __name__ == "__main__":
     qd100 = 10**29
 
     my_group_ranges={
-        "Probabilistische Tests":   {"n": 500, "start": 100,"end": m1, "xticks": [k1, k10, k100, m1]},
+        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m1, "xticks": [k1, k10, k100, m1]},
         "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
         "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
         "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
@@ -277,7 +277,7 @@ if __name__ == "__main__":
     custom_ticks = [0, 10**3, 10**5, 10**6]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [1,1,1]
+    repeat_prob_tests = [2,2,2]
 
     run_primetest_analysis(
         n_numbers=10,
@@ -285,7 +285,7 @@ if __name__ == "__main__":
         start=0,
         end=10,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
         seed=16,
         protocoll=True,

@@ -250,7 +250,10 @@ def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["Optimized Lucas"][n]["result"] = True
         return True
 
-    for q in factorint(n - 1):
+    factors = factorint(n - 1)
+    num_prime_factors = len(factors)
+    test_data["Optimized Lucas"][n]["other_fields"] = {"num_prime_factors": num_prime_factors}
+    for q in factors:
         for a in range(2, n):
             cond1 = pow(a, n - 1, n) == 1
             cond2 = pow(a, (n - 1) // q, n) != 1
@@ -466,6 +469,29 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
     return False
 
 
+def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.8
+    if n <= 1: raise ValueError("n must be greater than 1")
+    if n % 2 == 0:
+        test_data["Proth Variant"][n]["result"] = False
+        test_data["Proth Variant"][n]["reason"] = "n must be odd"
+        return False
+
+    for a in range(2, n):
+        if pow(a, n - 1, n) != 1:
+            test_data["Proth Variant"][n]["result"] = False
+            test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
+            return False
+
+        if pow(a, (n - 1) // 2, n) == n - 1:
+            test_data["Proth Variant"][n]["a_values"] = [(a, True)]
+            test_data["Proth Variant"][n]["result"] = True
+            return True
+
+    test_data["Proth Variant"][n]["result"] = False
+    test_data["Proth Variant"][n]["reason"] = "Kein passendes a gefunden"
+    return False
+
+
 def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
     if n <= 1: raise ValueError("n must be greater than 1")
 
@@ -500,6 +526,7 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
+    test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
     F = math.prod(factors.keys())
     R = (n - 1) // F
 
@@ -516,7 +543,8 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
             cond1 = pow(a, n - 1, n) == 1
             cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
             if cond1 and cond2:
-                test_data["Optimized Pocklington"][n]["a_values"] = {q: [(a, cond1, cond2)]}
+                #test_data["Optimized Pocklington"][n]["a_values"] = {q: [(a, cond1, cond2)]}
+                test_data["Optimized Pocklington"][n]["a_values"].setdefault(q, []).append((a, cond1, cond2))
                 found = True
                 break
         if not found:
@@ -527,34 +555,12 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
     return True
 
 
-def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.8
-    if n <= 1: raise ValueError("n must be greater than 1")
-    if n % 2 == 0:
-        test_data["Proth Variant"][n]["result"] = False
-        test_data["Proth Variant"][n]["reason"] = "n must be odd"
-        return False
-
-    for a in range(2, n):
-        if pow(a, n - 1, n) != 1:
-            test_data["Proth Variant"][n]["result"] = False
-            test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
-            return False
-
-        if pow(a, (n - 1) // 2, n) == n - 1:
-            test_data["Proth Variant"][n]["a_values"] = [(a, True)]
-            test_data["Proth Variant"][n]["result"] = True
-            return True
-
-    test_data["Proth Variant"][n]["result"] = False
-    test_data["Proth Variant"][n]["reason"] = "Kein passendes a gefunden"
-    return False
-
-
 def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: #4.9
     if n <= 1: raise ValueError("n must be greater than 1")
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
+    test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
     F = math.prod(pow(p, e) for p, e in factors.items())
     R = (n - 1) // F
 

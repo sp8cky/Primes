@@ -256,7 +256,7 @@ def plot_runtime(
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
-    filename = f"{timestamp}-test-plot-seed{seed}-v{variant}.png" if timestamp else f"test-plot-seed{seed}-v{variant}.png"
+    filename = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
@@ -450,7 +450,7 @@ def plot_runtime_and_errorrate_by_group(
 
         fig.tight_layout()
         safe_group = group.replace(" ", "_").replace("/", "_")
-        fname = f"{timestamp}-test-plot-group_{safe_group}-seed{seed}-v{variant}.png"
+        fname = f"{timestamp}-group-{safe_group}-seed{seed}-v{variant}.png"
         path = os.path.join(DATA_DIR, fname)
         plt.savefig(path)
         plt.close()

@@ -164,7 +164,9 @@ def run_primetest_analysis(
             "best_times": [[entry["best_time"] for entry in data] for _, data in valid_plot_entries],
             "worst_times": [[entry["worst_time"] for entry in data] for _, data in valid_plot_entries],
             "labels": [data[0]["label"] for _, data in valid_plot_entries],
-            "colors": ["#b41f1f", "#d62728", "#e6550d", "#ff7f0e", "#bcbd22", "#2ca02c", "#31a354", "#637939", "#8c6d31", "#17becf", "#3182bd", "#393b79", "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f"]
+            "colors": ["#b41f1f","#ff7f0e",  "#3182bd",  "#2ca02c","#bcbd22","#31a354",
+                        "#d62728", "#e6550d", "#17becf", "#393b79", "#637939", "#8c6d31", 
+                        "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f"]
         }
         measure_section("Plotten", plot_runtime,
             n_lists=plot_data["n_values"],

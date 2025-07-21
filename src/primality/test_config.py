@@ -1,6 +1,7 @@
 from src.primality.tests import *
 from src.primality.test_protocoll import *
 from functools import partial
+from sympy import log, sqrt
 
 
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
@@ -16,7 +17,8 @@ TEST_CONFIG = {
         "prob_test": True,
         "number_type": "large",
         "testgroup": "Probabilistische Tests",
-        "plotgroup": "Probabilistische Tests"
+        "plotgroup": "Probabilistische Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**3
     },
     "Miller-Selfridge-Rabin": {
         "runtime_function": miller_selfridge_rabin_test,
@@ -24,7 +26,8 @@ TEST_CONFIG = {
         "prob_test": True,
         "number_type": "large",
         "testgroup": "Probabilistische Tests",
-        "plotgroup": "Probabilistische Tests"
+        "plotgroup": "Probabilistische Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**4
     },
     "Solovay-Strassen": {
         "runtime_function": solovay_strassen_test,
@@ -32,7 +35,8 @@ TEST_CONFIG = {
         "prob_test": True,
         "number_type": "large",
         "testgroup": "Probabilistische Tests",
-        "plotgroup": "Probabilistische Tests"
+        "plotgroup": "Probabilistische Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**3
     },
     "Initial Lucas": {
         "runtime_function": initial_lucas_test,
@@ -40,7 +44,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "lucas",
         "testgroup": "Lucas-Tests",
-        "plotgroup": "Lucas-Tests"
+        "plotgroup": "Lucas-Tests",
+        "runtime_theoretical_fn": lambda n: n * log(n)**3
     },
     "Lucas": {
         "runtime_function": lucas_test,
@@ -48,7 +53,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "lucas",
         "testgroup": "Lucas-Tests",
-        "plotgroup": "Lucas-Tests"
+        "plotgroup": "Lucas-Tests",
+        "runtime_theoretical_fn": lambda n: sqrt * log(n)**3
     },
     "Optimized Lucas": {
         "runtime_function": optimized_lucas_test,
@@ -56,7 +62,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "lucas",
         "testgroup": "Lucas-Tests",
-        "plotgroup": "Lucas-Tests"
+        "plotgroup": "Lucas-Tests",
+        "runtime_theoretical_fn": lambda n: test_data["Optimized Lucas"][n]["other_fields"]["num_prime_factors"] * log(n)**3
     },
     "Wilson": {
         "runtime_function": wilson_criterion,
@@ -64,7 +71,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "small",
         "testgroup": "Langsame Tests",
-        "plotgroup": "Langsame Tests"
+        "plotgroup": "Langsame Tests",
+        "runtime_theoretical_fn": lambda n: n * log(n)**2
     },
     "AKS04": {
         "runtime_function": aks04_test,
@@ -88,7 +96,7 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "fermat",
         "testgroup": "Fermat-Zahlen",
-        "plotgroup": "Spezielle Tests"
+        "plotgroup": "Spezielle Tests",
     },
     "Lucas-Lehmer": {
         "runtime_function": lucas_lehmer_test,
@@ -96,7 +104,7 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "mersenne",
         "testgroup": "Mersenne-Zahlen",
-        "plotgroup": "Spezielle Tests"
+        "plotgroup": "Spezielle Tests",
     },
     "Proth": {
         "runtime_function": proth_test,
@@ -104,7 +112,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "proth",
         "testgroup": "Proth-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: log(n)**3
     },
     "Proth Variant": {
         "runtime_function": proth_test_variant,
@@ -112,7 +121,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "proth",
         "testgroup": "Proth-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: log(n)**3
     },
     "Pocklington": {
         "runtime_function": pocklington_test,
@@ -120,7 +130,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "pocklington",
         "testgroup": "Pocklington-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: log(n)**3
     },
     "Optimized Pocklington": {
         "runtime_function": optimized_pocklington_test,
@@ -128,7 +139,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "pocklington",
         "testgroup": "Pocklington-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: test_data["Optimized Pocklington"][n]["other_fields"]["num_prime_factors"] * log(n)**3
     },
     "Optimized Pocklington Variant": {
         "runtime_function": optimized_pocklington_test_variant,
@@ -136,7 +148,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "pocklington",
         "testgroup": "Pocklington-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: test_data["Optimized Pocklington"][n]["other_fields"]["num_prime_factors"] * log(n)**3
     },
     "Generalized Pocklington": {
         "runtime_function": generalized_pocklington_test,
@@ -144,7 +157,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "pocklington",
         "testgroup": "Pocklington-Tests",
-        "plotgroup": "Zusammengesetzte"
+        "plotgroup": "Zusammengesetzte",
+
     },
     "Grau": {
         "runtime_function": grau_test,

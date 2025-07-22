@@ -329,7 +329,7 @@ def generalized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #6
     return False
 
 def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
-    print(f"Prüfe Grau-Test für {n}...")
+    #print(f"Prüfe Grau-Test für {n}...")
     if n <= 1: raise ValueError("n must be greater than 1")
 
     decomposition = helpers.find_pocklington_decomposition(n)
@@ -346,7 +346,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
 
 
 def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
-    print(f"Prüfe Grau-Probability-Test für {n}...")
+    #print(f"Prüfe Grau-Probability-Test für {n}...")
     if n <= 1:  raise ValueError("n must be greater than 1")
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition: return False

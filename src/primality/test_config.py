@@ -16,7 +16,7 @@ TEST_CONFIG = {
         "protocol_function": fermat_test_protocoll,
         "prob_test": True,
         "number_type": "large",
-        "testgroup": "Probabilistische Tests",
+        "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**3
     },
@@ -25,7 +25,7 @@ TEST_CONFIG = {
         "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
         "number_type": "large",
-        "testgroup": "Probabilistische Tests",
+        "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**4
     },
@@ -34,7 +34,7 @@ TEST_CONFIG = {
         "protocol_function": solovay_strassen_test_protocoll,
         "prob_test": True,
         "number_type": "large",
-        "testgroup": "Probabilistische Tests",
+        "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**3
     },
@@ -43,7 +43,7 @@ TEST_CONFIG = {
         "protocol_function": initial_lucas_test_protocoll,
         "prob_test": False,
         "number_type": "lucas",
-        "testgroup": "Lucas-Tests",
+        "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: n * log(n)**3
     },
@@ -52,7 +52,7 @@ TEST_CONFIG = {
         "protocol_function": lucas_test_protocoll,
         "prob_test": False,
         "number_type": "lucas",
-        "testgroup": "Lucas-Tests",
+        "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: sqrt * log(n)**3
     },
@@ -61,7 +61,7 @@ TEST_CONFIG = {
         "protocol_function": optimized_lucas_test_protocoll,
         "prob_test": False,
         "number_type": "lucas",
-        "testgroup": "Lucas-Tests",
+        "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: test_data["Optimized Lucas"][n]["other_fields"]["num_prime_factors"] * log(n)**3
     },
@@ -70,7 +70,7 @@ TEST_CONFIG = {
         "protocol_function": wilson_criterion_protocoll,
         "prob_test": False,
         "number_type": "small",
-        "testgroup": "Langsame Tests",
+        "testgroup": "Langsam",
         "plotgroup": "Langsame Tests",
         "runtime_theoretical_fn": lambda n: n * log(n)**2
     },
@@ -79,7 +79,7 @@ TEST_CONFIG = {
         "protocol_function": aks04_test_protocoll,
         "prob_test": False,
         "number_type": "small",
-        "testgroup": "Langsame Tests",
+        "testgroup": "Langsam",
         "plotgroup": "Langsame Tests"
     },
     "AKS10": {
@@ -87,7 +87,7 @@ TEST_CONFIG = {
         "protocol_function": aks10_test_protocoll,
         "prob_test": False,
         "number_type": "small",
-        "testgroup": "Langsame Tests",
+        "testgroup": "Langsam",
         "plotgroup": "Langsame Tests"
     },
     "Pepin": {

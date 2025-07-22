@@ -260,18 +260,16 @@ if __name__ == "__main__":
     qd10 = 10**28
     qd100 = 10**29
 
-    my_group_ranges={
-        "Probabilistische Tests":   {"n": 10, "start": 100,"end": m1, "xticks": [k1, k10, k100, m1]},
-        "Lucas-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
-        "Langsame Tests":           {"n": 10, "start": 10, "end": 100,      "xticks": [10, 50, h1]},
-        "Proth-Tests":              {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
-        "Pocklington-Tests":        {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
-        "Rao":                      {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
-        "Ramzy":                    {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
-        "Fermat-Zahlen":            {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
-        "Mersenne-Zahlen":          {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
-        "Spezielle Tests":          {"n": 10, "start": 0,   "end": 1000,    "xticks": [1, 500, k1]},
-        "Zusammengesetzte":         {"n": 10, "start": 100, "end": 1000,    "xticks": [h1, 500, k1]},
+    my_group_ranges={ 
+        "Probabilistisch":      {"n": 10, "start": 100,  "end": m1,       "xticks": [k1, k10, k100, m1]},
+        "Lucas":                {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
+        "Langsam":              {"n": 10, "start": 10,   "end": 100,      "xticks": [10, 50, h1]},
+        "Proth-Tests":          {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
+        "Pocklington-Tests":    {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
+        "Rao":                  {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
+        "Ramzy":                {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
+        "Fermat-Zahlen":        {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
     }
 
     custom_ticks = [0, 10**3, 10**5, 10**6]

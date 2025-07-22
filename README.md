@@ -73,7 +73,6 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
   - fermat fehlt
   - fehler bei anderen
 - Farben ändern
-- Aufruf der Testgroups, nicht Plotgroups (funktioniert aber)
 
 
 - Reproduzierbarkeit überprüfen

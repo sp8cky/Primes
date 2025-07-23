@@ -40,13 +40,52 @@ def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) 
 
     return True
 
+def optimized_miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
+    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
+    if n in (2, 3): return True
+    # Zerlegung von n - 1 in 2^s * m
+    m = n - 1
+    s = 0
+    while m % 2 == 0:
+        m //= 2
+        s += 1
+
+    for i in range(k):
+        a_seed = get_global_seed(seed, n, "Optimzed-Miller-Selfridge-Rabin", i)
+        r = random.Random(a_seed)
+        a = r.randint(2, n - 1)
+        if gcd(a, n) != 1: return False
+        x = pow(a, m, n)
+        if x == 1 or x == n - 1: continue
+        for _ in range(s - 1):
+            x = pow(x, 2, n)
+            if x == n - 1: break
+        else:
+            return False
+
+    return True
 
 def solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
+    if n < 2 or (n % 2 == 0 and n > 2): raise ValueError("n must be greater than 1")
+    if n == 2 or n == 3: return True
+
+    for i in range(k):
+        a_seed = get_global_seed(seed, n, "Solovay-Strassen", i)
+        r = random.Random(a_seed)
+        a = r.randint(2, n - 1)
+        jacobi = helpers.jacobisymbol(a, n)
+        if jacobi == 0 or pow(a, (n - 1) // 2, n) != jacobi % n:
+            return False
+
+    return True
+
+
+def optimized_solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
     if n < 2 or (n % 2 == 0 and n > 2): raise ValueError("n must be greater than 1")
     if n == 2: return True
 
     for i in range(k):
-        a_seed = get_global_seed(seed, n, "Solovay-Strassen", i)
+        a_seed = get_global_seed(seed, n, "Optimized-Solovay-Strassen", i)
         r = random.Random(a_seed)
         a = r.randint(2, n - 1)
         jacobi = jacobi_symbol(a, n)

@@ -5,9 +5,9 @@ from math import log, sqrt
 
 
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
-default_repeats = [3, 3, 3]
-prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao",  "Pepin", "Lucas-Lehmer"]
+default_repeats = [3, 3, 3, 3, 3]
+prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao",  "Pepin", "Lucas-Lehmer"]
 
 # Zuordnung von Tests zu Funktionen und Metadaten
 TEST_CONFIG = {
@@ -29,9 +29,27 @@ TEST_CONFIG = {
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**4
     },
+    "Optimized Miller-Selfridge-Rabin": {
+        "runtime_function": optimized_miller_selfridge_rabin_test,
+        "protocol_function": optimized_miller_selfridge_rabin_test_protocoll,
+        "prob_test": True,
+        "number_type": "large",
+        "testgroup": "Probabilistisch",
+        "plotgroup": "Probabilistische Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**4
+    },
     "Solovay-Strassen": {
         "runtime_function": solovay_strassen_test,
         "protocol_function": solovay_strassen_test_protocoll,
+        "prob_test": True,
+        "number_type": "large",
+        "testgroup": "Probabilistisch",
+        "plotgroup": "Probabilistische Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**3
+    },
+    "Optimized-Solovay-Strassen": {
+        "runtime_function": optimized_solovay_strassen_test,
+        "protocol_function": optimized_solovay_strassen_test_protocoll,
         "prob_test": True,
         "number_type": "large",
         "testgroup": "Probabilistisch",

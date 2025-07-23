@@ -14,6 +14,28 @@ def order(n: int, r: int) -> int:
         return n_order(n, r)
     except ValueError:
         return 0  # Andere Fehler
+    
+
+
+def jacobisymbol(a, n):
+    if n <= 0 or n % 2 == 0: raise ValueError("n muss eine ungerade, positive Zahl sein.")
+
+    a = a % n
+    result = 1
+
+    while a != 0:
+        while a % 2 == 0:
+            a //= 2
+            if n % 8 in [3, 5]:
+                result = -result
+
+        a, n = n, a  # Law of quadratic reciprocity
+        if a % 4 == 3 and n % 4 == 3:
+            result = -result
+        a %= n
+
+    return result if n == 1 else 0
+
 
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:

@@ -1,14 +1,10 @@
 import src.primality.helpers as helpers
 from src.primality.test_protocoll import get_global_seed
 import random, math, pytest
-from math import gcd
-from sympy import factorint
+from math import gcd, log2, sqrt
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, symbols
+from sympy import jacobi_symbol, gcd, log, factorint, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, ZZ, rem, symbols, Poly
 from sympy.abc import X
-from sympy.polys import rem
-from sympy.polys.domains import ZZ
-from sympy.polys.polytools import Poly
 from typing import Optional, List, Dict, Tuple, Any, Union
 
 def fermat_test(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
@@ -116,8 +112,7 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
     return result
 
 def aks04_test(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1: raise ValueError("n muss > 1 sein")
-    if perfect_power(n): return False  # echte Potenz => nicht prim
+    if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
     log_n = math.log2(n)
@@ -139,17 +134,19 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
     # Schritt 4: Polynomprüfung für a <= sqrt(phi(r)) * log n
     phi_r = totient(r)
-    max_a = math.floor(math.sqrt(phi_r) * log_n)
-    mod_poly = X**r - 1
+    log_n = log2(n)
+    max_a = int(sqrt(phi_r) * log_n) + 1
+    mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
-        X_plus_a = X + a
-        # Berechne (X + a)^n mod (X^r - 1)
-        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
-        # Berechne X^n + a mod (X^r - 1)
-        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
-        if left != right:
-            return False
+        # Compute (X + a)^n mod (X^r - 1) mod n
+        left = Poly(X + a, X, domain=GF(n)) ** n
+        left = left.rem(mod_poly)  # Explicit remainder computation
+
+        # Compute X^n + a mod (X^r - 1) mod n
+        right = Poly(X**n + a, X, domain=GF(n)).rem(mod_poly)
+
+        if left != right: return False
 
     return True
 
@@ -174,14 +171,15 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
-    mod_poly = X**r - 1
-
+    mod_poly = Poly(X**r - 1, X, domain=GF(n))
+    
     for a in range(1, max_a + 1):
-        X_plus_a = X + a
-        # Berechne (X + a)^n mod (X^r - 1)
-        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        # Effizient: (X + a)^n mod (X^r - 1) mit pow()
+        left = pow(Poly(X + a, X, domain=GF(n)), n, mod_poly)
+
         # Berechne X^n + a mod (X^r - 1)
-        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        xn_mod = pow(Poly(X, X, domain=GF(n)), n, mod_poly)
+        right = (xn_mod + a) % mod_poly
         if left != right: return False
 
     return True

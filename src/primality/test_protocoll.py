@@ -1,9 +1,9 @@
 import src.primality.helpers as helpers
 import random, math, hashlib
-from math import gcd, log2
+from math import gcd, log2, sqrt
 from sympy import factorint
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, symbols
+from sympy import jacobi_symbol, gcd, log, primerange, isprime, divisors, n_order, perfect_power, cyclotomic_poly, GF, symbols, totient
 from sympy.abc import X
 from sympy.polys import rem
 from sympy.polys.domains import ZZ
@@ -323,13 +323,15 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
     # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
-    max_a = int((helpers.order(n, r) ** 0.5) * log_n)
-    mod_poly = X**r - 1
+    phi_r = totient(r)
+    log_n = log2(n)
+    max_a = int(sqrt(phi_r) * log_n) + 1
+    mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
-        X_plus_a = X + a
-        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
-        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        left = Poly(X + a, X, domain=GF(n)) ** n
+        left = left.rem(mod_poly)
+        right = Poly(X**n + a, X, domain=GF(n)).rem(mod_poly)
 
         passed = (left == right)
         test_data[testname][n]["other_fields"]["polynomial_check"].append((a, passed))
@@ -385,12 +387,12 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)
-    mod_poly = X**r - 1
+    mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
-        X_plus_a = X + a
-        left = Poly(rem(Poly(X_plus_a**n, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
-        right = Poly(rem(Poly(X**n + a, X, domain=GF(n)), Poly(mod_poly, X, domain=GF(n))), X)
+        left = pow(Poly(X + a, X, domain=GF(n)), n, mod_poly)
+        xn_mod = pow(Poly(X, X, domain=GF(n)), n, mod_poly)
+        right = (xn_mod + a) % mod_poly
 
         if left != right:
             test_data["AKS10"][n]["result"] = False

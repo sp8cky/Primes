@@ -99,6 +99,7 @@ def run_primetest_analysis(
         # 3. Manuelle Gruppen nicht überschreiben
         for test_name, number_list in auto_generated.items():
             if test_name not in numbers_per_test:
+                print(f"Test '{test_name}' wurde automatisch generiert: {len(number_list)} Zahlen")
                 numbers_per_test[test_name] = number_list
     else:
         raise ValueError("variant muss 1 oder 2 sein")
@@ -117,6 +118,7 @@ def run_primetest_analysis(
     for test_name, config in test_config.items():
         runtime_functions[test_name] = config["runtime_function"]
         protocol_functions[test_name] = config["protocol_function"]
+
 
     # Zeitmessung
     datasets = measure_section("Laufzeitmessung", lambda: {
@@ -259,32 +261,36 @@ if __name__ == "__main__":
     qd10 = 10**28
     qd100 = 10**29
 
-    my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 100,  "end": m1,       "xticks": [k1, k10, k100, m1]},
-        "Lucas":                {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
-        "Langsam":              {"n": 10, "start": 10,   "end": 100,      "xticks": [10, 50, h1]},
-        "Proth-Tests":          {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
-        "Pocklington-Tests":    {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
-        "Rao":                  {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
-        "Ramzy":                {"n": 10, "start": 100,  "end": 1000,    "xticks": [h1, 500, k1]},
-        "Fermat-Zahlen":        {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 0,    "end": 1000,   "xticks": [1, 500, k1]},
-    }
 
     custom_ticks = [0, 10**3, 10**5, 10**6]
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [2,2,2]
+    #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests2 = ["Wilson", "AKS04", "AKS10"]
+    repeat_prob_tests = [1,1,1]
+
+
+    my_group_ranges={ 
+        "Probabilistisch":      {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Lucas":                {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, k1]},
+        "Proth-Tests":          {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Pocklington-Tests":    {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Rao":                  {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Ramzy":                {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Fermat-Zahlen":        {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Mersenne-Zahlen":      {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+    }
+
+
 
     run_primetest_analysis(
         n_numbers=10,
         num_type='g:0.5',
         start=0,
-        end=10,
+        end=k10,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests2,
         prob_test_repeats=repeat_prob_tests,
-        seed=17,
+        seed=200,
         protocoll=True,
         save_results=True,
         show_plot=True,

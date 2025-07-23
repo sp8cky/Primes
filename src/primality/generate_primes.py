@@ -130,8 +130,15 @@ def generate_numbers_per_group(
     return numbers_per_test 
 
 def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = True) -> List[int]:
-    if r is None:
-        r = random.Random()
+    # Absicherung gegen ungültige Werte
+    if start < 1:
+        print(f"[WARN] start ({start}) < 1, setze start auf 1")
+        start = 1
+    if end < start:
+        print(f"[WARN] end ({end}) < start ({start}), setze end auf start + 1")
+        end = start + 1
+    
+    if r is None: r = random.Random()
 
     # Wenn keine expliziten Werte gegeben, verwende Standardverteilung (50/50)
     if p_count is None or z_count is None:

@@ -263,13 +263,13 @@ if __name__ == "__main__":
 
 
     custom_ticks = [0, 10**3, 10**5, 10**6]
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 100, "start": 1,  "end": m1,    "xticks": [1, h1, 500, k1, 5000, k10, k100, m1]},
+        "Probabilistisch":      {"n": 100, "start": k1,  "end": t10,    "xticks": [k1, m1, md1, b1, bd1, t1, t10]},
         "Lucas":                {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
         "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, k1]},
         "Proth-Tests":          {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
@@ -290,7 +290,7 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=200,
+        seed=202,
         protocoll=True,
         save_results=True,
         show_plot=True,

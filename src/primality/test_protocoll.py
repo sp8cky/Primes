@@ -33,7 +33,9 @@ def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
     test_config = {
         "Fermat": {"a_values": []},
         "Miller-Selfridge-Rabin": {"a_values": []},
+        "Optimized-Miller-Selfridge-Rabin": {"a_values": []},
         "Solovay-Strassen": {"a_values": []},
+        "Optimized-Solovay-Strassen": {"a_values": []},
         "Initial Lucas": {"a_values": []},
         "Lucas": {"a_values": []},
         "Optimized Lucas": {"a_values": {}},
@@ -158,8 +160,8 @@ def optimized_miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: Op
         raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
 
     if n in (2, 3):
-        test_data["Miller-Selfridge-Rabin"][n]["result"] = True
-        test_data["Miller-Selfridge-Rabin"][n]["a_values"] = []
+        test_data["Optimized-Miller-Selfridge-Rabin"][n]["result"] = True
+        test_data["Optimized-Miller-Selfridge-Rabin"][n]["a_values"] = []
         return True
 
     m = n - 1
@@ -168,20 +170,20 @@ def optimized_miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: Op
         m //= 2
         s += 1
 
-    test_data["Miller-Selfridge-Rabin"][n]["a_values"] = []
+    test_data["Optimized-Miller-Selfridge-Rabin"][n]["a_values"] = []
 
     for i in range(k):
-        r = random.Random(get_global_seed(seed, n, "Miller-Selfridge-Rabin", i))
+        r = random.Random(get_global_seed(seed, n, "Optimized-Miller-Selfridge-Rabin", i))
         a = r.randint(2, n - 1)
 
         if gcd(a, n) != 1:
-            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
-            test_data["Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
+            test_data["Optimized-Miller-Selfridge-Rabin"][n]["result"] = False
+            test_data["Optimized-Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
             return False
         
         x = pow(a, m, n)
         if x == 1 or x == n - 1:
-            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, True, None))
+            test_data["Optimized-Miller-Selfridge-Rabin"][n]["a_values"].append((a, True, None))
             continue
 
         found = False
@@ -191,33 +193,18 @@ def optimized_miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: Op
         else:
             found = True
 
-        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, x, found))
+        test_data["Optimized-Miller-Selfridge-Rabin"][n]["a_values"].append((a, x, found))
 
         if not found:
-            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
-            test_data["Miller-Selfridge-Rabin"][n]["reason"] = "Keine passende Potenz gefunden"
+            test_data["Optimized-Miller-Selfridge-Rabin"][n]["result"] = False
+            test_data["Optimized-Miller-Selfridge-Rabin"][n]["reason"] = "Keine passende Potenz gefunden"
             return False
 
-    test_data["Miller-Selfridge-Rabin"][n]["result"] = True
+    test_data["Optimized-Miller-Selfridge-Rabin"][n]["result"] = True
     return True
 
 def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
     if n < 2 or (n % 2 == 0 and n > 2): raise ValueError("n must be greater than 1")
-    if n == 2 or n == 3: return True
-
-    for i in range(k):
-        a_seed = get_global_seed(seed, n, "Solovay-Strassen", i)
-        r = random.Random(a_seed)
-        a = r.randint(2, n - 1)
-        jacobi = helpers.jacobisymbol(a, n)
-        if jacobi == 0 or pow(a, (n - 1) // 2, n) != jacobi % n:
-            return False
-
-    return True
-
-def optimized_solovay_strassen_test_protocoll(n: int, k: int = 5, seed: int | None = None) -> bool:
-    if n < 2 or (n % 2 == 0 and n > 2):
-        raise ValueError("n must be greater than 1")
 
     if n == 2 or n == 3:
         test_data["Solovay-Strassen"][n]["result"] = True
@@ -246,6 +233,39 @@ def optimized_solovay_strassen_test_protocoll(n: int, k: int = 5, seed: int | No
             return False
 
     test_data["Solovay-Strassen"][n]["result"] = True
+    return True
+
+def optimized_solovay_strassen_test_protocoll(n: int, k: int = 5, seed: int | None = None) -> bool:
+    if n < 2 or (n % 2 == 0 and n > 2):
+        raise ValueError("n must be greater than 1")
+
+    if n == 2 or n == 3:
+        test_data["Optimized-Solovay-Strassen"][n]["result"] = True
+        test_data["Optimized-Solovay-Strassen"][n]["a_values"] = [(2, False, True)]
+        return True
+
+    test_data["Optimized-Solovay-Strassen"][n]["a_values"] = []
+
+    for i in range(k):
+        r = random.Random(get_global_seed(seed, n, "Optimized-Solovay-Strassen", i))
+        a = r.randint(2, n - 1)
+        jacobi = jacobi_symbol(a, n)
+        cond1 = (jacobi == 0)
+        cond2 = pow(a, (n - 1) // 2, n) == jacobi % n
+
+        test_data["Optimized-Solovay-Strassen"][n]["a_values"].append((a, cond1, cond2))
+
+        if cond1:
+            test_data["Optimized-Solovay-Strassen"][n]["reason"] = "Jacobi-Symbol ist 0"
+            test_data["Optimized-Solovay-Strassen"][n]["result"] = False
+            return False
+
+        if not cond2:
+            test_data["Optimized-Solovay-Strassen"][n]["reason"] = "Kongruenzprüfung fehlgeschlagen"
+            test_data["Optimized-Solovay-Strassen"][n]["result"] = False
+            return False
+
+    test_data["Optimized-Solovay-Strassen"][n]["result"] = True
     return True
 
 def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:

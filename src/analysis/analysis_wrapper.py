@@ -166,9 +166,11 @@ def run_primetest_analysis(
             "best_times": [[entry["best_time"] for entry in data] for _, data in valid_plot_entries],
             "worst_times": [[entry["worst_time"] for entry in data] for _, data in valid_plot_entries],
             "labels": [data[0]["label"] for _, data in valid_plot_entries],
-            "colors": ["#b41f1f","#ff7f0e",  "#3182bd",  "#2ca02c","#bcbd22","#31a354",
-                        "#d62728", "#e6550d", "#17becf", "#393b79", "#637939", "#8c6d31", 
-                        "#756bb1", "#9467bd", "#e377c2", "#7b4173","#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f"]
+            "colors": ["#b41f1f", "#ff7f0e", "#bcbd22", "#3182bd", "#2ca02c",
+                       "#31a354", "#d62728", "#e6550d",
+                       "#17becf", "#393b79", "#637939",
+                       "#8c6d31", "#756bb1",
+                       "#9467bd", "#e377c2", "#7b4173", "#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f", "#1f77b4", "#ff1493"],
         }
         measure_section("Plotten", plot_runtime,
             n_lists=plot_data["n_values"],
@@ -269,15 +271,15 @@ if __name__ == "__main__":
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 100, "start": k1,  "end": t10,    "xticks": [k1, m1, md1, b1, bd1, t1, t10]},
-        "Lucas":                {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Lucas":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
         "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, k1]},
-        "Proth-Tests":          {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Pocklington-Tests":    {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Rao":                  {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Ramzy":                {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Fermat-Zahlen":        {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Mersenne-Zahlen":      {"n": 100, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Rao":                  {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Ramzy":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
     }
 
 
@@ -288,9 +290,9 @@ if __name__ == "__main__":
         start=0,
         end=k10,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=202,
+        seed=204,
         protocoll=True,
         save_results=True,
         show_plot=True,

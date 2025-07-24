@@ -213,12 +213,9 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
     
     for a in range(1, max_a + 1):
-        # Effizient: (X + a)^n mod (X^r - 1) mit pow()
-        left = pow(Poly(X + a, X, domain=GF(n)), n, mod_poly)
-
-        # Berechne X^n + a mod (X^r - 1)
-        xn_mod = pow(Poly(X, X, domain=GF(n)), n, mod_poly)
-        right = (xn_mod + a) % mod_poly
+        left = Poly(X + a, X, domain=GF(n)) ** n
+        left = left.rem(mod_poly) 
+        right = Poly(X**n + a, X, domain=GF(n)).rem(mod_poly)
         if left != right: return False
 
     return True

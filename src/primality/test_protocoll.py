@@ -471,9 +471,9 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
-        left = pow(Poly(X + a, X, domain=GF(n)), n, mod_poly)
-        xn_mod = pow(Poly(X, X, domain=GF(n)), n, mod_poly)
-        right = (xn_mod + a) % mod_poly
+        left = Poly(X + a, X, domain=GF(n)) ** n
+        left = left.rem(mod_poly) 
+        right = Poly(X**n + a, X, domain=GF(n)).rem(mod_poly)
 
         if left != right:
             test_data["AKS10"][n]["result"] = False

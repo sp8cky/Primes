@@ -7,7 +7,7 @@ from math import log, sqrt
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
 default_repeats = [3, 3, 3, 3, 3]
 prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Ramzy", "Rao",  "Pepin", "Lucas-Lehmer"]
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
 
 # Zuordnung von Tests zu Funktionen und Metadaten
 TEST_CONFIG = {
@@ -98,7 +98,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "small",
         "testgroup": "Langsam",
-        "plotgroup": "Langsame Tests"
+        "plotgroup": "Langsame Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**(21/2)
     },
     "AKS10": {
         "runtime_function": aks10_test,
@@ -106,7 +107,8 @@ TEST_CONFIG = {
         "prob_test": False,
         "number_type": "small",
         "testgroup": "Langsam",
-        "plotgroup": "Langsame Tests"
+        "plotgroup": "Langsame Tests",
+        "runtime_theoretical_fn": lambda n: log(n)**18
     },
     "Pepin": {
         "runtime_function": pepin_test,
@@ -194,6 +196,15 @@ TEST_CONFIG = {
         "testgroup": "Pocklington-Tests",
         "plotgroup": "Zusammengesetzte"
     },
+    "Rao": {
+        "runtime_function": rao_test,
+        "protocol_function": rao_test_protocoll,
+        "prob_test": False,
+        "number_type": "rao",
+        "testgroup": "Rao",
+        "plotgroup": "Zusammengesetzte",
+        "runtime_theoretical_fn": lambda n: log(n)**2
+    },
     "Ramzy": {
         "runtime_function": ramzy_test,
         "protocol_function": ramzy_test_protocoll,
@@ -202,14 +213,6 @@ TEST_CONFIG = {
         "testgroup": "Ramzy",
         "plotgroup": "Zusammengesetzte"
     },
-    "Rao": {
-        "runtime_function": rao_test,
-        "protocol_function": rao_test_protocoll,
-        "prob_test": False,
-        "number_type": "rao",
-        "testgroup": "Rao",
-        "plotgroup": "Zusammengesetzte"
-    }
 }
 
 

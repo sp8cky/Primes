@@ -110,7 +110,7 @@ def format_scientific_str(x):
     return fr"${coefficient}\times10^{{{exponent}}}$"
 
 
-
+# plottet alle Tests in einem Plot
 def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(24, 14), use_log=True,
@@ -213,7 +213,7 @@ def plot_runtime(
 
     for base_label, group, label, *_ in entries:
         grouped_entries[group].append((test_index.get(base_label, 999), label, base_label))
-        if group not in group_order:  group_order.append(group)
+        if group not in group_order: group_order.append(group)
 
     for group in grouped_entries:
         grouped_entries[group].sort(key=lambda x: x[0])

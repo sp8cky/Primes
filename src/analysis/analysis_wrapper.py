@@ -264,22 +264,22 @@ if __name__ == "__main__":
     qd100 = 10**29
 
 
-    custom_ticks = [0, 10**3, 10**5, 10**6]
+    custom_ticks = [0, 10**2, 10**3]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, k1]},
-        "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Rao":                  {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Ramzy":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, 500, k1, 5000, k10]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Lucas":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, h1, k1]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Rao":                  {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Ramzy":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
     }
 
 
@@ -288,15 +288,15 @@ if __name__ == "__main__":
         n_numbers=10,
         num_type='g:0.5',
         start=0,
-        end=k10,
+        end=10**3,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=204,
+        seed=205,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=2,
+        variant=1,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

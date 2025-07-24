@@ -28,77 +28,6 @@ def log_base_10_label(x, _):
     else:
         return f"${base} \\times 10^{{{exp}}}$"
 
-def set_adaptive_xaxis(ax, start, end, force_log=None):
-    start = float(start)
-    end = float(end)
-    use_log = force_log if force_log is not None else (np.log10(end) - np.log10(max(start, 1))) >= 3
-
-    if use_log:
-        ax.set_xscale("log")
-        ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
-        ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs=range(2, 10), numticks=100))
-
-        ticks = [start]
-        mid = np.sqrt(start * end)  # log-mittig
-        left_mid = np.sqrt(start * mid)
-        right_mid = np.sqrt(mid * end)
-        ticks += [left_mid, mid, right_mid, end]
-        ticks = sorted(set(ticks))
-        ax.set_xticks(ticks)
-    else:
-        ax.set_xscale("linear")
-        ax.xaxis.set_major_formatter(FuncFormatter(scientific_format))
-
-        mid = (start + end) / 2
-        left_mid = (start + mid) / 2
-        right_mid = (mid + end) / 2
-        ticks = [start, left_mid, mid, right_mid, end]
-        ax.set_xticks(ticks)
-
- 
-
-def fixed_step_range(x_min, x_max, steps=10):
-    step = choose_step_range(x_min, x_max)  # ← nutze deine eigene Logik!
-    x_min_rounded = 0                      # wir wollen bei 0 starten
-    x_max_rounded = round_up(x_max, step)  # nächsthöherer runder Wert
-    return x_min_rounded, x_max_rounded, step
-
-
-def choose_step_range(x_min, x_max, target_steps=10):
-    range_ = x_max - x_min
-    if range_ <= 0:
-        return 1  # fallback bei ungültigem Bereich
-
-    rough_step = range_ // target_steps
-    if rough_step <= 0:
-        return 1  # Schutz gegen log10(0) oder negatives
-
-    magnitude = 10 ** int(math.floor(math.log10(rough_step)))
-    multiples = [1, 2, 5, 10]
-
-    for m in multiples:
-        step = m * magnitude
-        if range_ // step <= target_steps:
-            return step
-
-    return 10 * magnitude  # fallback
-
-
-def round_down(x, base):
-    return (x // base) * base
-
-def round_up(x, base):
-    return ((x + base - 1) // base) * base
-
-def scientific_format(x, pos):
-    if x == 0:
-        return "0"
-    exponent = int(math.log10(x))
-    coefficient = x / (10**exponent)
-    if coefficient.is_integer():
-        coefficient = int(coefficient)
-    return fr"${coefficient}\times10^{{{exponent}}}$"
-
 def format_scientific_str(x):
     if x == 0:
         return "0"
@@ -117,9 +46,11 @@ def plot_runtime(
     total_numbers=None, runs_per_n=None, group_ranges=None,
     seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None
 ):
+    # === Fallbacks für Labels/Farben ===
     if labels is None: labels = [None] * len(n_lists)
     if colors is None: colors = [None] * len(n_lists)
 
+    # === Einträge vorbereiten und nach TEST_ORDER sortieren ===
     entries = []
     for i in range(len(n_lists)):
         label = labels[i]
@@ -148,7 +79,7 @@ def plot_runtime(
 
     entries.sort(key=lambda x: TEST_ORDER.index(x[0]) if x[0] in TEST_ORDER else 999)
 
-    # Farben und Linienstile
+    # === Farben und Linienstile je Gruppe definieren ===
     unique_groups = list(dict.fromkeys(entry[1] for entry in entries))
     group_colors = plt.cm.tab10.colors
     line_styles = ['-', '--', '-.', ':']
@@ -157,8 +88,8 @@ def plot_runtime(
         for i, group in enumerate(unique_groups)
     }
 
+    # === Daten plotten ===
     plt.figure(figsize=figsize)
-
     for base_label, group, label, n, t, std, best, worst, user_color in entries:
         t_ms = [ti * 1000 for ti in t]
         std_ms = [s * 1000 for s in std] if std else None
@@ -166,36 +97,38 @@ def plot_runtime(
         worst_ms = [w * 1000 for w in worst] if worst else None
 
         color, linestyle = group_style_map.get(group, ('black', '-'))
-        if user_color is not None: color = user_color
+        if user_color is not None:
+            color = user_color
 
         plt.plot(n, t_ms, marker="o", label=label, color=color, linestyle=linestyle)
 
-        if std: plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
-        if best and worst: plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
+        if std:
+            plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
+        if best and worst:
+            plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
+    # === Achsenbeschriftungen ===
     plt.xlabel("Testzahl n (logarithmisch)", fontsize=16)
     plt.ylabel("Laufzeit [ms]", fontsize=16)
-
     ax = plt.gca()
-    all_x = [x for entry in entries for x in entry[3]]
-    xmin = min(all_x) if all_x else 1
-    xmax = max(all_x) if all_x else 10
-
     ax.set_xscale("log")
     ax.set_yscale("log")
+
+    # === Nur benutzerdefinierte Xticks verwenden ===
     if custom_xticks:
         ax.set_xticks(custom_xticks)
         ax.set_xlim(min(custom_xticks), max(custom_xticks))
         if 0 in custom_xticks:
-            # Definiere benutzerdefinierte Tick-Labels, um "0" anzuzeigen
             ax.get_xaxis().set_major_formatter(FuncFormatter(lambda x, _: "0" if x == 0 else log_base_10_label(x, _)))
+        else:
+            ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
     else:
-        x_min, x_max, _ = fixed_step_range(0, xmax)
-        ax.set_xlim(x_min, x_max)
+        if start is not None and end is not None:
+            ax.set_xticks([start, end])
+            ax.set_xlim(start, end)
+        ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
 
-    ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
-
-    # Titel
+    # === Plot-Titel ===
     title = "Laufzeitanalyse"
     if variant == 1:
         subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
@@ -206,14 +139,15 @@ def plot_runtime(
 
     plt.title(f"{title}\n{subtitle}")
 
-    # Legende gruppiert
+    # === Legende gruppiert ===
     grouped_entries = defaultdict(list)
     test_index = {name: i for i, name in enumerate(TEST_ORDER)}
     group_order = []
 
     for base_label, group, label, *_ in entries:
         grouped_entries[group].append((test_index.get(base_label, 999), label, base_label))
-        if group not in group_order: group_order.append(group)
+        if group not in group_order:
+            group_order.append(group)
 
     for group in grouped_entries:
         grouped_entries[group].sort(key=lambda x: x[0])
@@ -256,12 +190,12 @@ def plot_runtime(
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
+    # === Plot speichern ===
     filename = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
     plt.close()
-
 
 
 
@@ -317,7 +251,7 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
         ylim = (ymin * 0.8, ymax * 1.2)  # oder nach Wunsch z. B. (ymin * 0.5, ymax * 2)
 
         
-        plot1(
+        plot_graph(
             group=group,
             tests=tests,
             config=config,
@@ -333,7 +267,7 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             figsize=figsize
         )
 
-        plot2(
+        plot_stats(
             group=group,
             tests=tests,
             config=config,
@@ -349,7 +283,7 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             figsize=figsize
         )
 
-def plot1(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
+def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -398,11 +332,6 @@ def plot1(group, tests, config, color_map, group_ranges, timestamp, seed, varian
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-    # X-Achse anpassen: konsolidierte xticks verwenden, falls vorhanden
-    x_min_raw = 0
-    x_max_raw = max(all_n_values)
-    x_min, x_max, _ = fixed_step_range(x_min_raw, x_max_raw)
-
     # === Benutzerdefinierte X-Ticks oder adaptive Skalierung ===
     if custom_xticks:
         ax1.set_xscale("log")
@@ -411,8 +340,10 @@ def plot1(group, tests, config, color_map, group_ranges, timestamp, seed, varian
         ax1.xaxis.set_minor_locator(NullLocator())
         ax1.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
     else:
-        set_adaptive_xaxis(ax1, start, end)
-        ax1.set_xlim(x_min, x_max)
+        if start is not None and end is not None:
+            ax1.set_xticks([start, end])
+            ax1.set_xlim(start, end)
+        ax1.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
 
     # Y-Achse Skalierung
     ax1.set_yscale("log")
@@ -502,7 +433,7 @@ def plot1(group, tests, config, color_map, group_ranges, timestamp, seed, varian
 
 
 # plottet die Laufzeitmittelwerte, Fehlerbalken und Fehlerraten für eine Gruppe von Tests
-def plot2(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
+def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -555,10 +486,6 @@ def plot2(group, tests, config, color_map, group_ranges, timestamp, seed, varian
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-    x_min_raw = 0
-    x_max_raw = max(all_n_values)
-    x_min, x_max, _ = fixed_step_range(x_min_raw, x_max_raw)
-
     # === Benutzerdefinierte X-Ticks oder adaptive Skalierung ===
     if custom_xticks:
         ax1.set_xscale("log")
@@ -567,8 +494,10 @@ def plot2(group, tests, config, color_map, group_ranges, timestamp, seed, varian
         ax1.xaxis.set_minor_locator(NullLocator())
         ax1.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
     else:
-        set_adaptive_xaxis(ax1, start, end)
-        ax1.set_xlim(x_min, x_max)
+        if start is not None and end is not None:
+            ax1.set_xticks([start, end])
+            ax1.set_xlim(start, end)
+        ax1.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
 
     # Y-Achse Skalierung
     ax1.set_yscale("log")
@@ -760,7 +689,10 @@ def plot_theory_runtimes(
         else:
             ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
     else:
-        set_adaptive_xaxis(ax, start, end)
+        if start is not None and end is not None:
+            ax.set_xticks([start, end])
+            ax.set_xlim(start, end)
+        ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
 
     # Achsenbeschriftungen und Titel
     ax.set_title(f"Laufzeitverhalten Gruppe: {group}\n{subtitle}")

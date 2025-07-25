@@ -264,10 +264,10 @@ if __name__ == "__main__":
     qd100 = 10**29
 
 
-    custom_ticks = [0, 10**2, 10**3]
+    custom_ticks = [0, h1, k1, k10, k100]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [1,1,1,1,1]
+    repeat_prob_tests = [3,3,3,3,3]
 
 
     my_group_ranges={ 
@@ -288,11 +288,11 @@ if __name__ == "__main__":
         n_numbers=10,
         num_type='g:0.5',
         start=0,
-        end=10**3,
+        end=k10,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=205,
+        seed=207,
         protocoll=True,
         save_results=True,
         show_plot=True,

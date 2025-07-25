@@ -151,6 +151,7 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
     return result
 
 def aks04_test(n: int, seed: Optional[int] = None) -> bool:
+    print("Prüfe AKS04-Test für", n)
     if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
@@ -192,6 +193,7 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
 
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
+    print("Prüfe AKS10-Test für", n)
     if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
 
     l = math.ceil(math.log2(n))
@@ -363,7 +365,7 @@ def generalized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #6
     return False
 
 def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
-    #print(f"Prüfe Grau-Test für {n}...")
+    print(f"Prüfe Grau-Test für {n}...")
     if n <= 1: raise ValueError("n must be greater than 1")
 
     decomposition = helpers.find_pocklington_decomposition(n)
@@ -380,7 +382,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
 
 
 def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
-    #print(f"Prüfe Grau-Probability-Test für {n}...")
+    print(f"Prüfe Grau-Probability-Test für {n}...")
     if n <= 1:  raise ValueError("n must be greater than 1")
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition: return False

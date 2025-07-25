@@ -50,7 +50,9 @@ def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]
         raise ValueError(f"Unbekannter num_type: '{num_type}' – erlaubt sind 'p', 'z' oder 'g:x'")
 
     n_primes = round(n * prime_ratio)
+    print(f"🔢 Berechne Verteilung für n={n}, num_type='{num_type}': {n_primes} Primzahlen, {n - n_primes} Zusammengesetzte Zahlen")
     n_composites = n - n_primes
+    print(f"🔢 Verteilung: {n_primes} Primzahlen, {n_composites} Zusammengesetzte Zahlen (Verhältnis: {prime_ratio})")
     return n_primes, n_composites, prime_ratio
 
 

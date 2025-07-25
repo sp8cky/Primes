@@ -44,7 +44,7 @@ def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(24, 14), use_log=True,
     total_numbers=None, runs_per_n=None, group_ranges=None,
-    seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None
+    seed=None, timestamp=None, variant=None, start=None, end=None, number_type=None, custom_xticks=None
 ):
     # === Fallbacks für Labels/Farben ===
     if labels is None: labels = [None] * len(n_lists)
@@ -108,8 +108,8 @@ def plot_runtime(
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
     # === Achsenbeschriftungen ===
-    plt.xlabel("Testzahl n (logarithmisch)", fontsize=16)
-    plt.ylabel("Laufzeit [ms]", fontsize=16)
+    plt.xlabel("Testzahl n (log.)", fontsize=16)
+    plt.ylabel("Laufzeit [ms] (log.)", fontsize=16)
     ax = plt.gca()
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -131,9 +131,9 @@ def plot_runtime(
     # === Plot-Titel ===
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = fr"Gesamtauswertung über {total_numbers}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gesamtauswertung über {total_numbers}, Zahlentyp {number_type}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     elif variant == 2:
-        subtitle = fr"Gruppenauswertung mit angepassten Werten für n, start und end pro Gruppe, jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = fr"Gruppenauswertung mit angepassten Werten für n, Zahlentyp {number_type}, start und end pro Gruppe, jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     else:
         subtitle = f"Seed = {seed}"
 
@@ -203,7 +203,7 @@ def plot_runtime(
 
 ############################################################################
 
-def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, runs_per_n, prob_test_repeats, figsize=(20, 14)):
+def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, number_type, runs_per_n, prob_test_repeats, figsize=(20, 14)):
 
     os.makedirs(DATA_DIR, exist_ok=True)
     config = get_test_config(prob_test_repeats=prob_test_repeats, global_seed=seed)
@@ -264,7 +264,8 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             test_data=test_data,
             datasets=datasets,
             ylim=ylim,
-            figsize=figsize
+            figsize=figsize,
+            number_type=number_type
         )
 
         plot_stats(
@@ -280,10 +281,11 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             test_data=test_data,
             datasets=datasets,
             ylim=ylim,
-            figsize=figsize
+            figsize=figsize,
+            number_type=number_type
         )
 
-def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
+def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -324,11 +326,11 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
         all_n_values.extend(n_values)
 
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     ax1.set_title(f"{title}\n{subtitle}")
-    ax1.set_xlabel("Testzahl n (linear)", fontsize=16)
-    ax1.set_ylabel("Laufzeit [ms] (logarithmisch)", fontsize=16)
+    ax1.set_xlabel("Testzahl n (log.)", fontsize=16)
+    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -433,7 +435,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
 
 # plottet die Laufzeitmittelwerte, Fehlerbalken und Fehlerraten für eine Gruppe von Tests
-def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize):
+def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -478,11 +480,11 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         all_n_values.extend(n_values)
 
     # === Achsenbeschriftung und Titel ===
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     ax1.set_title(f"{title}\n{subtitle}")
-    ax1.set_xlabel("Testzahl n (linear)", fontsize=16)
-    ax1.set_ylabel("Laufzeit [ms] (logarithmisch)", fontsize=16)
+    ax1.set_xlabel("Testzahl n (log.)", fontsize=16)
+    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -696,8 +698,8 @@ def plot_theory_runtimes(
 
     # Achsenbeschriftungen und Titel
     ax.set_title(f"Laufzeitverhalten Gruppe: {group}\n{subtitle}")
-    ax.set_xlabel("Testzahl n (linear)", fontsize=16)
-    ax.set_ylabel("Laufzeit [ms] (logarithmisch)", fontsize=16)
+    ax.set_xlabel("Testzahl n (log.)", fontsize=16)
+    ax.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
     ax.grid(True, which='both', linestyle='--', alpha=0.5)
     ax.legend(fontsize=10, loc='upper left', ncol=1)
     ax.tick_params(axis='both', which='major', labelsize=14)

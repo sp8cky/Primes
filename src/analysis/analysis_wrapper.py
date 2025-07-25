@@ -189,6 +189,7 @@ def run_primetest_analysis(
             variant=variant,
             start=start,
             end=end,
+            num_type='g:0.5',
             custom_xticks=custom_ticks
         )
         # Gruppierten Plot aufrufen
@@ -200,6 +201,7 @@ def run_primetest_analysis(
                 timestamp=timestamp,
                 seed=seed,
                 variant=variant,
+                num_type='g:0.5',
                 runs_per_n=test_repeats,
                 prob_test_repeats=repeat_prob_tests,
                 figsize=(20, 14)
@@ -264,14 +266,14 @@ if __name__ == "__main__":
     qd100 = 10**29
 
 
-    custom_ticks = [0, h1, k1, k10, k100]
+    custom_ticks = [1, h1, k1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [3,3,3,3,3]
+    repeat_prob_tests = [1,1,1,1,1]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Probabilistisch":      {"n": 200, "start": 1,  "end": t1,    "xticks": [1, h1, k1]},
         "Lucas":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
         "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, h1, k1]},
         "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
@@ -287,12 +289,12 @@ if __name__ == "__main__":
     run_primetest_analysis(
         n_numbers=10,
         num_type='g:0.5',
-        start=0,
-        end=k10,
+        start=1,
+        end=k1,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=207,
+        seed=253,
         protocoll=True,
         save_results=True,
         show_plot=True,

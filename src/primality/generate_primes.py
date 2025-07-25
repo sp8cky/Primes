@@ -154,11 +154,6 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
         log_start = math.floor(math.log10(start))
         log_end = math.ceil(math.log10(end))
         boundaries = [10 ** exp for exp in range(log_start, log_end + 1)]
-
-        # Ausgabe der Intervallgrenzen im Format 10^x
-        boundary_strs = [f"10^{int(math.log10(b))}" for b in boundaries]
-        #print(f"🔢 Generiere Intervalle von 10^{log_start} bis 10^{log_end}:")
-        #print(" → " + " | ".join(boundary_strs))
     else:
         boundaries = [start, end]
 

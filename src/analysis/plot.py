@@ -44,7 +44,7 @@ def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(24, 14), use_log=True,
     total_numbers=None, runs_per_n=None, group_ranges=None,
-    seed=None, timestamp=None, variant=None, start=None, end=None, number_type=None, custom_xticks=None
+    seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None, number_type=None
 ):
     # === Fallbacks für Labels/Farben ===
     if labels is None: labels = [None] * len(n_lists)
@@ -203,7 +203,7 @@ def plot_runtime(
 
 ############################################################################
 
-def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, number_type, runs_per_n, prob_test_repeats, figsize=(20, 14)):
+def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, runs_per_n, prob_test_repeats, figsize=(20, 14), number_type=None):
 
     os.makedirs(DATA_DIR, exist_ok=True)
     config = get_test_config(prob_test_repeats=prob_test_repeats, global_seed=seed)

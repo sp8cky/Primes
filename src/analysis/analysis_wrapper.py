@@ -189,8 +189,8 @@ def run_primetest_analysis(
             variant=variant,
             start=start,
             end=end,
-            num_type='g:0.5',
-            custom_xticks=custom_ticks
+            custom_xticks=custom_ticks,
+            number_type=num_type
         )
         # Gruppierten Plot aufrufen
         measure_section("Plots",
@@ -201,10 +201,10 @@ def run_primetest_analysis(
                 timestamp=timestamp,
                 seed=seed,
                 variant=variant,
-                num_type='g:0.5',
                 runs_per_n=test_repeats,
                 prob_test_repeats=repeat_prob_tests,
-                figsize=(20, 14)
+                figsize=(20, 14),
+                number_type=num_type
         )
 
     # CSV-Export
@@ -266,7 +266,7 @@ if __name__ == "__main__":
     qd100 = 10**29
 
 
-    custom_ticks = [1, h1, k1]
+    custom_ticks = [1, h1, k1, k10]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
@@ -290,11 +290,11 @@ if __name__ == "__main__":
         n_numbers=10,
         num_type='g:0.5',
         start=1,
-        end=k1,
+        end=k10,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=253,
+        seed=261,
         protocoll=True,
         save_results=True,
         show_plot=True,

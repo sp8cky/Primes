@@ -78,7 +78,6 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
 - Reproduzierbarkeit überprüfen
 - Fehlerrate bei Fermat/Lucas überprüfen
   - anscheinend nur ungünstige werte 
-- sst ist schneller, da jacobi von sympy effizienter als pow ist
 
 ---
 

@@ -16,8 +16,6 @@ from src.primality.test_config import *
 # schattierung: bereich zwischen best/worst case
 
 
-
-
 def log_base_10_label(x, _):
     if x == 0:
         return "0"
@@ -26,7 +24,7 @@ def log_base_10_label(x, _):
     if base == 1:
         return f"$10^{{{exp}}}$"
     else:
-        return f"${base} \\times 10^{{{exp}}}$"
+        return f"${base}\\times 10^{{{exp}}}$"
 
 def format_scientific_str(x):
     if x == 0:
@@ -108,8 +106,8 @@ def plot_runtime(
             plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
 
     # === Achsenbeschriftungen ===
-    plt.xlabel("Testzahl n (log.)", fontsize=16)
-    plt.ylabel("Laufzeit [ms] (log.)", fontsize=16)
+    plt.xlabel("Testzahl n (log.)", fontsize=20)
+    plt.ylabel("Laufzeit [ms] (log.)", fontsize=20)
     ax = plt.gca()
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -131,13 +129,14 @@ def plot_runtime(
     # === Plot-Titel ===
     title = "Laufzeitanalyse"
     if variant == 1:
-        subtitle = fr"Gesamtauswertung über {total_numbers}, Zahlentyp {number_type}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+        subtitle = (
+            f"Gesamtauswertung über {total_numbers}, Zahlentyp {number_type}, zufällig gewählte Zahlen im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n"
+            f"jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})")
     elif variant == 2:
-        subtitle = fr"Gruppenauswertung mit angepassten Werten für n, Zahlentyp {number_type}, start und end pro Gruppe, jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-    else:
-        subtitle = f"Seed = {seed}"
-
-    plt.title(f"{title}\n{subtitle}")
+        subtitle = (f"Gruppenauswertung mit angepassten Werten für n, Zahlentyp {number_type}, start und \n"
+                    f"end pro Gruppe, jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})")
+    plt.suptitle(title, fontsize=24)
+    plt.title(subtitle, fontsize=20)
 
     # === Legende gruppiert ===
     grouped_entries = defaultdict(list)
@@ -185,8 +184,8 @@ def plot_runtime(
             handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
             legend_elements.append(handle)
 
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=16)
-    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=20)
+    plt.tick_params(axis='both', which='major', labelsize=20)
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
@@ -323,15 +322,21 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         color_map[test_name] = color
 
         avg_runtime = statistics.mean(avg_times) if avg_times else 0
-        ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
+        ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
         all_n_values.extend(n_values)
 
-    #subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    #subtitle = f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
-    ax1.set_title(f"{title}\n{subtitle}")
-    ax1.set_xlabel("Testzahl n (log.)", fontsize=16)
-    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
+    subtitle = (
+        f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n "
+        f"{runs_per_n} Wiederholungen (Seed = {seed})"
+    )
+
+    ax1.figure.suptitle(title, fontsize=24)
+    ax1.set_title(subtitle, fontsize=20)
+
+    ax1.set_xlabel("Testzahl n (log.)", fontsize=20)
+    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -357,15 +362,25 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     if ylim:
         ax1.set_ylim(ylim)
     else:
-        all_y_values = [t for _, avg, *_ in tests for t in avg]
+        all_y_values = [t for _, avg, *_ in tests for t in avg if t > 0]
         ymin = min(all_y_values)
         ymax = max(all_y_values)
-        ax1.set_ylim(max(ymin * 0.5, 1e-4), ymax * 2)
+        
+        # Fest definierte Grenzen
+        hard_min = 0.00001 # 10^-5 ms
+        hard_max = 10  # 10^1 ms
+        
+        if ymin >= hard_min and ymax <= hard_max:
+            ax1.set_ylim(hard_min, hard_max)
+        else:
+            final_min = min(max(ymin * 0.95, 1e-6), hard_min)
+            final_max = max(ymax * 1.5, hard_max)
+            ax1.set_ylim(final_min, final_max)
 
 
     # === Fehlerraten auf rechter Y-Achse ===
     ax2 = ax1.twinx()
-    ax2.set_ylabel("Fehlerrate", fontsize=16)
+    ax2.set_ylabel("Fehlerrate", fontsize=20)
     ax2.set_ylim(0, 1)
     ax2.grid(False)
 
@@ -383,7 +398,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
         avg_error = statistics.mean(error_rates)
         color = color_map.get(test_name, "gray")
-        ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
+        ax2.plot(1, avg_error, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
 
     # Legende mit Mittelwerten
     handles_laufzeit, labels_laufzeit = [], []
@@ -411,11 +426,11 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         handles_laufzeit + handles_fehler,
         labels_laufzeit + labels_fehler,
         loc="upper right",
-        bbox_to_anchor=(0.9, 0.95),
+        bbox_to_anchor=(0.9, 0.9),
         ncol=2,
-        fontsize=11,
+        fontsize=16,
         title="Legende",
-        title_fontsize=12,
+        title_fontsize=20,
         columnspacing=2.8,
         handletextpad=1.2,
         borderaxespad=0.8,
@@ -424,8 +439,8 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     )
 
     # Finalisieren
-    ax1.tick_params(axis='both', which='major', labelsize=14)
-    ax2.tick_params(axis='both', which='major', labelsize=14)
+    ax1.tick_params(axis='both', which='major', labelsize=20)
+    ax2.tick_params(axis='both', which='major', labelsize=20)
     fig.tight_layout()
 
     safe_group = group.replace(" ", "_").replace("/", "_")
@@ -474,19 +489,25 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         color_map[test_name] = color
 
         avg_runtime = statistics.mean(avg_times) if avg_times else 0
-        ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
+        ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
 
         ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
         ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
         all_n_values.extend(n_values)
 
     # === Achsenbeschriftung und Titel ===
-    #subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    #subtitle = f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
-    ax1.set_title(f"{title}\n{subtitle}")
-    ax1.set_xlabel("Testzahl n (log.)", fontsize=16)
-    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
+    subtitle = (
+        f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n"
+        f"{runs_per_n} Wiederholungen (Seed = {seed})"
+    )
+
+    ax1.figure.suptitle(title, fontsize=24)
+    ax1.set_title(subtitle, fontsize=20)
+
+    ax1.set_xlabel("Testzahl n (log.)", fontsize=20)
+    ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
     ax1.set_yscale("log")
     ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
@@ -508,19 +529,29 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     ax1.yaxis.set_major_formatter(FuncFormatter(log_base_10_label))
     ax1.yaxis.set_minor_locator(NullLocator())
 
-    # automatisch min/max berechnen
+   # automatisch min/max berechnen
     if ylim:
         ax1.set_ylim(ylim)
     else:
-        all_y_values = [t for _, avg, *_ in tests for t in avg]
+        all_y_values = [t for _, avg, *_ in tests for t in avg if t > 0]
         ymin = min(all_y_values)
         ymax = max(all_y_values)
-        ax1.set_ylim(max(ymin * 0.5, 1e-4), ymax * 2)
+        
+        # Fest definierte Grenzen
+        hard_min = 0.00001 # 10^-5 ms
+        hard_max = 10  # 10^1 ms
+        
+        if ymin >= hard_min and ymax <= hard_max:
+            ax1.set_ylim(hard_min, hard_max)
+        else:
+            final_min = min(max(ymin * 0.95, 1e-6), hard_min)
+            final_max = max(ymax * 1.5, hard_max)
+            ax1.set_ylim(final_min, final_max)
 
 
     # === Fehlerraten auf rechter Y-Achse ===
     ax2 = ax1.twinx()
-    ax2.set_ylabel("Fehlerrate", fontsize=16)
+    ax2.set_ylabel("Fehlerrate", fontsize=20)
     ax2.set_ylim(0, 1)
     ax2.grid(False)
 
@@ -544,7 +575,7 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         ax2.plot(n_sorted, rates_sorted, linestyle="--", marker="x", color=color, label=f"{label_error} Fehlerrate")
 
         avg_error = statistics.mean(rates_sorted) if rates_sorted else 0
-        ax2.plot(1, avg_error, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
+        ax2.plot(1, avg_error, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax2.get_yaxis_transform(), clip_on=False)
 
     # === Legende ===
     handles1, labels1 = ax1.get_legend_handles_labels()
@@ -582,11 +613,11 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         handles_laufzeit + handles_fehler,
         labels_laufzeit + labels_fehler,
         loc="upper right",
-        bbox_to_anchor=(0.9, 0.95),
+        bbox_to_anchor=(0.9, 0.9),
         ncol=2,
-        fontsize=11,
+        fontsize=16,
         title="Legende",
-        title_fontsize=12,
+        title_fontsize=20,
         columnspacing=2.8,
         handletextpad=1.2,
         borderaxespad=0.8,
@@ -595,8 +626,8 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     )
 
     # === Speichern ===
-    ax1.tick_params(axis='both', which='major', labelsize=14)
-    ax2.tick_params(axis='both', which='major', labelsize=14)
+    ax1.tick_params(axis='both', which='major', labelsize=20)
+    ax2.tick_params(axis='both', which='major', labelsize=20)
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
@@ -680,7 +711,7 @@ def plot_theory_runtimes(
         custom_xticks = None
         n = "?"
 
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit Wiederholungen (Seed = {seed})"
+    subtitle = f"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit Wiederholungen (Seed = {seed})"
     ax.set_xlim(start, end)
 
     if custom_xticks:
@@ -700,11 +731,11 @@ def plot_theory_runtimes(
 
     # Achsenbeschriftungen und Titel
     ax.set_title(f"Laufzeitverhalten Gruppe: {group}\n{subtitle}")
-    ax.set_xlabel("Testzahl n (log.)", fontsize=16)
-    ax.set_ylabel("Laufzeit [ms] (log.)", fontsize=16)
+    ax.set_xlabel("Testzahl n (log.)", fontsize=20)
+    ax.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
     ax.grid(True, which='both', linestyle='--', alpha=0.5)
     ax.legend(fontsize=10, loc='upper left', ncol=1)
-    ax.tick_params(axis='both', which='major', labelsize=14)
+    ax.tick_params(axis='both', which='major', labelsize=20)
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")

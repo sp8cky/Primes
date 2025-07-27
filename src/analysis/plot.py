@@ -326,7 +326,8 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         ax1.plot(0, avg_runtime, 'x', markersize=14, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
         all_n_values.extend(n_values)
 
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    #subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     ax1.set_title(f"{title}\n{subtitle}")
     ax1.set_xlabel("Testzahl n (log.)", fontsize=16)
@@ -480,7 +481,8 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         all_n_values.extend(n_values)
 
     # === Achsenbeschriftung und Titel ===
-    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    #subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
+    subtitle = fr"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     ax1.set_title(f"{title}\n{subtitle}")
     ax1.set_xlabel("Testzahl n (log.)", fontsize=16)

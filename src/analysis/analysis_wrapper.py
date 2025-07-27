@@ -273,7 +273,7 @@ if __name__ == "__main__":
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 100, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
+        "Probabilistisch":      {"n": 500, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
         "Lucas":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
         "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, h1, k1]},
         "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
@@ -287,14 +287,14 @@ if __name__ == "__main__":
 
 
     run_primetest_analysis(
-        n_numbers=100,
+        n_numbers=500,
         num_type='g:0.5',
         start=1,
         end=t1,
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=3031,
+        seed=3044,
         protocoll=True,
         save_results=True,
         show_plot=True,

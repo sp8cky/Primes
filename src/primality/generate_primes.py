@@ -138,157 +138,126 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
         start = 1
     if end < start:
         end = start + 1
-
-    if r is None:
-        r = random.Random()
-
+    r = r or random.Random()
     if p_count is None or z_count is None:
         p_count = round(n * 0.5)
         z_count = n - p_count
 
-    primes = set()
-    composites = set()
+    primes, composites = set(), set()
 
-    # Schritt 1: Intervallbildung mit stärkerem Boost für obere Bereiche
     if use_log_intervals:
-        log_start = math.log10(max(1, start))
-        log_end = math.log10(end)
-        # Mehr Intervalle im oberen Bereich
-        num_intervals = min(30, max(10, n // 5))  # Mehr Intervalle
-        step_size = (log_end - log_start) / num_intervals
-        
-        boundaries = [start]
-        # Nicht-lineare Verteilung für mehr Intervalle im oberen Bereich
-        for i in range(1, num_intervals):
-            # Quadratische Verteilung für mehr Gewicht oben
-            progress = (i / num_intervals) ** 2
-            boundary = int(10 ** (log_start + progress * (log_end - log_start)))
-            if boundary > boundaries[-1]:
-                boundaries.append(boundary)
+        log_start, log_end = math.log10(start), math.log10(end)
+        num_intervals = min(30, max(10, n // 5))
+        boundaries = [start] + [int(10 ** (log_start + (i / num_intervals) ** 2 * (log_end - log_start))) 
+                               for i in range(1, num_intervals) if int(10 ** (log_start + (i / num_intervals) ** 2 * (log_end - log_start))) > start]
         boundaries.append(end)
     else:
         boundaries = [start, end]
 
     intervals = len(boundaries) - 1
-    interval_sizes = [boundaries[i + 1] - boundaries[i] for i in range(intervals)]
-    total_size = sum(interval_sizes)
-    
-    # Stärkere Gewichtung für obere Intervalle
+    sizes = [boundaries[i + 1] - boundaries[i] for i in range(intervals)]
+    total_size = sum(sizes)
+
     log_weights = [math.log10(boundaries[i + 1]) - math.log10(max(1, boundaries[i])) for i in range(intervals)]
-    linear_weights = [size / total_size for size in interval_sizes]
-    
-    # Deutlich stärkerer Boost für obere Intervalle
-    upper_end_boost = 5.0  # Boost für obere Intervalle
-    boost_factors = [1.0 + (upper_end_boost - 1.0) * ((i / intervals) ** 1.5) for i in range(intervals)]
+    linear_weights = [size / total_size for size in sizes]
+    boost = 5.0
+    boost_factors = [1 + (boost - 1) * (i / intervals) ** 1.5 for i in range(intervals)]
     boosted_weights = [0.4 * lw * bf + 0.6 * nw * bf for lw, nw, bf in zip(log_weights, linear_weights, boost_factors)]
-    
+
     total_weight = sum(boosted_weights)
     interval_weights = [w / total_weight for w in boosted_weights]
 
-    # Verteilung der Zahlen mit Mindestanzahl pro Intervall
     per_interval_p = [max(1, int(round(interval_weights[i] * p_count * 0.7))) for i in range(intervals)]
     per_interval_z = [max(1, int(round(interval_weights[i] * z_count * 0.7))) for i in range(intervals)]
-    
-    # Restliche Zahlen auf obere Intervalle verteilen
-    remaining_p = p_count - sum(per_interval_p)
-    remaining_z = z_count - sum(per_interval_z)
-    
-    # Sortiere Intervalle nach Gewicht (absteigend) für die Restverteilung
+
+    rem_p = p_count - sum(per_interval_p)
+    rem_z = z_count - sum(per_interval_z)
     sorted_intervals = sorted(range(intervals), key=lambda x: boundaries[x], reverse=True)
-    
+
     for i in sorted_intervals:
-        if remaining_p <= 0 and remaining_z <= 0:
+        if rem_p <= 0 and rem_z <= 0:
             break
-        if remaining_p > 0:
+        if rem_p > 0:
             per_interval_p[i] += 1
-            remaining_p -= 1
-        if remaining_z > 0:
+            rem_p -= 1
+        if rem_z > 0:
             per_interval_z[i] += 1
-            remaining_z -= 1
+            rem_z -= 1
 
-    # Rest verteilen nach Gewicht
-    while remaining_p > 0:
+    while rem_p > 0:
         for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
-            if remaining_p <= 0:
+            if rem_p <= 0:
                 break
             per_interval_p[i] += 1
-            remaining_p -= 1
+            rem_p -= 1
 
-    while remaining_z > 0:
+    while rem_z > 0:
         for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
-            if remaining_z <= 0:
+            if rem_z <= 0:
                 break
             per_interval_z[i] += 1
-            remaining_z -= 1
+            rem_z -= 1
 
-    # Schritt 3: Zahlen generieren
+    # Zahlen generieren
     for i in range(intervals):
-        interval_start = boundaries[i]
-        interval_end = boundaries[i + 1] - 1
-        if interval_end < interval_start:
+        start_i, end_i = boundaries[i], boundaries[i + 1] - 1
+        if end_i < start_i:
             continue
-            
-        target_p = per_interval_p[i]
-        target_z = per_interval_z[i]
-        local_primes = set()
-        local_composites = set()
-        local_attempts = 0
-        
-        while (len(local_primes) < target_p or len(local_composites) < target_z) and local_attempts < max_attempts:
-            local_attempts += 1
+
+        local_primes, local_composites = set(), set()
+        attempts = 0
+
+        while (len(local_primes) < per_interval_p[i] or len(local_composites) < per_interval_z[i]) and attempts < max_attempts:
+            attempts += 1
             if use_log_intervals:
                 if i == intervals - 1:
-                    candidate = r.randint(interval_start, interval_end) # Letztes Intervall: Kein Bias, gleichverteilt
+                    candidate = r.randint(start_i, end_i)
                 else:
                     u = r.random()
-                    candidate = int(interval_start + (interval_end - interval_start) * u ** 2)
+                    candidate = int(start_i + (end_i - start_i) * u ** 2)
             else:
-                candidate = r.randint(interval_start, interval_end)
-                
-            if candidate in primes or candidate in composites:
+                candidate = r.randint(start_i, end_i)
+
+            if candidate in primes or candidate in composites or candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
                 continue
-            if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
-                continue
-                
+
             if isprime(candidate):
-                if len(local_primes) < target_p:
+                if len(local_primes) < per_interval_p[i]:
                     local_primes.add(candidate)
             elif is_valid_composite(candidate):
-                if len(local_composites) < target_z:
+                if len(local_composites) < per_interval_z[i]:
                     local_composites.add(candidate)
-        
+
         primes.update(local_primes)
         composites.update(local_composites)
 
-    # Fallback für fehlende Zahlen
+    # Fallback
     total_generated = len(primes) + len(composites)
     if total_generated < n:
         remaining = n - total_generated
         additional = set()
         attempts = 0
-        
+
         while len(additional) < remaining and attempts < max_attempts * 2:
             attempts += 1
-            # Direkte Generierung ohne große Liste
             if use_log_intervals:
                 log_val = r.uniform(math.log10(max(2, start)), math.log10(end))
                 candidate = int(10 ** log_val)
             else:
                 candidate = r.randint(start, end)
-                
+
             if candidate in primes or candidate in composites or candidate in additional:
                 continue
             if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
                 continue
-                
+
             if (isprime(candidate) and (len(primes) + sum(1 for x in additional if isprime(x)) < p_count)):
                 additional.add(candidate)
             elif (is_valid_composite(candidate) and (len(composites) + sum(1 for x in additional if not isprime(x)) < z_count)):
                 additional.add(candidate)
-        
+
         primes.update(x for x in additional if isprime(x))
         composites.update(x for x in additional if not isprime(x))
-        total_generated = len(primes) + len(composites)
 
     return sorted(primes.union(composites))[:n]
 

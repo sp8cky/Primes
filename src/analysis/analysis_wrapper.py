@@ -270,10 +270,11 @@ if __name__ == "__main__":
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     #run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
+    #repeat_prob_tests = [3,3,3,3,3]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 500, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
+        "Probabilistisch":      {"n": 100, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
         "Lucas":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
         "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, h1, k1]},
         "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
@@ -287,14 +288,14 @@ if __name__ == "__main__":
 
 
     run_primetest_analysis(
-        n_numbers=500,
+        n_numbers=100,
         num_type='g:0.5',
         start=1,
         end=t1,
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=3044,
+        seed=3046,
         protocoll=True,
         save_results=True,
         show_plot=True,

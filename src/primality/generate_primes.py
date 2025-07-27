@@ -1,4 +1,5 @@
 import random, math
+from tracemalloc import start
 from typing import List, Dict
 from collections import defaultdict
 from sympy import isprime, primerange, primefactors, perfect_power
@@ -131,18 +132,16 @@ def generate_numbers_per_group(
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test 
 
-def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = False) -> List[int]:
-    # Absicherung gegen ungültige Werte
+
+def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = True) -> List[int]:
     if start < 1:
-        print(f"[WARN] start ({start}) < 1, setze start auf 1")
         start = 1
     if end < start:
-        print(f"[WARN] end ({end}) < start ({start}), setze end auf start + 1")
         end = start + 1
-    
-    if r is None: r = random.Random()
 
-    # Wenn keine expliziten Werte gegeben, verwende Standardverteilung (50/50)
+    if r is None:
+        r = random.Random()
+
     if p_count is None or z_count is None:
         p_count = round(n * 0.5)
         z_count = n - p_count
@@ -150,47 +149,149 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
     primes = set()
     composites = set()
 
+    # Schritt 1: Intervallbildung mit stärkerem Boost für obere Bereiche
     if use_log_intervals:
-        log_start = math.floor(math.log10(start))
-        log_end = math.ceil(math.log10(end))
-        boundaries = [10 ** exp for exp in range(log_start, log_end + 1)]
+        log_start = math.log10(max(1, start))
+        log_end = math.log10(end)
+        # Mehr Intervalle im oberen Bereich
+        num_intervals = min(30, max(10, n // 5))  # Mehr Intervalle
+        step_size = (log_end - log_start) / num_intervals
+        
+        boundaries = [start]
+        # Nicht-lineare Verteilung für mehr Intervalle im oberen Bereich
+        for i in range(1, num_intervals):
+            # Quadratische Verteilung für mehr Gewicht oben
+            progress = (i / num_intervals) ** 2
+            boundary = int(10 ** (log_start + progress * (log_end - log_start)))
+            if boundary > boundaries[-1]:
+                boundaries.append(boundary)
+        boundaries.append(end)
     else:
         boundaries = [start, end]
 
     intervals = len(boundaries) - 1
-    max_interval_attempts = max_attempts // intervals
-    per_interval_p = p_count // intervals
-    per_interval_z = z_count // intervals
+    interval_sizes = [boundaries[i + 1] - boundaries[i] for i in range(intervals)]
+    total_size = sum(interval_sizes)
+    
+    # Stärkere Gewichtung für obere Intervalle
+    log_weights = [math.log10(boundaries[i + 1]) - math.log10(max(1, boundaries[i])) for i in range(intervals)]
+    linear_weights = [size / total_size for size in interval_sizes]
+    
+    # Deutlich stärkerer Boost für obere Intervalle
+    upper_end_boost = 5.0  # Boost für obere Intervalle
+    boost_factors = [1.0 + (upper_end_boost - 1.0) * ((i / intervals) ** 1.5) for i in range(intervals)]
+    boosted_weights = [0.4 * lw * bf + 0.6 * nw * bf for lw, nw, bf in zip(log_weights, linear_weights, boost_factors)]
+    
+    total_weight = sum(boosted_weights)
+    interval_weights = [w / total_weight for w in boosted_weights]
 
+    # Verteilung der Zahlen mit Mindestanzahl pro Intervall
+    per_interval_p = [max(1, int(round(interval_weights[i] * p_count * 0.7))) for i in range(intervals)]
+    per_interval_z = [max(1, int(round(interval_weights[i] * z_count * 0.7))) for i in range(intervals)]
+    
+    # Restliche Zahlen auf obere Intervalle verteilen
+    remaining_p = p_count - sum(per_interval_p)
+    remaining_z = z_count - sum(per_interval_z)
+    
+    # Sortiere Intervalle nach Gewicht (absteigend) für die Restverteilung
+    sorted_intervals = sorted(range(intervals), key=lambda x: boundaries[x], reverse=True)
+    
+    for i in sorted_intervals:
+        if remaining_p <= 0 and remaining_z <= 0:
+            break
+        if remaining_p > 0:
+            per_interval_p[i] += 1
+            remaining_p -= 1
+        if remaining_z > 0:
+            per_interval_z[i] += 1
+            remaining_z -= 1
+
+    # Rest verteilen nach Gewicht
+    while remaining_p > 0:
+        for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
+            if remaining_p <= 0:
+                break
+            per_interval_p[i] += 1
+            remaining_p -= 1
+
+    while remaining_z > 0:
+        for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
+            if remaining_z <= 0:
+                break
+            per_interval_z[i] += 1
+            remaining_z -= 1
+
+    # Schritt 3: Zahlen generieren
     for i in range(intervals):
         interval_start = boundaries[i]
         interval_end = boundaries[i + 1] - 1
-        local_attempts = 0
+        if interval_end < interval_start:
+            continue
+            
+        target_p = per_interval_p[i]
+        target_z = per_interval_z[i]
         local_primes = set()
         local_composites = set()
-        #print(f"🔁 Intervall {i + 1}/{intervals}: [{interval_start}, {interval_end}] ≈ 10^{int(math.log10(interval_start))}–10^{int(math.log10(interval_end))}")
-
-        while ((len(local_primes) < per_interval_p or len(local_composites) < per_interval_z) and local_attempts < max_interval_attempts):
+        local_attempts = 0
+        
+        while (len(local_primes) < target_p or len(local_composites) < target_z) and local_attempts < max_attempts:
             local_attempts += 1
-            candidate = r.randint(interval_start, interval_end)
+            if use_log_intervals:
+                if i == intervals - 1:
+                    candidate = r.randint(interval_start, interval_end) # Letztes Intervall: Kein Bias, gleichverteilt
+                else:
+                    u = r.random()
+                    candidate = int(interval_start + (interval_end - interval_start) * u ** 2)
+            else:
+                candidate = r.randint(interval_start, interval_end)
+                
+            if candidate in primes or candidate in composites:
+                continue
             if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
                 continue
+                
             if isprime(candidate):
-                if len(local_primes) < per_interval_p:
+                if len(local_primes) < target_p:
                     local_primes.add(candidate)
             elif is_valid_composite(candidate):
-                if len(local_composites) < per_interval_z:
+                if len(local_composites) < target_z:
                     local_composites.add(candidate)
-
-        # Übernahme der lokalen Mengen in die globalen
+        
         primes.update(local_primes)
         composites.update(local_composites)
-        #print(f"   ➕ {len(local_primes)} Primzahlen, {len(local_composites)} Zusammengesetzte in diesem Intervall")
 
+    # Fallback für fehlende Zahlen
     total_generated = len(primes) + len(composites)
-    if total_generated < (p_count + z_count):
-        print(f"⚠️ WARNUNG: Nur {total_generated} Zahlen generiert (Prim: {len(primes)}, Zusammengesetzt: {len(composites)}) von {p_count + z_count} geforderten Zahlen.")
-    return sorted(primes.union(composites))
+    if total_generated < n:
+        remaining = n - total_generated
+        additional = set()
+        attempts = 0
+        
+        while len(additional) < remaining and attempts < max_attempts * 2:
+            attempts += 1
+            # Direkte Generierung ohne große Liste
+            if use_log_intervals:
+                log_val = r.uniform(math.log10(max(2, start)), math.log10(end))
+                candidate = int(10 ** log_val)
+            else:
+                candidate = r.randint(start, end)
+                
+            if candidate in primes or candidate in composites or candidate in additional:
+                continue
+            if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
+                continue
+                
+            if (isprime(candidate) and (len(primes) + sum(1 for x in additional if isprime(x)) < p_count)):
+                additional.add(candidate)
+            elif (is_valid_composite(candidate) and (len(composites) + sum(1 for x in additional if not isprime(x)) < z_count)):
+                additional.add(candidate)
+        
+        primes.update(x for x in additional if isprime(x))
+        composites.update(x for x in additional if not isprime(x))
+        total_generated = len(primes) + len(composites)
+
+    return sorted(primes.union(composites))[:n]
+
 
 # 2. Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:

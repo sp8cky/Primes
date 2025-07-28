@@ -100,6 +100,29 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                     f.write(f"{key}, {value}\n")
             f.write("\n")
 
+        # Durchschnittswerte pro Test berechnen und einfügen
+        test_stats = {}
+
+        for row in rows:
+            test = row["Test"]
+            try:
+                avg_time = float(row["avg_time"].replace(" ms", ""))
+                error_rate = float(row["error_rate"]) if row["error_rate"] != "" else 0.0
+            except ValueError:
+                continue  # ungültige Zeilen überspringen
+
+            if test not in test_stats:
+                test_stats[test] = {"times": [], "errors": []}
+            test_stats[test]["times"].append(avg_time)
+            test_stats[test]["errors"].append(error_rate)
+
+        for test, values in test_stats.items():
+            avg_time = sum(values["times"]) / len(values["times"])
+            avg_error = sum(values["errors"]) / len(values["errors"])
+            f.write(f"test_avg, {test}, avg_time={avg_time:.3f} ms, avg_error_rate={avg_error:.3f}\n")
+
+        f.write("\n")
+
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
         writer.writerows(rows)

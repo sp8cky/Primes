@@ -265,9 +265,9 @@ if __name__ == "__main__":
     qd10 = 10**28
     qd100 = 10**29
 
-    pseudopimes = generate_pseudoprimes(100, 3, k100, True, True, True)
-    for i in pseudopimes:
-        print(i, end=" ")
+    #pseudopimes = generate_pseudoprimes(100, 3, k100, True, True, True)
+    #for i in pseudopimes:
+    #   print(i, end=" ")
 
     custom_ticks = [1, k1, m1, md1, b1, bd1, t1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
@@ -290,7 +290,7 @@ if __name__ == "__main__":
 
 
 
-    """run_primetest_analysis(
+    run_primetest_analysis(
         n_numbers=100,
         num_type='g:0.5',
         start=1,
@@ -298,12 +298,12 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=3047,
+        seed=4005,
         protocoll=True,
         save_results=True,
         show_plot=True,
         variant=2,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
-        custom_group_numbers=pseudopimes
-    )"""
+        #custom_group_numbers=pseudopimes
+    )

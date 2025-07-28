@@ -135,14 +135,6 @@ TEST_CONFIG = {
         "plotgroup": "Zusammengesetzte",
         "runtime_theoretical_fn": lambda n: log(n)**3
     },
-    "Optimized Proth": {
-        "runtime_function": optimized_proth_test,
-        "protocol_function": optimized_proth_test_protocoll,
-        "prob_test": False,
-        "number_type": "proth",
-        "testgroup": "Proth-Tests",
-        "plotgroup": "Zusammengesetzte",
-    },
     "Proth Variant": {
         "runtime_function": proth_test_variant,
         "protocol_function": proth_test_variant_protocoll,

@@ -552,15 +552,6 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
     test_data["Proth"][n]["result"] = False
     return False
 
-def optimized_proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
-    result = proth_test_protocoll(n, seed)
-    if not result:
-        test_data["Optimized Proth"][n]["result"] = False
-        test_data["Optimized Proth"][n]["reason"] = "Proth-Test fehlgeschlagen"
-        return False
-    test_data["Optimized Proth"][n]["result"] = True
-    return True
 
 def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.8
     if n <= 1: raise ValueError("n must be greater than 1")

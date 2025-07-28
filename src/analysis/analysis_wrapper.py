@@ -269,18 +269,18 @@ if __name__ == "__main__":
     #for i in pseudopimes:
     #   print(i, end=" ")
 
-    custom_ticks = [1, k1, m1, md1, b1, bd1, t1]
+    custom_ticks = [1, h1, k1, k10]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    #run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    repeat_prob_tests = [1,1,1,1,1]
-    #repeat_prob_tests = [3,3,3,3,3]
+    run_tests2 = ["Wilson", "AKS04", "AKS10"]
+    #repeat_prob_tests = [1,1,1,1,1]
+    repeat_prob_tests = [3,3,3,3,3]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 100, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Langsam":              {"n": 10, "start": 1,  "end": 500,    "xticks": [1, h1, k1]},
-        "Proth-Tests":          {"n": 30, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Lucas":                {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1]},
+        "Langsam":              {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1]},
         "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
         "Rao":                  {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
         "Ramzy":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
@@ -291,18 +291,18 @@ if __name__ == "__main__":
 
 
     run_primetest_analysis(
-        n_numbers=100,
+        n_numbers=10,
         num_type='g:0.5',
         start=1,
-        end=t1,
+        end=k1,
         test_repeats=10,
-        include_tests=run_tests,
+        #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=1,
+        seed=927,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=2,
+        variant=1,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

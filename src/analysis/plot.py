@@ -325,9 +325,12 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
         all_n_values.extend(n_values)
 
-    #subtitle = f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     subtitle = (
+        f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n "
+        f"{runs_per_n} Wiederholungen (Seed = {seed})"
+    )
+    subtitle2 = (
         f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n "
         f"{runs_per_n} Wiederholungen (Seed = {seed})"
     )
@@ -496,9 +499,12 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
         all_n_values.extend(n_values)
 
     # === Achsenbeschriftung und Titel ===
-    #subtitle = f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit {runs_per_n} Wiederholungen (Seed = {seed})"
     title = f"Laufzeitverhalten der Gruppe: {group}"
     subtitle = (
+        f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n "
+        f"{runs_per_n} Wiederholungen (Seed = {seed})"
+    )
+    subtitle2 = (
         f"Gruppenauswertung mit {n} Zahlen vom Typ {number_type}, log. gleichverteilt gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}],\n"
         f"{runs_per_n} Wiederholungen (Seed = {seed})"
     )

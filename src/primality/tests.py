@@ -5,6 +5,7 @@ from math import gcd, log2, sqrt
 from statistics import mean
 from sympy import jacobi_symbol, gcd, log, factorint, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, ZZ, rem, symbols, Poly
 from sympy.abc import X
+from sympy.ntheory.primetest import proth_test
 from typing import Optional, List, Dict, Tuple, Any, Union
 
 def fermat_test(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
@@ -150,6 +151,7 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
     result = math.factorial(p - 1) % p == p - 1
     return result
 
+
 def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     print("Prüfe AKS04-Test für", n)
     if n <= 1 or perfect_power(n): raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
@@ -189,7 +191,6 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
         if left != right: return False
 
     return True
-
 
 
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
@@ -266,6 +267,8 @@ def proth_test(n: int, seed: Optional[int] = None) -> bool: #4.5
             return True
     return False
 
+def optimized_proth_test(n: int, seed: Optional[int] = None) -> bool: 
+    return proth_test(n, seed)
 
 def proth_test_variant(n: int, seed: Optional[int] = None) -> bool: #4.8
     if n <= 1: raise ValueError("n must be greater than 1")

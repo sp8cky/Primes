@@ -43,6 +43,7 @@ def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
         "AKS04": {"a_values": None, "other_fields": {}},
         "AKS10": {"a_values": None, "other_fields": {}},
         "Proth": {"a_values": []},
+        "Optimized Proth": {"a_values": []},
         "Proth Variant": {"a_values": []},
         "Pocklington": {"a_values": []},
         "Optimized Pocklington": {"a_values": {}},
@@ -551,6 +552,15 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
     test_data["Proth"][n]["result"] = False
     return False
 
+def optimized_proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+    if n <= 1: raise ValueError("n must be greater than 1")
+    result = proth_test_protocoll(n, seed)
+    if not result:
+        test_data["Optimized Proth"][n]["result"] = False
+        test_data["Optimized Proth"][n]["reason"] = "Proth-Test fehlgeschlagen"
+        return False
+    test_data["Optimized Proth"][n]["result"] = True
+    return True
 
 def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.8
     if n <= 1: raise ValueError("n must be greater than 1")

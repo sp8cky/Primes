@@ -2,7 +2,8 @@ import random, math
 from tracemalloc import start
 from typing import List, Dict
 from collections import defaultdict
-from sympy import isprime, primerange, primefactors, perfect_power
+from sympy import isprime, primerange, primefactors, perfect_power, legendre_symbol
+from sympy.ntheory.primetest import mr, is_euler_pseudoprime
 from math import log2
 import src.primality.helpers as helpers
 from src.primality.test_config import *
@@ -439,3 +440,100 @@ def generate_numbers_for_test(
     except ValueError as e:
         print(f"⚠️ Fehler bei Test '{testname}': {e}")
         return []
+
+
+def generate_pseudoprimes(n, start=3, end=None, fermat=True, euler=False, strong=False, bases=[2, 3, 5, 7, 11]):
+    assert fermat or euler or strong, "Mindestens ein Testtyp muss aktiviert sein."
+    candidate = start | 1  # ungerade Startzahl
+    max_candidate = end if end is not None else float('inf')
+
+    # Sammler
+    fermat_pps = set()
+    euler_pps = set()
+    strong_pps = set()
+
+    # Typen aktiv
+    types_active = [fermat, euler, strong]
+    count_active = sum(types_active)
+
+    # Mindestens gleich verteilen
+    targets = [0, 0, 0]
+    for i, active in enumerate(types_active):
+        targets[i] = n // count_active
+    # Eventueller Rest wird unten verteilt
+
+    # Hilfsfunktionen
+    def is_fermat_pp(n, a):
+        return not isprime(n) and gcd(a, n) == 1 and pow(a, n-1, n) == 1
+
+    def is_euler_pp(n, a):
+        return not isprime(n) and gcd(a, n) == 1 and is_euler_pseudoprime(n, a)
+
+    def is_strong_pp(n, a):
+        return not isprime(n) and gcd(a, n) == 1 and mr(n, [a])
+
+    # Hauptschleife
+    while candidate <= max_candidate:
+        # Check ob alle Ziele erreicht
+        done = True
+        if fermat and len(fermat_pps) < targets[0]:
+            done = False
+        if euler and len(euler_pps) < targets[1]:
+            done = False
+        if strong and len(strong_pps) < targets[2]:
+            done = False
+        if done:
+            break
+
+        for a in bases:
+            if fermat and len(fermat_pps) < targets[0] and is_fermat_pp(candidate, a):
+                fermat_pps.add(candidate)
+                break
+            if euler and len(euler_pps) < targets[1] and is_euler_pp(candidate, a):
+                euler_pps.add(candidate)
+                break
+            if strong and len(strong_pps) < targets[2] and is_strong_pp(candidate, a):
+                strong_pps.add(candidate)
+                break
+        candidate += 2
+
+    # Falls nicht genug gefunden, restliche Slots auf andere verteilen
+    total_found = len(fermat_pps) + len(euler_pps) + len(strong_pps)
+    missing = n - total_found
+    if missing > 0:
+        # Berechne Verteilung restlicher Plätze
+        deficits = [
+            max(0, targets[0] - len(fermat_pps)),
+            max(0, targets[1] - len(euler_pps)),
+            max(0, targets[2] - len(strong_pps)),
+        ]
+        # Erhöhe Targets für die Typen, die noch Platz haben
+        while missing > 0:
+            for i, active in enumerate(types_active):
+                if active and deficits[i] > 0:
+                    targets[i] += 1
+                    deficits[i] -= 1
+                    missing -= 1
+                    if missing <= 0:
+                        break
+
+        # Suche weiter nach fehlenden Zahlen
+        while candidate <= max_candidate and missing > 0:
+            for a in bases:
+                if fermat and len(fermat_pps) < targets[0] and is_fermat_pp(candidate, a):
+                    fermat_pps.add(candidate)
+                    missing -= 1
+                    break
+                if euler and len(euler_pps) < targets[1] and is_euler_pp(candidate, a):
+                    euler_pps.add(candidate)
+                    missing -= 1
+                    break
+                if strong and len(strong_pps) < targets[2] and is_strong_pp(candidate, a):
+                    strong_pps.add(candidate)
+                    missing -= 1
+                    break
+            candidate += 2
+
+    # Ergebnis: sortiert und kombiniert
+    result = sorted(fermat_pps | euler_pps | strong_pps)
+    return result

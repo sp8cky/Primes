@@ -7,7 +7,7 @@ from math import log, sqrt
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
 default_repeats = [3, 3, 3, 3, 3]
 prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Optimized Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
 
 # Zuordnung von Tests zu Funktionen und Metadaten
 TEST_CONFIG = {
@@ -134,6 +134,14 @@ TEST_CONFIG = {
         "testgroup": "Proth-Tests",
         "plotgroup": "Zusammengesetzte",
         "runtime_theoretical_fn": lambda n: log(n)**3
+    },
+    "Optimized Proth": {
+        "runtime_function": optimized_proth_test,
+        "protocol_function": optimized_proth_test_protocoll,
+        "prob_test": False,
+        "number_type": "proth",
+        "testgroup": "Proth-Tests",
+        "plotgroup": "Zusammengesetzte",
     },
     "Proth Variant": {
         "runtime_function": proth_test_variant,

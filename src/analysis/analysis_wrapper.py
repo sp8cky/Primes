@@ -203,7 +203,7 @@ def run_primetest_analysis(
                 variant=variant,
                 runs_per_n=test_repeats,
                 prob_test_repeats=repeat_prob_tests,
-                figsize=(20, 14),
+                figsize=(24, 16),
                 number_type=num_type
         )
 
@@ -269,40 +269,40 @@ if __name__ == "__main__":
     #for i in pseudopimes:
     #   print(i, end=" ")
 
-    custom_ticks = [1, h1, k1, k10]
+    custom_ticks = [1, k1, m1, md1, b1, bd1, t1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     run_tests2 = ["Wilson", "AKS04", "AKS10"]
-    #repeat_prob_tests = [1,1,1,1,1]
-    repeat_prob_tests = [3,3,3,3,3]
+    repeat_prob_tests = [1,1,1,1,1]
+    #repeat_prob_tests = [3,3,3,3,3]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1]},
-        "Langsam":              {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1]},
-        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Rao":                  {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Ramzy":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Probabilistisch":      {"n": 1000, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
+        "Lucas":                {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
+        "Langsam":              {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Rao":                  {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Ramzy":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
     }
 
 
 
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=500,
         num_type='g:0.5',
         start=1,
-        end=k1,
+        end=t1,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=927,
+        seed=2797,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=1,
+        variant=2,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

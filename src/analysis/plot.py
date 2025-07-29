@@ -101,9 +101,9 @@ def plot_runtime(
         plt.plot(n, t_ms, marker="o", label=label, color=color, linestyle=linestyle)
 
         if std:
-            plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=3, color=color, alpha=0.6)
+            plt.errorbar(n, t_ms, yerr=std_ms, fmt='none', capsize=2, color=color, alpha=0.3)
         if best and worst:
-            plt.fill_between(n, best_ms, worst_ms, alpha=0.1, color=color)
+            plt.fill_between(n, best_ms, worst_ms, alpha=0.09, color=color)
 
     # === Achsenbeschriftungen ===
     plt.xlabel("Testzahl n (log.)", fontsize=20)
@@ -181,7 +181,7 @@ def plot_runtime(
 
             color = user_color if user_color is not None else group_style_map.get(group, ('black', '-'))[0]
 
-            handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', label=f"  {label}")
+            handle = Line2D([0], [0], color=color, linestyle=linestyle, marker='o', markersize=3, label=f"  {label}")
             legend_elements.append(handle)
 
     plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=20)
@@ -317,7 +317,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     # === Laufzeitlinien und Fehlerbereiche plotten ===
     for test_name, avg_times, n_values, std_devs, best_times, worst_times, _ in tests:
         label = testname_to_label.get(test_name, test_name)
-        line_handle, = ax1.plot(n_values, avg_times, marker='o', label=label)
+        line_handle, = ax1.plot(n_values, avg_times, marker='o', markersize=3, label=label)
         color = line_handle.get_color()
         color_map[test_name] = color
 
@@ -419,7 +419,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         avg_time_str = f"{avg_time:.3f} ms"
         avg_error_str = f"{avg_error:.4g}"
 
-        handles_laufzeit.append(Line2D([], [], linestyle='-', marker='o', color=color))
+        handles_laufzeit.append(Line2D([], [], linestyle='-', marker='o', markersize=3, color=color))
         labels_laufzeit.append(f"{label} Laufzeit [avg: {avg_time_str}]")
 
         handles_fehler.append(Line2D([], [], linestyle='--', marker='x', color=color))
@@ -487,15 +487,15 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     # === Laufzeitlinien und Fehlerbereiche plotten ===
     for test_name, avg_times, n_values, std_devs, best_times, worst_times, _ in tests:
         label = testname_to_label.get(test_name, test_name)
-        line_handle, = ax1.plot(n_values, avg_times, marker='o', label=label)
+        line_handle, = ax1.plot(n_values, avg_times, marker='o', markersize=3, label=label)
         color = line_handle.get_color()
         color_map[test_name] = color
 
         avg_runtime = statistics.mean(avg_times) if avg_times else 0
         ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=3, transform=ax1.get_yaxis_transform(), clip_on=False)
 
-        ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=3, alpha=0.6, color=color)
-        ax1.fill_between(n_values, best_times, worst_times, alpha=0.1, color=color)
+        ax1.errorbar(n_values, avg_times, yerr=std_devs, fmt='none', capsize=2, alpha=0.3, color=color)
+        ax1.fill_between(n_values, best_times, worst_times, alpha=0.09, color=color)
         all_n_values.extend(n_values)
 
     # === Achsenbeschriftung und Titel ===
@@ -672,9 +672,9 @@ def plot_theory_runtimes(
         # Empirische Werte (Punkte + Linien)
         if avg_times and n_values:
             if test_name == "fermat":
-                ax.plot(n_values, avg_times, marker='o', linestyle='-', color='red', linewidth=3, label=f"{label} (empirisch)")
+                ax.plot(n_values, avg_times, marker='o', markersize=3, linestyle='-', color='red', linewidth=3, label=f"{label} (empirisch)")
             else:
-                ax.plot(n_values, avg_times, marker='o', linestyle='-', color=color, alpha=0.3, label=f"{label} (empirisch)")
+                ax.plot(n_values, avg_times, marker='o', markersize=3, linestyle='-', color=color, alpha=0.3, label=f"{label} (empirisch)")
             all_n_values.extend(n_values)
             all_y_values.extend(avg_times)
 

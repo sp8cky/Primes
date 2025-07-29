@@ -2,6 +2,7 @@ import random, math
 from tracemalloc import start
 from typing import List, Dict
 from collections import defaultdict
+from matplotlib.pylab import rint
 from sympy import isprime, primerange, primefactors, perfect_power, legendre_symbol
 from sympy.ntheory.primetest import mr, is_euler_pseudoprime
 from math import log2
@@ -135,47 +136,46 @@ def generate_numbers_per_group(
 
 
 def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = True) -> List[int]:
+    if r is None:
+        r = random.Random()
+
     if start < 1:
         start = 1
     if end < start:
         end = start + 1
-    r = r or random.Random()
+
     if p_count is None or z_count is None:
         p_count = round(n * 0.5)
         z_count = n - p_count
 
-    primes, composites = set(), set()
-
     if use_log_intervals:
-        log_start, log_end = math.log10(start), math.log10(end)
-        num_intervals = min(30, max(10, n // 5))
-        boundaries = [start] + [int(10 ** (log_start + (i / num_intervals) ** 2 * (log_end - log_start))) 
-                               for i in range(1, num_intervals) if int(10 ** (log_start + (i / num_intervals) ** 2 * (log_end - log_start))) > start]
-        boundaries.append(end)
+        boundaries = [
+            1, 10, 100, 1000, 10**4, 10**5, 10**6, 10**7, 10**8, 10**9,
+            10**10, 10**11, 10**12, 10**13, 10**14, 10**15, 10**16, 10**17, 10**18
+        ]
+        boundaries = [b for b in boundaries if start <= b <= end]
+        if len(boundaries) == 0 or boundaries[0] != start:
+            boundaries.insert(0, start)
+        if boundaries[-1] != end:
+            boundaries.append(end)
     else:
         boundaries = [start, end]
 
     intervals = len(boundaries) - 1
-    sizes = [boundaries[i + 1] - boundaries[i] for i in range(intervals)]
-    total_size = sum(sizes)
+    log_weights = [math.log10(boundaries[i+1]) - math.log10(max(1, boundaries[i])) for i in range(intervals)]
+    total_log_weight = sum(log_weights)
+    interval_weights = [w / total_log_weight for w in log_weights]
 
-    log_weights = [math.log10(boundaries[i + 1]) - math.log10(max(1, boundaries[i])) for i in range(intervals)]
-    linear_weights = [size / total_size for size in sizes]
-    boost = 5.0
-    boost_factors = [1 + (boost - 1) * (i / intervals) ** 1.5 for i in range(intervals)]
-    boosted_weights = [0.4 * lw * bf + 0.6 * nw * bf for lw, nw, bf in zip(log_weights, linear_weights, boost_factors)]
+    interval_prime_weights = [interval_weights[i] * p_count for i in range(intervals)]
+    interval_composite_weights = [interval_weights[i] * z_count for i in range(intervals)]
 
-    total_weight = sum(boosted_weights)
-    interval_weights = [w / total_weight for w in boosted_weights]
-
-    per_interval_p = [max(1, int(round(interval_weights[i] * p_count * 0.7))) for i in range(intervals)]
-    per_interval_z = [max(1, int(round(interval_weights[i] * z_count * 0.7))) for i in range(intervals)]
+    per_interval_p = [max(1, int(round(w))) for w in interval_prime_weights]
+    per_interval_z = [max(1, int(round(w))) for w in interval_composite_weights]
 
     rem_p = p_count - sum(per_interval_p)
     rem_z = z_count - sum(per_interval_z)
-    sorted_intervals = sorted(range(intervals), key=lambda x: boundaries[x], reverse=True)
 
-    for i in sorted_intervals:
+    for i in range(intervals):
         if rem_p <= 0 and rem_z <= 0:
             break
         if rem_p > 0:
@@ -185,23 +185,10 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
             per_interval_z[i] += 1
             rem_z -= 1
 
-    while rem_p > 0:
-        for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
-            if rem_p <= 0:
-                break
-            per_interval_p[i] += 1
-            rem_p -= 1
+    primes, composites = set(), set()
 
-    while rem_z > 0:
-        for i in sorted(range(intervals), key=lambda x: interval_weights[x], reverse=True):
-            if rem_z <= 0:
-                break
-            per_interval_z[i] += 1
-            rem_z -= 1
-
-    # Zahlen generieren
     for i in range(intervals):
-        start_i, end_i = boundaries[i], boundaries[i + 1] - 1
+        start_i, end_i = boundaries[i], boundaries[i+1] - 1
         if end_i < start_i:
             continue
 
@@ -210,14 +197,9 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
 
         while (len(local_primes) < per_interval_p[i] or len(local_composites) < per_interval_z[i]) and attempts < max_attempts:
             attempts += 1
-            if use_log_intervals:
-                if i == intervals - 1:
-                    candidate = r.randint(start_i, end_i)
-                else:
-                    u = r.random()
-                    candidate = int(start_i + (end_i - start_i) * u ** 2)
-            else:
-                candidate = r.randint(start_i, end_i)
+            log_start = math.log10(start_i)
+            log_end = math.log10(end_i)
+            candidate = int(10 ** r.uniform(log_start, log_end))
 
             if candidate in primes or candidate in composites or candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
                 continue
@@ -228,33 +210,28 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
             elif is_valid_composite(candidate):
                 if len(local_composites) < per_interval_z[i]:
                     local_composites.add(candidate)
-
         primes.update(local_primes)
         composites.update(local_composites)
 
-    # Fallback
     total_generated = len(primes) + len(composites)
+
     if total_generated < n:
         remaining = n - total_generated
         additional = set()
         attempts = 0
-
         while len(additional) < remaining and attempts < max_attempts * 2:
             attempts += 1
-            if use_log_intervals:
-                log_val = r.uniform(math.log10(max(2, start)), math.log10(end))
-                candidate = int(10 ** log_val)
-            else:
-                candidate = r.randint(start, end)
+            log_val = r.uniform(math.log10(max(2, start)), math.log10(end))
+            candidate = int(10 ** log_val)
 
             if candidate in primes or candidate in composites or candidate in additional:
                 continue
             if candidate < 2 or (candidate % 2 == 0 and candidate > 2) or perfect_power(candidate):
                 continue
 
-            if (isprime(candidate) and (len(primes) + sum(1 for x in additional if isprime(x)) < p_count)):
+            if isprime(candidate) and (len(primes) + sum(1 for x in additional if isprime(x)) < p_count):
                 additional.add(candidate)
-            elif (is_valid_composite(candidate) and (len(composites) + sum(1 for x in additional if not isprime(x)) < z_count)):
+            elif is_valid_composite(candidate) and (len(composites) + sum(1 for x in additional if not isprime(x)) < z_count):
                 additional.add(candidate)
 
         primes.update(x for x in additional if isprime(x))

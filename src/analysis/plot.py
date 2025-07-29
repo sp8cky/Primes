@@ -190,7 +190,8 @@ def plot_runtime(
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
     # === Plot speichern ===
-    filename = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
+    #filename = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
+    filename = f"d1-k1-plot-seed{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
     plt.savefig(path)
@@ -336,7 +337,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     )
 
     ax1.figure.suptitle(title, fontsize=24)
-    ax1.set_title(subtitle, fontsize=20)
+    ax1.set_title(subtitle2, fontsize=20)
 
     ax1.set_xlabel("Testzahl n (log.)", fontsize=20)
     ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
@@ -447,8 +448,9 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     fig.tight_layout()
 
     safe_group = group.replace(" ", "_").replace("/", "_")
-    fname = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, fname)
+    #filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    filename = f"d1-k1-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()
 
@@ -510,7 +512,7 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     )
 
     ax1.figure.suptitle(title, fontsize=24)
-    ax1.set_title(subtitle, fontsize=20)
+    ax1.set_title(subtitle2, fontsize=20)
 
     ax1.set_xlabel("Testzahl n (log.)", fontsize=20)
     ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
@@ -637,8 +639,9 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
-    fname = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, fname)
+    #filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    filename = f"d1-k1-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()
 

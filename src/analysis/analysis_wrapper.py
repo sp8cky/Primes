@@ -209,7 +209,8 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
+        filename = f"d1-k1-test-data-seed{seed}-v{variant}.csv"
+        # filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
             filename = filename,
@@ -226,6 +227,7 @@ def run_primetest_analysis(
                 "group_ranges": group_ranges
             }
         ))
+
     return datasets
 
 # Hauptaufruf
@@ -269,15 +271,16 @@ if __name__ == "__main__":
     #for i in pseudopimes:
     #   print(i, end=" ")
 
-    custom_ticks = [1, k1, m1, md1, b1, bd1, t1]
+    custom_ticks = [1, k1, m1, md1, b1, bd1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
+    #repeat_prob_tests = [2,2,2,2,2]
     #repeat_prob_tests = [3,3,3,3,3]
 
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 1000, "start": 1,  "end": t1,    "xticks": [1, k1, m1, md1, b1, bd1, t1]},
+        "Probabilistisch":      {"n": 1000, "start": 1,  "end": bd1,    "xticks": [1, k1, m1, md1, b1, bd1]},
         "Lucas":                {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
         "Langsam":              {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
         "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
@@ -291,14 +294,14 @@ if __name__ == "__main__":
 
 
     run_primetest_analysis(
-        n_numbers=500,
+        n_numbers=1000,
         num_type='g:0.5',
         start=1,
-        end=t1,
+        end=bd1,
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=2797,
+        seed=6376,
         protocoll=True,
         save_results=True,
         show_plot=True,

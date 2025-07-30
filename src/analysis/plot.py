@@ -190,11 +190,10 @@ def plot_runtime(
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
     # === Plot speichern ===
-    #filename = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
-    filename = f"d1-k1-plot-seed{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, filename)
-    os.makedirs(DATA_DIR, exist_ok=True)
-    plt.savefig(path)
+    #fname = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
+    #path = os.path.join(DATA_DIR, fname)
+    #os.makedirs(DATA_DIR, exist_ok=True)
+    #plt.savefig(path)
     plt.close()
 
 
@@ -203,7 +202,7 @@ def plot_runtime(
 
 ############################################################################
 
-def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, runs_per_n, prob_test_repeats, figsize=(20, 14), number_type=None):
+def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, runs_per_n, prob_test_repeats, figsize=(20, 14), number_type=None, filename1=None, filename2=None):
 
     os.makedirs(DATA_DIR, exist_ok=True)
     config = get_test_config(prob_test_repeats=prob_test_repeats, global_seed=seed)
@@ -265,7 +264,8 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             datasets=datasets,
             ylim=ylim,
             figsize=figsize,
-            number_type=number_type
+            number_type=number_type,
+            filename=filename1,
         )
 
         plot_stats(
@@ -282,10 +282,11 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
             datasets=datasets,
             ylim=ylim,
             figsize=figsize,
-            number_type=number_type
+            number_type=number_type,
+            filename=filename2,
         )
 
-def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type):
+def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type, filename):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -449,14 +450,14 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
     safe_group = group.replace(" ", "_").replace("/", "_")
     #filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
-    filename = f"d1-k1-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    #filename = f"d5-k4-group-{safe_group}-graph-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()
 
 
 # plottet die Laufzeitmittelwerte, Fehlerbalken und Fehlerraten für eine Gruppe von Tests
-def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type):
+def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type, filename):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
 
@@ -640,7 +641,7 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
     #filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
-    filename = f"d1-k1-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    #filename = f"d5-k4-group-{safe_group}-stats-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()

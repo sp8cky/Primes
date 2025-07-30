@@ -12,12 +12,12 @@ from datetime import datetime
 
 # Zeitmessungshilfe
 def measure_section(label: str, func, *args, **kwargs):
-    print(f"Starte Abschnitt: {label}...")
+    #print(f"Starte Abschnitt: {label}...")
     start = time.perf_counter()
     result = func(*args, **kwargs)
     end = time.perf_counter()
     duration = end - start
-    print(f"\nAbschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden\n")
+    print(f"Abschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden")
     return result
 
 
@@ -209,7 +209,7 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        filename = f"d1-k1-test-data-seed{seed}-v{variant}.csv"
+        filename = f"d5-k4-test-data-seed{seed}-v{variant}.csv"
         # filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
@@ -254,30 +254,14 @@ if __name__ == "__main__":
     bd1 = 10**15
     bd10 = 10**16
     bd100 = 10**17
-    t1 = 10**18
-    t10 = 10**19
-    t100 = 10**20
-    td1 = 10**21
-    td10 = 10**22
-    td100 = 10**23
-    q1 = 10**24
-    q10 = 10**25
-    q100 = 10**26
-    qd1 = 10**27
-    qd10 = 10**28
-    qd100 = 10**29
 
-    #pseudopimes = generate_pseudoprimes(100, 3, k100, True, True, True)
-    #for i in pseudopimes:
-    #   print(i, end=" ")
 
     custom_ticks = [1, k1, m1, md1, b1, bd1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    run_tests2 = ["Wilson", "AKS04", "AKS10"]
     repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
     #repeat_prob_tests = [3,3,3,3,3]
-
+    #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
         "Probabilistisch":      {"n": 1000, "start": 1,  "end": bd1,    "xticks": [1, k1, m1, md1, b1, bd1]},
@@ -301,7 +285,7 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=6376,
+        seed=9365,
         protocoll=True,
         save_results=True,
         show_plot=True,

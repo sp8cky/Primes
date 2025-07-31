@@ -106,7 +106,7 @@ def generate_numbers_per_group(
                 for testname in relevant_tests:
                     numbers_per_test[testname] = result
                     p_count, z_count, _ = compute_number_distribution(group_n, "g:1.0")
-                    print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='{unique_number_type}': {len(result)} Zahlen (p: {p_count}, z: {z_count}): ZAHL1 {result}")
+                    print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='{unique_number_type}': {len(result)} Zahlen (p: {p_count}, z: {z_count}): {result}")
             except ValueError as e:
                 print(f"⚠️ Fehler bei Gruppengenerierung für '{group}': {e}")
                 if not allow_partial_numbers:
@@ -125,7 +125,7 @@ def generate_numbers_per_group(
             )
             for testname in relevant_tests:
                 numbers_per_test[testname] = shared_numbers
-                print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='': {len(shared_numbers)} Zufallszahlen (p: {p_count}, z: {z_count}): ZAHL2 {shared_numbers}")
+                print(f"🔍 Test '{testname}' num_type='{num_type}', number_type='': {len(shared_numbers)} Zufallszahlen (p: {p_count}, z: {z_count}): {shared_numbers}")
         except ValueError as e:
             print(f"⚠️ Fehler bei Zahlengenerierung für Gruppe '{group}': {e}")
             if not allow_partial_numbers:
@@ -135,7 +135,7 @@ def generate_numbers_per_group(
     return numbers_per_test 
 
 
-def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = True) -> List[int]:
+def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = False) -> List[int]:
     if r is None:
         r = random.Random()
 

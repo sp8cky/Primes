@@ -190,10 +190,10 @@ def plot_runtime(
     plt.tight_layout(rect=[0, 0, 0.9, 1])
 
     # === Plot speichern ===
-    #fname = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
-    #path = os.path.join(DATA_DIR, fname)
-    #os.makedirs(DATA_DIR, exist_ok=True)
-    #plt.savefig(path)
+    fname = f"{timestamp}-plot-seed{seed}-v{variant}.png" if timestamp else f"plot-seed{seed}-v{variant}.png"
+    path = os.path.join(DATA_DIR, fname)
+    os.makedirs(DATA_DIR, exist_ok=True)
+    plt.savefig(path)
     plt.close()
 
 
@@ -449,7 +449,7 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     fig.tight_layout()
 
     safe_group = group.replace(" ", "_").replace("/", "_")
-    #filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
     #filename = f"d5-k4-group-{safe_group}-graph-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
@@ -640,7 +640,7 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
-    #filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
     #filename = f"d5-k4-group-{safe_group}-stats-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)

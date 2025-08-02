@@ -235,7 +235,7 @@ def pepin_test(n: int, seed: Optional[int] = None) -> bool:
 
 # Prüft ob n=2^p-1 eine Mersenne-Primzahl (mit primem p) ist
 def lucas_lehmer_test(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 2: raise ValueError("n must be greater than 1")
+    if n <= 1: raise ValueError("n must be greater than 1")
     is_mersenne = helpers.is_mersenne_number(n)
     p = (n + 1).bit_length() - 1
     if not is_mersenne or not isprime(p): return False
@@ -401,7 +401,7 @@ def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
     return False
 
 def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
-    if n <= 3: raise ValueError("n must be greater than 1")
+    if n <= 3: raise ValueError("rao: n must be greater than 2")
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)

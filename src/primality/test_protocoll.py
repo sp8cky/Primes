@@ -504,7 +504,7 @@ def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 2: raise ValueError("n must be greater than 1")
+    if n < 2: raise ValueError("n must be greater than 1")
     is_mersenne = helpers.is_mersenne_number(n)
     p = (n + 1).bit_length() - 1
     if not is_mersenne or not isprime(p): 
@@ -778,7 +778,7 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
-    if n <= 3: raise ValueError("n must be greater than 1")
+    if n <= 3: raise ValueError("rao: n must be greater than 2")
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)

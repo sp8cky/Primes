@@ -5,9 +5,9 @@ from math import log, sqrt
 
 
 # Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
-default_repeats = [3, 3, 3, 3, 3]
-prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen"]
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Optimized-Miller-Selfridge-Rabin", "Solovay-Strassen", "Optimized-Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Optimized Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
+default_repeats = [3, 3, 3]
+prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Optimized Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
 
 # Zuordnung von Tests zu Funktionen und Metadaten
 TEST_CONFIG = {
@@ -15,7 +15,7 @@ TEST_CONFIG = {
         "runtime_function": fermat_test,
         "protocol_function": fermat_test_protocoll,
         "prob_test": True,
-        "number_type": "large",
+        "number_type": "normal",
         "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**3
@@ -24,16 +24,7 @@ TEST_CONFIG = {
         "runtime_function": miller_selfridge_rabin_test,
         "protocol_function": miller_selfridge_rabin_test_protocoll,
         "prob_test": True,
-        "number_type": "large",
-        "testgroup": "Probabilistisch",
-        "plotgroup": "Probabilistische Tests",
-        "runtime_theoretical_fn": lambda n: log(n)**4
-    },
-    "Optimized-Miller-Selfridge-Rabin": {
-        "runtime_function": optimized_miller_selfridge_rabin_test,
-        "protocol_function": optimized_miller_selfridge_rabin_test_protocoll,
-        "prob_test": True,
-        "number_type": "large",
+        "number_type": "normal",
         "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**4
@@ -42,16 +33,7 @@ TEST_CONFIG = {
         "runtime_function": solovay_strassen_test,
         "protocol_function": solovay_strassen_test_protocoll,
         "prob_test": True,
-        "number_type": "large",
-        "testgroup": "Probabilistisch",
-        "plotgroup": "Probabilistische Tests",
-        "runtime_theoretical_fn": lambda n: log(n)**3
-    },
-    "Optimized-Solovay-Strassen": {
-        "runtime_function": optimized_solovay_strassen_test,
-        "protocol_function": optimized_solovay_strassen_test_protocoll,
-        "prob_test": True,
-        "number_type": "large",
+        "number_type": "normal",
         "testgroup": "Probabilistisch",
         "plotgroup": "Probabilistische Tests",
         "runtime_theoretical_fn": lambda n: log(n)**3
@@ -60,7 +42,7 @@ TEST_CONFIG = {
         "runtime_function": initial_lucas_test,
         "protocol_function": initial_lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas",
+        "number_type": "normal",
         "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: n * log(n)**3
@@ -69,7 +51,7 @@ TEST_CONFIG = {
         "runtime_function": lucas_test,
         "protocol_function": lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas",
+        "number_type": "normal",
         "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: sqrt * log(n)**3
@@ -78,7 +60,7 @@ TEST_CONFIG = {
         "runtime_function": optimized_lucas_test,
         "protocol_function": optimized_lucas_test_protocoll,
         "prob_test": False,
-        "number_type": "lucas",
+        "number_type": "normal",
         "testgroup": "Lucas",
         "plotgroup": "Lucas-Tests",
         "runtime_theoretical_fn": lambda n: test_data["Optimized Lucas"][n]["other_fields"]["num_prime_factors"] * log(n)**3
@@ -87,7 +69,7 @@ TEST_CONFIG = {
         "runtime_function": wilson_criterion,
         "protocol_function": wilson_criterion_protocoll,
         "prob_test": False,
-        "number_type": "small",
+        "number_type": "normal",
         "testgroup": "Langsam",
         "plotgroup": "Langsame Tests",
         "runtime_theoretical_fn": lambda n: n * log(n)**2
@@ -96,7 +78,7 @@ TEST_CONFIG = {
         "runtime_function": aks04_test,
         "protocol_function": aks04_test_protocoll,
         "prob_test": False,
-        "number_type": "small",
+        "number_type": "normal",
         "testgroup": "Langsam",
         "plotgroup": "Langsame Tests",
         "runtime_theoretical_fn": lambda n: log(n)**(21/2)
@@ -105,7 +87,7 @@ TEST_CONFIG = {
         "runtime_function": aks10_test,
         "protocol_function": aks10_test_protocoll,
         "prob_test": False,
-        "number_type": "small",
+        "number_type": "normal",
         "testgroup": "Langsam",
         "plotgroup": "Langsame Tests",
         "runtime_theoretical_fn": lambda n: log(n)**18

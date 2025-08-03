@@ -358,21 +358,6 @@ def generate_ramzy_numbers(n: int, start: int, end: int, r=None, max_attempts=No
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return sorted(results)
 
-def generate_lucas_primes(n: int, start: int, end: int, r=None) -> List[int]:
-    if r is None:
-        r = random.Random()
-    primes = list(primerange(start, end))
-    lucas_primes = []
-    for p in primes:
-        max_allowed = int(log2(p)**2)
-        factors = primefactors(p - 1)
-        if all(f <= max_allowed for f in factors):
-            lucas_primes.append(p)
-    if len(lucas_primes) < n:
-        raise ValueError(f"Nicht genug Lucas-Primzahlen im Bereich [{start}, {end}] (nur {len(lucas_primes)})")
-    return sorted(r.sample(list(set(lucas_primes)), n))
-
-
 # 3. Mapping Testtyp → Generator
 def generate_numbers_for_test(
     n: int, start: int, end: int, num_type: str = "g:x", number_type: str = "", r=None, testname: str = ""
@@ -387,7 +372,6 @@ def generate_numbers_for_test(
         "pocklington": generate_pocklington_numbers,
         "ramzy": generate_ramzy_numbers,
         "rao": generate_rao_numbers,
-        #"lucas": generate_lucas_primes,
     }
 
     try:

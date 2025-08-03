@@ -2,3 +2,4 @@ sympy
 pytest
 matplotlib
 seaborn
+scipy

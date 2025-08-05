@@ -361,7 +361,8 @@ def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
     return False
 
 def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
-    if n <= 3: raise ValueError("rao: n must be greater than 2")
+    if n <= 1: raise ValueError("rao: n must be greater than 1")
+    if n == 2: return True
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
@@ -378,6 +379,7 @@ def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
 
 def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
     if n <= 1: raise ValueError("n must be greater than 1")
+    if n == 2: return True
     decomposition = helpers.find_ramzy_decomposition(n)
     if not decomposition: 
         return False

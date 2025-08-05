@@ -695,7 +695,10 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
-    if n <= 3: raise ValueError("rao: n must be greater than 2")
+    if n <= 1: raise ValueError("rao: n must be greater than 1")
+    if n == 2:
+        test_data["Rao"][n]["result"] = True
+        return True
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
@@ -729,6 +732,9 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
 
 def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
     if n <= 1: raise ValueError("n must be greater than 1")
+    if n == 2:
+        test_data["Ramzy"][n]["result"] = True
+        return True
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
         test_data["Ramzy"][n]["result"] = False

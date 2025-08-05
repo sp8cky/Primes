@@ -1,6 +1,6 @@
 from tkinter.messagebox import NO
 import src.primality.helpers as helpers
-from src.primality.test_config import PRIME, COMPOSITE, INVALID, NOT_APPLICABLE, VALID_RESULTS
+from src.primality.constants import *
 import random, math, hashlib
 from math import gcd, log2, sqrt
 from sympy import factorint

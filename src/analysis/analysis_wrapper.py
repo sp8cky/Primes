@@ -1,4 +1,5 @@
 from src.primality.tests import *
+from src.primality.constants import *
 from src.primality.test_protocoll import *
 from src.primality.generate_primes import *
 from src.analysis.timing import *
@@ -264,15 +265,15 @@ if __name__ == "__main__":
     #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
-        "Langsam":              {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
-        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Rao":                  {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Ramzy":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k10,  "xticks": [1, h1, k1, k10]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Lucas":                {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1, k10]},
+        "Langsam":              {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1, k1, k10]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Rao":                  {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Ramzy":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1, k10]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k1,  "xticks": [1, h1, k1, k10]},
     }
 
 
@@ -281,15 +282,15 @@ if __name__ == "__main__":
         n_numbers=10,
         num_type='g:0.5',
         start=1,
-        end=k10,
+        end=k1,
         test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=29840,
+        seed=12145,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=1,
+        variant=2,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

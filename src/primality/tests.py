@@ -1,6 +1,6 @@
 import src.primality.helpers as helpers
+from src.primality.constants import *
 from src.primality.test_protocoll import get_global_seed
-from src.primality.test_config import PRIME, COMPOSITE, INVALID, NOT_APPLICABLE, VALID_RESULTS
 import random, math, pytest
 from math import gcd, log2, sqrt
 from statistics import mean
@@ -171,7 +171,10 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     l_pow5 = pow(l, 5)
     for p in primerange(2, l_pow5 + 1):
         if n % p == 0:
-            return p == n
+            if p == n:
+                return PRIME
+            else:
+                return COMPOSITE
 
     # polynomial condition check
     max_a = math.floor(math.sqrt(r) * l)

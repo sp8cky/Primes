@@ -164,3 +164,4 @@ def main(data_dir: str):
 # --- Aufruf ---
 if __name__ == "__main__":
     main("C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Pool 3 - prob, v2, 1-bd1")
+    #main("C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Pool 1 - alle, v1, 1-k1")

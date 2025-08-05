@@ -1,4 +1,6 @@
+from tkinter.messagebox import NO
 import src.primality.helpers as helpers
+from src.primality.test_config import PRIME, COMPOSITE, INVALID, NOT_APPLICABLE, VALID_RESULTS
 import random, math, hashlib
 from math import gcd, log2, sqrt
 from sympy import factorint
@@ -75,15 +77,14 @@ def get_global_seed(global_seed: int, n: int, testname: str = "", repeat_index: 
 ############################################################################################
 
 def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
-    if n <= 1:
-        raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     
     test_data["Fermat"][n]["a_values"] = []
 
     if n == 2:
-        test_data["Fermat"][n]["result"] = True
+        test_data["Fermat"][n]["result"] = PRIME
         test_data["Fermat"][n]["a_values"].append((2, True, True))  # alle Bedingungen erfüllt
-        return True
+        return PRIME
 
     for i in range(k):
         r = random.Random(get_global_seed(seed, n, "Fermat", i))
@@ -93,28 +94,27 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
         if not cond1:
             test_data["Fermat"][n]["a_values"].append((a, False, None))
             test_data["Fermat"][n]["reason"] = "ggT ≠ 1"
-            test_data["Fermat"][n]["result"] = False
-            return False
+            test_data["Fermat"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
         cond2 = pow(a, n - 1, n) == 1
         test_data["Fermat"][n]["a_values"].append((a, cond1, cond2))
 
         if not cond2:
             test_data["Fermat"][n]["reason"] = "a^{n-1} ≠ 1"
-            test_data["Fermat"][n]["result"] = False
-            return False
+            test_data["Fermat"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
-    test_data["Fermat"][n]["result"] = True
-    return True
+    test_data["Fermat"][n]["result"] = PRIME
+    return PRIME
 
 def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n):
-        raise ValueError("n must be an odd integer greater than 1 and not a real potency.")
+    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): return INVALID
 
     if n in (2, 3):
-        test_data["Miller-Selfridge-Rabin"][n]["result"] = True
+        test_data["Miller-Selfridge-Rabin"][n]["result"] = PRIME
         test_data["Miller-Selfridge-Rabin"][n]["a_values"] = []
-        return True
+        return PRIME
 
     m = n - 1
     s = 0
@@ -129,9 +129,9 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
         a = r.randint(2, n - 1)
 
         if gcd(a, n) != 1:
-            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
+            test_data["Miller-Selfridge-Rabin"][n]["result"] = COMPOSITE
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
-            return False
+            return COMPOSITE
 
         cond1 = pow(a, m, n) == 1
         if cond1:
@@ -147,20 +147,20 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
         test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1, found))
 
         if not found:
-            test_data["Miller-Selfridge-Rabin"][n]["result"] = False
+            test_data["Miller-Selfridge-Rabin"][n]["result"] = COMPOSITE
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "Keine passende Potenz gefunden"
-            return False
+            return COMPOSITE
 
-    test_data["Miller-Selfridge-Rabin"][n]["result"] = True
-    return True
+    test_data["Miller-Selfridge-Rabin"][n]["result"] = PRIME
+    return PRIME
 
 def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
-    if n < 2 or (n % 2 == 0 and n > 2): raise ValueError("n must be greater than 1")
+    if n < 2 or (n % 2 == 0 and n > 2): return INVALID
 
     if n == 2 or n == 3:
-        test_data["Solovay-Strassen"][n]["result"] = True
+        test_data["Solovay-Strassen"][n]["result"] = PRIME
         test_data["Solovay-Strassen"][n]["a_values"] = [(2, False, True)]
-        return True
+        return PRIME
 
     test_data["Solovay-Strassen"][n]["a_values"] = []
 
@@ -175,24 +175,24 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = No
 
         if cond1:
             test_data["Solovay-Strassen"][n]["reason"] = "Jacobi-Symbol ist 0"
-            test_data["Solovay-Strassen"][n]["result"] = False
-            return False
+            test_data["Solovay-Strassen"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
         if not cond2:
             test_data["Solovay-Strassen"][n]["reason"] = "Kongruenzprüfung fehlgeschlagen"
-            test_data["Solovay-Strassen"][n]["result"] = False
-            return False
+            test_data["Solovay-Strassen"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
-    test_data["Solovay-Strassen"][n]["result"] = True
-    return True
+    test_data["Solovay-Strassen"][n]["result"] = PRIME
+    return PRIME
 
 def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     test_data["Initial Lucas"][n]["a_values"] = []
 
     if n == 2:
-        test_data["Initial Lucas"][n]["result"] = True
-        return True
+        test_data["Initial Lucas"][n]["result"] = PRIME
+        return PRIME
 
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
@@ -206,19 +206,19 @@ def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
             if cond2:
                 break  # a ist ungeeignet → nächstes a
         else:
-            test_data["Initial Lucas"][n]["result"] = True
-            return True
+            test_data["Initial Lucas"][n]["result"] = PRIME
+            return PRIME
 
-    test_data["Initial Lucas"][n]["result"] = False
+    test_data["Initial Lucas"][n]["result"] = COMPOSITE
     test_data["Initial Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
-    return False
+    return COMPOSITE
 
 
 def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     if n == 2:
-        test_data["Lucas"][n]["result"] = True
-        return True
+        test_data["Lucas"][n]["result"] = PRIME
+        return PRIME
 
     test_data["Lucas"][n]["a_values"] = []
 
@@ -234,20 +234,20 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
             if cond2:
                 break  # Bedingung (ii) verletzt, nächstes a
         else:
-            test_data["Lucas"][n]["result"] = True
-            return True  # EIN gültiges a gefunden
+            test_data["Lucas"][n]["result"] = PRIME
+            return PRIME  # EIN gültiges a gefunden
 
-    test_data["Lucas"][n]["result"] = False
+    test_data["Lucas"][n]["result"] = COMPOSITE
     test_data["Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
-    return False
+    return COMPOSITE
 
 
 def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     test_data["Optimized Lucas"][n]["a_values"] = {}
     if n == 2:
-        test_data["Optimized Lucas"][n]["result"] = True
-        return True
+        test_data["Optimized Lucas"][n]["result"] = PRIME
+        return PRIME
 
     factors = factorint(n - 1)
     num_prime_factors = len(factors)
@@ -260,19 +260,22 @@ def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
             if cond1 and cond2:
                 break
         else:
-            test_data["Optimized Lucas"][n]["result"] = False
+            test_data["Optimized Lucas"][n]["result"] = COMPOSITE
             test_data["Optimized Lucas"][n]["reason"] = f"No valid a for q = {q}"
-            return False
+            return COMPOSITE
 
-    test_data["Optimized Lucas"][n]["result"] = True
-    return True
+    test_data["Optimized Lucas"][n]["result"] = PRIME
+    return PRIME
 
 
 def wilson_criterion_protocoll(p: int, seed: Optional[int] = None) -> bool:
-    if p <= 1: raise ValueError("p must be greater than 1")
+    if p <= 1: return INVALID
     result = math.factorial(p - 1) % p == p - 1
-    test_data["Wilson"][p]["result"] = result
-    return result
+    if result:
+        test_data["Wilson"][p]["result"] = PRIME
+        return PRIME
+    test_data["Wilson"][p]["result"] = COMPOSITE
+    return COMPOSITE
 
 
 def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
@@ -280,9 +283,9 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     if n <= 1 or perfect_power(n):
         test_data[testname][n]["other_fields"]["initial_check"] = False
-        test_data[testname][n]["result"] = False
+        test_data[testname][n]["result"] = INVALID
         test_data[testname][n]["reason"] = "Ungültige Eingabe: ≤ 1 oder echte Potenz"
-        raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
+        return INVALID
 
     # Initialisiere Protokollstruktur
     test_data[testname][n]["other_fields"] = {
@@ -309,15 +312,15 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         g = gcd(a, n)
         test_data[testname][n]["other_fields"]["gcd_check"].append((a, g))
         if 1 < g < n:
-            test_data[testname][n]["result"] = False
+            test_data[testname][n]["result"] = COMPOSITE
             test_data[testname][n]["reason"] = f"Nichttrivialer Teiler gefunden: gcd({a}, {n}) = {g}"
-            return False
+            return COMPOSITE
 
     # Frühausstieg, falls n ≤ r
     if n <= r:
         test_data[testname][n]["other_fields"]["early_prime_check"] = True
-        test_data[testname][n]["result"] = True
-        return True
+        test_data[testname][n]["result"] = PRIME
+        return PRIME
     else:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
@@ -336,20 +339,20 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["polynomial_check"].append((a, passed))
 
         if not passed:
-            test_data[testname][n]["result"] = False
+            test_data[testname][n]["result"] = COMPOSITE
             test_data[testname][n]["reason"] = f"Polynomprüfung für a={a} fehlgeschlagen"
-            return False
+            return COMPOSITE
 
-    test_data[testname][n]["result"] = True
-    return True
+    test_data[testname][n]["result"] = PRIME
+    return PRIME
 
 
 
 def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1 or perfect_power(n):
         test_data["AKS10"][n]["other_fields"]["initial_check"] = False
-        test_data["AKS10"][n]["result"] = False
-        raise ValueError("n muss eine ungerade Zahl > 1 und keine echte Potenz sein")
+        test_data["AKS10"][n]["result"] = INVALID
+        return INVALID
 
     # Reset steps if test has to be run again
     test_data["AKS10"][n]["other_fields"] = {
@@ -373,14 +376,14 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     for p in primerange(2, l_pow5 + 1):
         if n % p == 0:
             if p == n:
-                test_data["AKS10"][n]["result"] = True
+                test_data["AKS10"][n]["result"] = PRIME
                 test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = f"Primfaktor p={p} (n selbst)"
-                return True
+                return PRIME
             else:
-                test_data["AKS10"][n]["result"] = False
+                test_data["AKS10"][n]["result"] = COMPOSITE
                 test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = f"Teiler p={p} von n"
                 test_data["AKS10"][n]["reason"] = f"n ist durch p={p} teilbar"
-                return False
+                return COMPOSITE
 
     test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
 
@@ -394,30 +397,30 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         right = Poly(X**n + a, X, domain=GF(n)).rem(mod_poly)
 
         if left != right:
-            test_data["AKS10"][n]["result"] = False
+            test_data["AKS10"][n]["result"] = COMPOSITE
             test_data["AKS10"][n]["reason"] = f"Polynomprüfung für a={a} fehlgeschlagen"
-            return False
+            return COMPOSITE
 
-    test_data["AKS10"][n]["result"] = True
-    return True
+    test_data["AKS10"][n]["result"] = PRIME
+    return PRIME
 
 
 def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n == 3: 
-        test_data["Pepin"][n]["result"] = True
-        return True
+        test_data["Pepin"][n]["result"] = PRIME
+        return PRIME
     if not helpers.is_fermat_number(n):
-        test_data["Pepin"][n]["result"] = False
+        test_data["Pepin"][n]["result"] = INVALID
         test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"
-        return False
+        return INVALID
 
     if pow(3, (n - 1) // 2, n) != n - 1: 
-        test_data["Pepin"][n]["result"] = False
+        test_data["Pepin"][n]["result"] = COMPOSITE
         test_data["Pepin"][n]["reason"] = "3^(n-1)/2 mod n ≠ n - 1"
-        return False
+        return COMPOSITE
     
-    test_data["Pepin"][n]["result"] = True
-    return True
+    test_data["Pepin"][n]["result"] = PRIME
+    return PRIME
 
 
 def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
@@ -425,12 +428,12 @@ def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     is_mersenne = helpers.is_mersenne_number(n)
     p = (n + 1).bit_length() - 1
     if not is_mersenne or not isprime(p): 
-        test_data["Lucas-Lehmer"][n]["result"] = False
+        test_data["Lucas-Lehmer"][n]["result"] = INVALID
         test_data["Lucas-Lehmer"][n]["reason"] = "Keine Mersenne-Zahl"
-        return False
+        return INVALID
     if p == 2: 
-        test_data["Lucas-Lehmer"][n]["result"] = True
-        return True
+        test_data["Lucas-Lehmer"][n]["result"] = PRIME
+        return PRIME
 
     # Test
     S = 4
@@ -438,14 +441,17 @@ def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     for _ in range(p - 2):
         S = (pow(S, 2, n) - 2) % n
         sequence.append(S)
-    is_prime = (S == 0)
+    if S != 0:
+        test_data["Lucas-Lehmer"][n]["result"] = COMPOSITE
+        test_data["Lucas-Lehmer"][n]["reason"] = "S != 0"
+        return COMPOSITE
     test_data["Lucas-Lehmer"][n]["other_fields"] = [p, sequence, S]
-    test_data["Lucas-Lehmer"][n]["result"] = is_prime
-    return is_prime
+    test_data["Lucas-Lehmer"][n]["result"] = PRIME
+    return PRIME
 
 
 def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     
     # Check if n is of the form K*2^m + 1 with K < 2^m
     m, temp = 0, n - 1
@@ -454,76 +460,76 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
         m += 1
     K = temp
     if K >= 2**m:
-        test_data["Proth"][n]["result"] = False
+        test_data["Proth"][n]["result"] = NOT_APPLICABLE
         test_data["Proth"][n]["reason"] = "Erfüllt nicht K < 2^m"
-        return False
-    
+        return NOT_APPLICABLE
+
     # Test
     for a in range(2, n):
         cond = pow(a, (n - 1) // 2, n) == n - 1
         if cond:
             test_data["Proth"][n]["a_values"].append((a, cond))
-            test_data["Proth"][n]["result"] = True
-            return True
+            test_data["Proth"][n]["result"] = PRIME
+            return PRIME
     test_data["Proth"][n]["a_values"].append((a, cond))
-    test_data["Proth"][n]["result"] = False
-    return False
+    test_data["Proth"][n]["result"] = COMPOSITE
+    return COMPOSITE
 
 
 def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.8
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     if n % 2 == 0:
-        test_data["Proth Variant"][n]["result"] = False
+        test_data["Proth Variant"][n]["result"] = COMPOSITE
         test_data["Proth Variant"][n]["reason"] = "n must be odd"
-        return False
+        return COMPOSITE
 
     for a in range(2, n):
         if pow(a, n - 1, n) != 1:
-            test_data["Proth Variant"][n]["result"] = False
+            test_data["Proth Variant"][n]["result"] = COMPOSITE
             test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
-            return False
+            return COMPOSITE
 
         if pow(a, (n - 1) // 2, n) == n - 1:
             test_data["Proth Variant"][n]["a_values"] = [(a, True)]
-            test_data["Proth Variant"][n]["result"] = True
-            return True
+            test_data["Proth Variant"][n]["result"] = PRIME
+            return PRIME
 
-    test_data["Proth Variant"][n]["result"] = False
+    test_data["Proth Variant"][n]["result"] = COMPOSITE
     test_data["Proth Variant"][n]["reason"] = "Kein passendes a gefunden"
-    return False
+    return COMPOSITE
 
 
 def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     # Factorize n-1 as q^m * R
     factors = factorint(n - 1)
-    if len(factors) != 1:
-        test_data["Pocklington"][n]["result"] = False
-        test_data["Pocklington"][n]["reason"] = "n-1 muss genau einen Primfaktor haben"
-        return False
-    
+    if not factors:
+        test_data["Pocklington"][n]["result"] = NOT_APPLICABLE
+        test_data["Pocklington"][n]["reason"] = "Keine Faktorisierung gefunden"
+        return NOT_APPLICABLE
+
     q, m = next(iter(factors.items()))
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
-        test_data["Pocklington"][n]["result"] = False
+        test_data["Pocklington"][n]["result"] = COMPOSITE
         test_data["Pocklington"][n]["reason"] = "q muss n - 1 genau m mal teilen"
-        return False
+        return COMPOSITE
     # Test
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
         cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
         if cond1 and cond2:
             test_data["Pocklington"][n]["a_values"].append((a, cond1, cond2))
-            test_data["Pocklington"][n]["result"] = True
-            return True
+            test_data["Pocklington"][n]["result"] = PRIME
+            return PRIME
         
-    test_data["Pocklington"][n]["result"] = False
-    return False
+    test_data["Pocklington"][n]["result"] = COMPOSITE
+    return COMPOSITE
 
 
 def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.7
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
@@ -532,9 +538,9 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
     R = (n - 1) // F
 
     if gcd(F, R) != 1:
-        test_data["Optimized Pocklington"][n]["result"] = False
+        test_data["Optimized Pocklington"][n]["result"] = NOT_APPLICABLE
         test_data["Optimized Pocklington"][n]["reason"] = "F und R müssen teilerfremd sein"
-        return False
+        return NOT_APPLICABLE
 
     # test for each prime factor q of F
     test_data["Optimized Pocklington"][n]["a_values"] = {}
@@ -549,15 +555,15 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
                 found = True
                 break
         if not found:
-            test_data["Optimized Pocklington"][n]["result"] = False
-            return False
+            test_data["Optimized Pocklington"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
-    test_data["Optimized Pocklington"][n]["result"] = True
-    return True
+    test_data["Optimized Pocklington"][n]["result"] = PRIME
+    return PRIME
 
 
 def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: #4.9
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with gcd(F,R)=1
     factors = factorint(n - 1)
@@ -569,15 +575,15 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
         B = int(math.isqrt(n) // F) + 1
 
     if F * B <= math.isqrt(n):
-        test_data["Optimized Pocklington Variant"][n]["result"] = False
+        test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
         test_data["Optimized Pocklington Variant"][n]["reason"] = "FB ≤ √n condition not met"
-        return False
+        return NOT_APPLICABLE
 
     for p in primerange(2, B):
         if R % p == 0:
-            test_data["Optimized Pocklington Variant"][n]["result"] = False
+            test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
             test_data["Optimized Pocklington Variant"][n]["reason"] = f"R has prime factor < B: {p}"
-            return False
+            return NOT_APPLICABLE
 
     test_data["Optimized Pocklington Variant"][n]["a_values"] = {}
     for q in factors:
@@ -590,31 +596,31 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
                 found = True
                 break
         if not found:
-            test_data["Optimized Pocklington Variant"][n]["result"] = False
-            return False
+            test_data["Optimized Pocklington Variant"][n]["result"] = COMPOSITE
+            return COMPOSITE
 
     # b-Test
     b = 2
     while b < n and pow(b, (n - 1) // F, n) == 1:
         b += 1
     if b == n:
-        test_data["Optimized Pocklington Variant"][n]["result"] = False
+        test_data["Optimized Pocklington Variant"][n]["result"] = COMPOSITE
         test_data["Optimized Pocklington Variant"][n]["reason"] = "Kein b gefunden mit b^{(n-1)/F} ≠ 1 mod n"
-        return False
+        return COMPOSITE
 
     test_data["Optimized Pocklington Variant"][n]["other_fields"] = [b, pow(b, (n - 1) // F, n)]
-    test_data["Optimized Pocklington Variant"][n]["result"] = True
-    return True
+    test_data["Optimized Pocklington Variant"][n]["result"] = PRIME
+    return PRIME
 
 
 def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.12
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
     if decomposition is None:
-        test_data["Generalized Pocklington"][n]["result"] = False
+        test_data["Generalized Pocklington"][n]["result"] = NOT_APPLICABLE
         test_data["Generalized Pocklington"][n]["reason"] = "Keine Zerlegung N = K*p^n + 1 mit K < p^n gefunden"
-        return False
+        return NOT_APPLICABLE
 
     K, p, e = decomposition
     test_data["Generalized Pocklington"][n]["other_fields"] = [K, p, e]
@@ -624,57 +630,60 @@ def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -
         cond2 = gcd(pow(a, (n - 1) // p, n) - 1, n) == 1
         if cond1 and cond2:
             test_data["Generalized Pocklington"][n]["a_values"] = [(a, cond1, cond2)]
-            test_data["Generalized Pocklington"][n]["result"] = True
-            return True
+            test_data["Generalized Pocklington"][n]["result"] = PRIME
+            return PRIME
 
-    test_data["Generalized Pocklington"][n]["result"] = False
+    test_data["Generalized Pocklington"][n]["result"] = COMPOSITE
     test_data["Generalized Pocklington"][n]["reason"] = "Kein geeignetes a gefunden"
-    return False
+    return COMPOSITE
 
 
 def grau_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.13
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
-        test_data["Grau"][n]["result"] = False
+        test_data["Grau"][n]["result"] = NOT_APPLICABLE
         test_data["Grau"][n]["reason"] = "Keine Zerlegung n=K*p^n+1 gefunden"
-        return False
+        return NOT_APPLICABLE
 
     K, p, n_exp = decomposition
     a = helpers.find_quadratic_non_residue(p)
     if a is None:
-        test_data["Grau"][n]["result"] = False
+        test_data["Grau"][n]["result"] = NOT_APPLICABLE
         test_data["Grau"][n]["reason"] = f"Kein quadratischer Nichtrest für p={p} gefunden"
-        return False
+        return NOT_APPLICABLE
 
     exponent = (n - 1) // p
     base = pow(a, exponent, n)
     phi_p = cyclotomic_poly(p, base) % n
-    is_prime = (phi_p == 0)
+    
     test_data["Grau"][n]["a_values"] = [a]
     test_data["Grau"][n]["other_fields"] = [K, p, n_exp, phi_p]
-    test_data["Grau"][n]["result"] = is_prime
-    return is_prime
+    if phi_p != 0:
+        test_data["Grau"][n]["result"] = COMPOSITE
+        
+    test_data["Grau"][n]["result"] = PRIME
+    return PRIME 
 
 
 def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.14
-    if n <= 1:  raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
-        test_data["Grau Probability"][n]["result"] = False
+        test_data["Grau Probability"][n]["result"] = NOT_APPLICABLE
         test_data["Grau Probability"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
-        return False
+        return NOT_APPLICABLE
 
     K, p, n_exp = decomposition
     test_data["Grau Probability"][n]["other_fields"] = [K, p, n_exp]
     log_p_K = math.log(K, p) if K != 0 else float("-inf")
     a = helpers.find_quadratic_non_residue(p)
     if a is None: 
-        test_data["Grau Probability"][n]["result"] = False
+        test_data["Grau Probability"][n]["result"] = NOT_APPLICABLE
         test_data["Grau Probability"][n]["reason"] = "Keine a gefunden"
-        return False
+        return NOT_APPLICABLE
 
     for j in range(n_exp - 1, -1, -1):
         phi_value = pow(a, K * pow(p, n_exp - j - 1), n)
@@ -686,60 +695,60 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         if cond1 and cond2:
             test_data["Grau Probability"][n]["a_values"] = [a]
             test_data["Grau Probability"][n]["other_fields"].extend([j])
-            test_data["Grau Probability"][n]["result"] = True
-            return True
+            test_data["Grau Probability"][n]["result"] = PRIME
+            return PRIME
         
-    test_data["Grau Probability"][n]["result"] = False
+    test_data["Grau Probability"][n]["result"] = COMPOSITE
     test_data["Grau Probability"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
-    return False
+    return COMPOSITE
 
 
 def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
-    if n <= 1: raise ValueError("rao: n must be greater than 1")
+    if n <= 1: return INVALID
     if n == 2:
-        test_data["Rao"][n]["result"] = True
-        return True
+        test_data["Rao"][n]["result"] = PRIME
+        return PRIME
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition:
-        test_data["Rao"][n]["result"] = False
+        test_data["Rao"][n]["result"] = NOT_APPLICABLE
         test_data["Rao"][n]["reason"] = "Keine Zerlegung R = p2^n+1 gefunden"
-        return False
-        
+        return NOT_APPLICABLE
+
     p, n_exp = decomposition
     test_data["Rao"][n]["other_fields"] = [p, 2, n_exp]
 
     exponent = (n - 1) // 2
     cond1 = pow(3, exponent, n) == (n - 1)
     if not cond1: 
-        test_data["Rao"][n]["result"] = False
+        test_data["Rao"][n]["result"] = COMPOSITE
         test_data["Rao"][n]["a_values"].append((3, False, None))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
-        return False
+        return COMPOSITE
     
     cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
     if not cond2: 
-        test_data["Rao"][n]["result"] = True
+        test_data["Rao"][n]["result"] = PRIME
         test_data["Rao"][n]["a_values"].append((3, cond1, cond2))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
-        return True
+        return PRIME
 
-    test_data["Rao"][n]["result"] = False
+    test_data["Rao"][n]["result"] = COMPOSITE
     test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R | GF(3, n-1) → R ist primover"
-    return False
+    return COMPOSITE
 
 
 def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
-    if n <= 1: raise ValueError("n must be greater than 1")
+    if n <= 1: return INVALID
     if n == 2:
-        test_data["Ramzy"][n]["result"] = True
-        return True
+        test_data["Ramzy"][n]["result"] = PRIME
+        return PRIME
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
-        test_data["Ramzy"][n]["result"] = False
+        test_data["Ramzy"][n]["result"] = NOT_APPLICABLE    
         test_data["Ramzy"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
-        return False
+        return NOT_APPLICABLE
 
     K, p, n_exp = decomposition  # N = K*p^n + 1
     test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
@@ -755,10 +764,10 @@ def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
 
                 if cond1 and cond2:
                     test_data["Ramzy"][n]["a_values"].append((a, cond1, cond2))
-                    test_data["Ramzy"][n]["result"] = True
-                    return True
+                    test_data["Ramzy"][n]["result"] = PRIME
+                    return PRIME
     
-    test_data["Ramzy"][n]["result"] = False
+    test_data["Ramzy"][n]["result"] = COMPOSITE
     test_data["Ramzy"][n]["reason"] = "Kein geeignetes (a,j)-Paar gefunden"
-    return False
+    return COMPOSITE
 

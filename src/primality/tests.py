@@ -191,7 +191,6 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
 
 # Prüft ob eine Fermat-Zahl n prim ist
 def pepin_test(n: int, seed: Optional[int] = None) -> bool:
-    if n == 3: return PRIME
     if not helpers.is_fermat_number(n): return INVALID
 
     if pow(3, (n - 1) // 2, n) != n - 1: 
@@ -216,7 +215,7 @@ def lucas_lehmer_test(n: int, seed: Optional[int] = None) -> bool:
         return COMPOSITE
     return PRIME
 
-def proth_test(n: int, seed: Optional[int] = None) -> bool: #4.5
+def proth_test(n: int, seed: Optional[int] = None) -> bool: ##5.6
     if n <= 1: return INVALID
     
     # Check if n is of the form K*2^m + 1 with K < 2^m
@@ -235,19 +234,28 @@ def proth_test(n: int, seed: Optional[int] = None) -> bool: #4.5
     return COMPOSITE
 
 
-def proth_test_variant(n: int, seed: Optional[int] = None) -> bool: #4.8
+def proth_test_variant(n: int, seed: Optional[int] = None) -> bool: ##5.9
     if n <= 1: return INVALID
     if n % 2 == 0: return COMPOSITE
+    
+    decomposition = helpers.find_proth_decomposition(n)
+    if decomposition is None: return NOT_APPLICABLE
+    
+    K, e = decomposition
+
+    # Prüfe Bedingung 2^e > K (2^n > K im Theorem)
+    if 2 ** e <= K: return NOT_APPLICABLE
 
     for a in range(2, n):
-        if pow(a, n - 1, n) != 1: return COMPOSITE
-        if pow(a, (n - 1) // 2, n) == n - 1: return PRIME
-        
+        if pow(a, n - 1, n) != 1:
+            return COMPOSITE
+        if pow(a, (n - 1) // 2, n) == n - 1:
+            return PRIME
+
     return COMPOSITE
 
 
-
-def pocklington_test(n: int, seed: Optional[int] = None) -> bool: #4.6
+def pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.7
     if n <= 1: return INVALID
 
     # Factorize n-1 as q^m * R
@@ -257,7 +265,7 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: #4.6
     q, m = next(iter(factors.items()))
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
-        return COMPOSITE
+        return NOT_APPLICABLE
 
     # Test
     for a in range(2, n):
@@ -265,7 +273,7 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: #4.6
             return PRIME
     return COMPOSITE
 
-def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #4.7
+def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.8
     if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with gcd(F,R)=1
@@ -288,7 +296,7 @@ def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #4.7
     return PRIME
 
 
-def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: #4.9
+def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: ##5.10
     if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with gcd(F,R)=1
@@ -312,9 +320,13 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
 
     # b-Test
     b = 2
-    while b < n and pow(b, (n - 1) // F, n) == 1:
+    found_b = False
+    while b < n:
+        if pow(b, n-1, n) == 1 and gcd(pow(b, F, n) - 1, n) == 1:
+            found_b = True
+            break
         b += 1
-    if b == n: return COMPOSITE
+    if not found_b: return COMPOSITE
 
     return PRIME
 
@@ -332,14 +344,14 @@ def generalized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #6
         
     return COMPOSITE
 
-def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
+def grau_test(n: int, seed: Optional[int] = None) -> bool: ##6.13
     print(f"Prüfe Grau-Test für {n}...")
     if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition: return NOT_APPLICABLE
 
-    K, p, n_exp = decomposition
+    K, p, exp = decomposition
     a = helpers.find_quadratic_non_residue(p)
     if a is None: return NOT_APPLICABLE
 
@@ -348,7 +360,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: #6.13
     phi_p = cyclotomic_poly(p, base) % n
     if phi_p != 0: return COMPOSITE
     return PRIME
-
+# todo
 
 def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
     print(f"Prüfe Grau-Probability-Test für {n}...")

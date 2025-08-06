@@ -36,6 +36,22 @@ def jacobisymbol(a, n):
 
     return result if n == 1 else 0
 
+# find decomposition of n-1 = K*2^e with odd K
+def find_proth_decomposition(n: int) -> tuple[int, int] | None:
+    if n <= 2 or n % 2 == 0:
+        return None
+    
+    m = n - 1
+    e = 0
+    while m % 2 == 0:
+        m //= 2
+        e += 1
+    K = m
+    if K % 2 == 1:
+        return (K, e)
+    return None
+
+
 
 # Find K, p, n such that N = K*p^n + 1 with K < p^n
 def find_pocklington_decomposition(n: int) -> tuple:
@@ -168,7 +184,6 @@ def find_quadratic_non_residue(p: int) -> int:
 # Prüft ob n eine Fermat-Zahl der Form n=2^(2^k) + 1 ist
 def is_fermat_number(n: int) -> bool:
     if n < 3: return False
-    if n < 3: return n == 3
     k = 0
     while True:
         fermat_candidate = (1 << (1 << k)) + 1  # Berechnet 2^(2^k) + 1 effizient

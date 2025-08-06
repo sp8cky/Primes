@@ -406,9 +406,6 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n == 3: 
-        test_data["Pepin"][n]["result"] = PRIME
-        return PRIME
     if not helpers.is_fermat_number(n):
         test_data["Pepin"][n]["result"] = INVALID
         test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"
@@ -483,6 +480,18 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
         test_data["Proth Variant"][n]["reason"] = "n must be odd"
         return COMPOSITE
 
+    decomposition = helpers.find_proth_decomposition(n)
+    if decomposition is None: 
+        test_data["Proth Variant"][n]["reason"] = "Keine Zerlegung gefunden"
+        test_data["Proth Variant"][n]["result"] = NOT_APPLICABLE
+        return NOT_APPLICABLE
+    
+    K, e = decomposition
+    if 2 ** e <= K: 
+        test_data["Proth Variant"][n]["reason"] = "K muss kleiner als 2^e sein"
+        test_data["Proth Variant"][n]["result"] = NOT_APPLICABLE
+        return NOT_APPLICABLE
+
     for a in range(2, n):
         if pow(a, n - 1, n) != 1:
             test_data["Proth Variant"][n]["result"] = COMPOSITE
@@ -512,9 +521,9 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
     q, m = next(iter(factors.items()))
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
-        test_data["Pocklington"][n]["result"] = COMPOSITE
-        test_data["Pocklington"][n]["reason"] = "q muss n - 1 genau m mal teilen"
-        return COMPOSITE
+        test_data["Pocklington"][n]["result"] = NOT_APPLICABLE
+        test_data["Pocklington"][n]["reason"] = "q erfüllt Bedingungen nicht"
+        return NOT_APPLICABLE
     # Test
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
@@ -601,14 +610,18 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
 
     # b-Test
     b = 2
-    while b < n and pow(b, (n - 1) // F, n) == 1:
+    found_b = False
+    while b < n:
+        if pow(b, n-1, n) == 1 and gcd(pow(b, F, n) - 1, n) == 1:
+            found_b = True
+            break
         b += 1
-    if b == n:
+    if not found_b:
         test_data["Optimized Pocklington Variant"][n]["result"] = COMPOSITE
-        test_data["Optimized Pocklington Variant"][n]["reason"] = "Kein b gefunden mit b^{(n-1)/F} ≠ 1 mod n"
+        test_data["Optimized Pocklington Variant"][n]["reason"] = "Kein pasendes b gefunden"
         return COMPOSITE
 
-    test_data["Optimized Pocklington Variant"][n]["other_fields"] = [b, pow(b, (n - 1) // F, n)]
+    test_data["Optimized Pocklington Variant"][n]["other_fields"] = [b]
     test_data["Optimized Pocklington Variant"][n]["result"] = PRIME
     return PRIME
 
@@ -676,8 +689,8 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["Grau Probability"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
         return NOT_APPLICABLE
 
-    K, p, n_exp = decomposition
-    test_data["Grau Probability"][n]["other_fields"] = [K, p, n_exp]
+    K, p, exp = decomposition
+    test_data["Grau Probability"][n]["other_fields"] = [K, p, exp]
     log_p_K = math.log(K, p) if K != 0 else float("-inf")
     a = helpers.find_quadratic_non_residue(p)
     if a is None: 
@@ -685,12 +698,12 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["Grau Probability"][n]["reason"] = "Keine a gefunden"
         return NOT_APPLICABLE
 
-    for j in range(n_exp - 1, -1, -1):
-        phi_value = pow(a, K * pow(p, n_exp - j - 1), n)
+    for j in range(exp - 1, -1, -1):
+        phi_value = pow(a, K * pow(p, exp - j - 1), n)
         phi_p = cyclotomic_poly(p, phi_value) % n
 
         cond1 = (phi_p == 0)
-        cond2 = (2 * (n_exp - j) > math.log(K, p) + n_exp)
+        cond2 = (2 * (exp - j) > math.log(K, p) + exp)
 
         if cond1 and cond2:
             test_data["Grau Probability"][n]["a_values"] = [a]

@@ -15,8 +15,6 @@ def order(n: int, r: int) -> int:
     except ValueError:
         return 0  # Andere Fehler
     
-
-
 def jacobisymbol(a, n):
     if n <= 0 or n % 2 == 0: raise ValueError("n muss eine ungerade, positive Zahl sein.")
 
@@ -102,15 +100,16 @@ def fast_pocklington_decomposition(n: int, max_factors: int = 3) -> tuple | None
     return None
 
 
-# find the smallest prime p and exponent n such that N = p2^n + 1
+# find the smallest prime p and exponent n such that N = p2^e + 1
 def find_rao_decomposition(n: int) -> tuple[int, int] | None:
     if n <= 3: return None
-    R_minus_1 = n - 1
-    for n in range(2, n):
-        if R_minus_1 % (1 << n) == 0:
-            p = R_minus_1 // (1 << n)
+    n_minus_1 = n - 1
+    for e in range(2, n.bit_length() + 1):
+        power = 1 << e
+        if n_minus_1 % power == 0:
+            p = n_minus_1 // power
             if p > 1 and isprime(p):
-                return (p, n)
+                return (p, e)
     return None
 
 

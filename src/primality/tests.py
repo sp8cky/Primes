@@ -360,7 +360,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: ##6.13
     phi_p = cyclotomic_poly(p, base) % n
     if phi_p != 0: return COMPOSITE
     return PRIME
-# todo
+
 
 def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
     print(f"Prüfe Grau-Probability-Test für {n}...")
@@ -381,19 +381,18 @@ def grau_probability_test(n: int, seed: Optional[int] = None) -> bool: #6.14
             return PRIME
     return COMPOSITE
 
-def rao_test(n: int, seed: Optional[int] = None) -> bool: # 6.6
+def rao_test(n: int, seed: Optional[int] = None) -> bool: ## 6.6
     if n <= 1: return INVALID
     if n == 2: return PRIME
     
-    # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
+    # Spezielle Zerlegung für Rao-Test (n = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition: return NOT_APPLICABLE
     p, n_exp = decomposition 
 
     exponent = (n - 1) // 2
     if pow(3, exponent, n) != (n - 1): return COMPOSITE
-    cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
-    if not cond2: return PRIME
+    if (pow(3, pow(2, n_exp - 1), n) + 1) % n != 0: return PRIME
 
     return COMPOSITE
 
@@ -404,16 +403,71 @@ def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
     decomposition = helpers.find_ramzy_decomposition(n)
     if not decomposition: return NOT_APPLICABLE
 
-    K, p, n_exp = decomposition  # N = K*p^n + 1
+    K, p, n_exp = decomposition  # n = K*p^n + 1
     
     for j in range(0, n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
         if pow(p, n_exp - 1) >= K * pow(p, j):
             for a in range(2, n):
-                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
+                # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod n
                 exponent = K * pow(p, n_exp - j - 1)
                 L = pow(a, exponent, n)
                 if L == 1: continue
-                if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod N
+                if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
                     return PRIME
     return COMPOSITE
 
+
+def optimized_ramzy_test(n: int, seed: Optional[int] = None) -> bool: ##6.16
+    if n <= 1: return INVALID
+
+    decomposition = helpers.find_ramzy_decomposition(n)
+    if decomposition is None: return NOT_APPLICABLE
+    
+    K, p, e = decomposition
+
+    # Wir iterieren über j und prüfen die Vorbedingungen
+    found_valid_j = False
+    for j in range(e):
+        # Exponenten
+        p_n_j = p ** (e - j)
+        p_3n_j = p ** (3 * (e - j))
+        p_j = p ** j
+
+        # Prüfe p^j >= p^{2(n-j)} <=> j >= 2(n-j)
+        if j < 2 * (e - j): continue
+
+        # Prüfe p^{n-j} >= (n-1)^{2/7}
+        if p_n_j < (n - 1) ** (2/7): continue
+        
+        # Prüfe p^{n-j} > 11 + 4*sqrt(7)
+        if p_n_j <= 11 + 4 * sqrt(7): continue
+
+        # Prüfe n != p^{3(n-j)} +1
+        if n == p_3n_j + 1: continue
+        
+        # Prüfe n != (sqrt(p^{n-j} + 1) -1)*p^{3(n-j)} +1
+        val = (sqrt(p_n_j + 1) - 1) * p_3n_j + 1
+        if abs(n - val) < 1e-10: continue
+        
+        # Prüfe n != H^3 * p^{3(n-j)} + 1 für ein ganzzahliges H
+        # H^3 = (n-1) / p^{3(n-j)} prüfen
+        q = (n - 1) / p_3n_j
+        H = round(q ** (1/3))
+        if H**3 == q: continue
+
+        found_valid_j = True
+        break  # Wir brauchen nur ein gültiges j
+
+    if not found_valid_j: return NOT_APPLICABLE
+
+    # Test
+    exponent = K * pow(p, e - j - 1)
+    # Teste alle a von 2 bis n-1 (kleiner als n)
+    for a in range(2, n):
+        # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod n
+        L = pow(a, exponent, n)
+        if L == 1: continue
+        if pow(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
+            return PRIME
+    
+    return COMPOSITE

@@ -190,6 +190,14 @@ TEST_CONFIG = {
         "testgroup": "Ramzy",
         "plotgroup": "Zusammengesetzte"
     },
+    "Optimized Ramzy": {
+        "runtime_function": optimized_ramzy_test,
+        "protocol_function": optimized_ramzy_test_protocoll,
+        "prob_test": False,
+        "number_type": "ramzy",
+        "testgroup": "Ramzy",
+        "plotgroup": "Zusammengesetzte"
+    }
 }
 
 

@@ -68,16 +68,11 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
 
 
 ### TODOs
-- große Zahlen - mathplotlib Fehler
 - Graphen einfügen
   - fermat fehlt
   - fehler bei anderen
 - Farben ändern
-
-
-- Reproduzierbarkeit überprüfen
-- Fehlerrate bei Fermat/Lucas überprüfen
-  - anscheinend nur ungünstige werte 
+- ramzy opt. kein j
 
 ---
 

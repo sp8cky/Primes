@@ -1,4 +1,5 @@
 from src.primality.tests import *
+from src.primality.constants import *
 from src.primality.test_protocoll import *
 from src.primality.generate_primes import *
 from src.analysis.timing import *
@@ -256,40 +257,41 @@ if __name__ == "__main__":
     bd100 = 10**17
 
 
-    custom_ticks = [1, h1, k1, k10]
+    custom_ticks = [1, h1]
     #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Optimized Ramzy"]
     #repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
     repeat_prob_tests = [3,3,3,3,3]
     #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
-        "Langsam":              {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Proth-Tests":          {"n": 10, "start": 1,  "end": k10,   "xticks": [1, h1, k1, k10]},
-        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Rao":                  {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Ramzy":                {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k10,    "xticks": [1, h1, k1, k10]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k10,  "xticks": [1, h1, k1, k10]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Lucas":                {"n": 10, "start": 1,  "end": h1,   "xticks": [1, h1]},
+        "Langsam":              {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": h1,  "xticks": [1, h1]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Rao":                  {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Ramzy":                {"n": 100, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": h1,   "xticks": [1, h1]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": h1,  "xticks": [1, h1]},
     }
 
 
 
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=100,
         num_type='g:0.5',
         start=1,
-        end=k10,
+        end=k1,
         test_repeats=10,
-        #include_tests=run_tests,
+        include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=29840,
+        seed=11121,
         protocoll=True,
         save_results=True,
         show_plot=True,
-        variant=1,
+        variant=2,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

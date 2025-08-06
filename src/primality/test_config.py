@@ -1,17 +1,12 @@
 from src.primality.tests import *
 from src.primality.test_protocoll import *
+from src.primality.constants import *
 from functools import partial
 from math import log, sqrt
 
-
-# Wahrscheinlichkeitsbasierte Tests und Standardwiederholungen
-default_repeats = [3, 3, 3]
-prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", "Initial Lucas", "Lucas", "Optimized Lucas", "Wilson", "AKS", "Pepin", "Lucas-Lehmer", "Proth", "Optimized Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Grau", "Grau Probability", "Rao", "Ramzy"]
-
 # Zuordnung von Tests zu Funktionen und Metadaten
 TEST_CONFIG = {
-    "Fermat": {
+        "Fermat": {
         "runtime_function": fermat_test,
         "protocol_function": fermat_test_protocoll,
         "prob_test": True,
@@ -195,6 +190,14 @@ TEST_CONFIG = {
         "testgroup": "Ramzy",
         "plotgroup": "Zusammengesetzte"
     },
+    "Optimized Ramzy": {
+        "runtime_function": optimized_ramzy_test,
+        "protocol_function": optimized_ramzy_test_protocoll,
+        "prob_test": False,
+        "number_type": "ramzy",
+        "testgroup": "Ramzy",
+        "plotgroup": "Zusammengesetzte"
+    }
 }
 
 

@@ -143,6 +143,8 @@ def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
                     
     return None
 
+
+
 def compute_all_valid_decompositions(N):
     if N <= 2:
         return [None]

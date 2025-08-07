@@ -99,7 +99,6 @@ def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
 
             error_rate = error_count / len(valid_results) if valid_results else 0.0
 
-            data["error_count"] = error_count
             data["error_rate"] = error_rate
             data["is_error"] = (error_count > 0)
             data["false_positive"] = (not true_prime and any(r == PRIME for r in valid_results))

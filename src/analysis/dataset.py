@@ -54,7 +54,6 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                 "is_error": details.get("is_error"),
                 "false_positive": details.get("false_positive"),
                 "false_negative": details.get("false_negative"),
-                "error_count": details.get("error_count", ""),
                 "error_rate": round(details.get("error_rate") or 0, 3) if "error_rate" in details else "",
                 "best_time": f"{details.get('best_time', 0)*1000:.3f} ms",
                 "avg_time": f"{details.get('avg_time', 0)*1000:.3f} ms",
@@ -85,7 +84,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     fieldnames = [
         "Gruppe", "Test", "Zahl", "Ergebnis", "true_prime", "is_error",
-        "false_positive", "false_negative", "error_count", "error_rate",
+        "false_positive", "false_negative", "error_rate",
         "best_time", "avg_time", "worst_time", "std_dev",
         "a_values", "other_fields", "reason"
     ]
@@ -103,25 +102,49 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
         # Durchschnittswerte pro Test berechnen und einfügen
         test_stats = {}
 
+        numeric_fields = {
+            "false_positive": int,
+            "false_negative": int,
+            "error_rate": float,
+            "best_time": lambda v: float(v.replace(" ms", "")),
+            "avg_time": lambda v: float(v.replace(" ms", "")),
+            "worst_time": lambda v: float(v.replace(" ms", "")),
+            "std_dev": lambda v: float(v.replace(" ms", "")),
+        }
+
         for row in rows:
             test = row["Test"]
-            try:
-                avg_time = float(row["avg_time"].replace(" ms", ""))
-                error_rate = float(row["error_rate"]) if row["error_rate"] != "" else 0.0
-            except ValueError:
-                continue  # ungültige Zeilen überspringen
-
             if test not in test_stats:
-                test_stats[test] = {"times": [], "errors": []}
-            test_stats[test]["times"].append(avg_time)
-            test_stats[test]["errors"].append(error_rate)
+                test_stats[test] = {key: [] for key in numeric_fields.keys()}
 
-        for test, values in test_stats.items():
-            avg_time = sum(values["times"]) / len(values["times"])
-            avg_error = sum(values["errors"]) / len(values["errors"])
-            f.write(f"test_avg, {test}, avg_time={avg_time:.3f} ms, avg_error_rate={avg_error:.3f}\n")
+            for key, parser in numeric_fields.items():
+                value = row.get(key, "")
+                if value == "" or value is None:
+                    continue
+                try:
+                    parsed = parser(value)
+                    test_stats[test][key].append(parsed)
+                except ValueError:
+                    continue  # ungültiger Eintrag -> überspringen
+
+        for test in sorted(test_stats.keys(), key=lambda t: test_order_map.get(extract_base_label(t), 9999)):
+            values = test_stats[test]
+            line = f"test_avg, {test}"
+            for key in [
+                "false_positive", "false_negative", "error_rate",
+                "best_time", "avg_time", "worst_time", "std_dev"
+            ]:
+                data = values[key]
+                if data:
+                    avg = sum(data) / len(data)
+                    if "time" in key:
+                        line += f", avg_{key}={avg:.3f} ms"
+                    else:
+                        line += f", avg_{key}={avg:.3f}"
+            f.write(line + "\n")
 
         f.write("\n")
+
 
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()

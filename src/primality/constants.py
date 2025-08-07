@@ -12,4 +12,4 @@ TEST_ORDER = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen",
               "Lucas-Lehmer", "Proth", 
               "Optimized Proth", "Proth Variant", 
               "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", 
-              "Grau", "Grau Probability", "Rao", "Ramzy", "Optimized Ramzy"]
+              "Grau", "Grau Probability", "Rao", "Ramzy"]

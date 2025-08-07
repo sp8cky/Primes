@@ -33,8 +33,7 @@ def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) 
 
     for i in range(k):
         a_seed = get_global_seed(seed, n, "Miller-Selfridge-Rabin", i)
-        r = random.Random(a_seed)
-        a = r.randint(2, n - 1)
+        a = helpers.rand_seed(a_seed, 2, n - 1)
         if helpers.gcd(a, n) != 1: return COMPOSITE
         if helpers.modexp(a, n - 1, n) == 1: continue
         if any(helpers.modexp(a, 2**j * m, n) == n - 1 for j in range(s)): continue
@@ -48,8 +47,7 @@ def solovay_strassen_test(n: int, k: int = 5, seed: Optional[int] = None) -> boo
 
     for i in range(k):
         a_seed = get_global_seed(seed, n, "Solovay-Strassen", i)
-        r = random.Random(a_seed)
-        a = r.randint(2, n - 1)
+        a = helpers.rand_seed(a_seed, 2, n - 1)
         jacobi = helpers.jacobisymbol(a, n)
         if jacobi == 0 or helpers.modexp(a, (n - 1) // 2, n) != jacobi % n:
             return COMPOSITE
@@ -336,7 +334,6 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
     b = 2
     found_b = False
     while b < n:
-        print(f"b: {b} type: {type(b)}, F: {F} type: {type(F)}, n: {n} type: {type(n)}")
         if helpers.modexp(b, n-1, n) == 1 and helpers.gcd(helpers.modexp(b, int(F), n) - 1, n) == 1:
             found_b = True
             break
@@ -428,6 +425,6 @@ def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
                 exponent = int(K * helpers.power(p, n_exp - j - 1))
                 L = helpers.modexp(a, exponent, n)
                 if L == 1: continue
-                if helpers.modexp(L, p**(j+1), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
+                if helpers.modexp(L, int(helpers.modexp(p, j + 1)), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
                     return PRIME
     return COMPOSITE

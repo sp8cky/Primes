@@ -90,9 +90,9 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
         return PRIME
 
     for i in range(k):
-        r = random.Random(get_global_seed(seed, n, "Fermat", i))
-        a = r.randint(2, n - 1)
-        cond1 = gcd(a, n) == 1 
+        a_seed = random.Random(get_global_seed(seed, n, "Fermat", i))
+        a = helpers.rand_seed(a_seed, 2, n - 1)
+        cond1 = helpers.gcd(a, n) == 1 
 
         if not cond1:
             test_data["Fermat"][n]["a_values"].append((a, False, None))
@@ -100,7 +100,7 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
             test_data["Fermat"][n]["result"] = COMPOSITE
             return COMPOSITE
 
-        cond2 = pow(a, n - 1, n) == 1
+        cond2 = helpers.modexp(a, n - 1, n) == 1
         test_data["Fermat"][n]["a_values"].append((a, cond1, cond2))
 
         if not cond2:
@@ -112,7 +112,7 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
     return PRIME
 
 def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): return INVALID
+    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_perfect_power(n): return INVALID
 
     if n in (2, 3):
         test_data["Miller-Selfridge-Rabin"][n]["result"] = PRIME
@@ -128,22 +128,22 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
     test_data["Miller-Selfridge-Rabin"][n]["a_values"] = []
 
     for i in range(k):
-        r = random.Random(get_global_seed(seed, n, "Miller-Selfridge-Rabin", i))
-        a = r.randint(2, n - 1)
+        a_seed = random.Random(get_global_seed(seed, n, "Miller-Selfridge-Rabin", i))
+        a = helpers.rand_seed(a_seed, 2, n - 1)
 
-        if gcd(a, n) != 1:
+        if helpers.gcd(a, n) != 1:
             test_data["Miller-Selfridge-Rabin"][n]["result"] = COMPOSITE
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "ggT ≠ 1"
             return COMPOSITE
 
-        cond1 = pow(a, m, n) == 1
+        cond1 = helpers.modexp(a, m, n) == 1
         if cond1:
             test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, True, None))
             continue
 
         found = False
         for j in range(s):
-            if pow(a, 2**j * m, n) == n - 1:
+            if helpers.modexp(a, 2**j * m, n) == n - 1:
                 found = True
                 break
 
@@ -168,11 +168,11 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = No
     test_data["Solovay-Strassen"][n]["a_values"] = []
 
     for i in range(k):
-        r = random.Random(get_global_seed(seed, n, "Solovay-Strassen", i))
-        a = r.randint(2, n - 1)
+        a_seed = random.Random(get_global_seed(seed, n, "Solovay-Strassen", i))
+        a = helpers.rand_seed(a_seed, 2, n - 1)
         jacobi = helpers.jacobisymbol(a, n)
         cond1 = (jacobi == 0)
-        cond2 = pow(a, (n - 1) // 2, n) == jacobi % n
+        cond2 = helpers.modexp(a, (n - 1) // 2, n) == jacobi % n
 
         test_data["Solovay-Strassen"][n]["a_values"].append((a, cond1, cond2))
 
@@ -198,13 +198,13 @@ def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         return PRIME
 
     for a in range(2, n):
-        cond1 = pow(a, n - 1, n) == 1
+        cond1 = helpers.modexp(a, n - 1, n) == 1
         test_data["Initial Lucas"][n]["a_values"].append((a, cond1, None))
 
         if not cond1: continue  # Wichtig: nicht abbrechen, sondern nächstes a testen
 
         for m in range(1, n - 1):
-            cond2 = pow(a, m, n) == 1
+            cond2 = helpers.modexp(a, m, n) == 1
             test_data["Initial Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
             if cond2:
                 break  # a ist ungeeignet → nächstes a
@@ -226,13 +226,13 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
     test_data["Lucas"][n]["a_values"] = []
 
     for a in range(2, n):
-        cond1 = pow(a, n - 1, n) == 1
+        cond1 = helpers.modexp(a, n - 1, n) == 1
         test_data["Lucas"][n]["a_values"].append((a, cond1, None))
 
         if not cond1: continue  # nächstes a versuchen
 
-        for m in divisors(n - 1)[:-1]:
-            cond2 = pow(a, m, n) == 1
+        for m in helpers.divisors(n - 1)[:-1]:
+            cond2 = helpers.modexp(a, m, n) == 1
             test_data["Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
             if cond2:
                 break  # Bedingung (ii) verletzt, nächstes a
@@ -252,13 +252,13 @@ def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["Optimized Lucas"][n]["result"] = PRIME
         return PRIME
 
-    factors = factorint(n - 1)
+    factors = helpers.factorint(n - 1)
     num_prime_factors = len(factors)
     test_data["Optimized Lucas"][n]["other_fields"] = {"num_prime_factors": num_prime_factors}
     for q in factors:
         for a in range(2, n):
-            cond1 = pow(a, n - 1, n) == 1
-            cond2 = pow(a, (n - 1) // q, n) != 1
+            cond1 = helpers.modexp(a, n - 1, n) == 1
+            cond2 = helpers.modexp(a, (n - 1) // q, n) != 1
             test_data["Optimized Lucas"][n]["a_values"][q] = (a, cond1, cond2)
             if cond1 and cond2:
                 break
@@ -273,7 +273,7 @@ def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 def wilson_criterion_protocoll(p: int, seed: Optional[int] = None) -> bool:
     if p <= 1: return INVALID
-    result = math.factorial(p - 1) % p == p - 1
+    result = helpers.factorial(p - 1) % p == p - 1
     if result:
         test_data["Wilson"][p]["result"] = PRIME
         return PRIME
@@ -284,7 +284,7 @@ def wilson_criterion_protocoll(p: int, seed: Optional[int] = None) -> bool:
 def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     testname = "AKS04"
 
-    if n <= 1 or perfect_power(n):
+    if n <= 1 or helpers.is_perfect_power(n):
         test_data[testname][n]["other_fields"]["initial_check"] = False
         test_data[testname][n]["result"] = INVALID
         test_data[testname][n]["reason"] = "Ungültige Eingabe: ≤ 1 oder echte Potenz"
@@ -299,12 +299,12 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         "polynomial_check": []
     }
 
-    log_n = log2(n)
-    log_sq = pow(log_n, 2)
+    log_n = helpers.log2(int(n))
+    log_sq = helpers.power(log_n, 2)
     r = 2
     while True:
         ord_val = helpers.order(n, r)
-        if gcd(n, r) == 1 and ord_val > log_sq:
+        if helpers.gcd(n, r) == 1 and ord_val > log_sq:
             test_data[testname][n]["other_fields"]["find_r"] = r
             break
         r += 1
@@ -312,11 +312,11 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     # GCD-Prüfungen: 1 < (a, n) < n für a ≤ r
     found_gcd_witness = False
     for a in range(2, r + 1):
-        g = gcd(a, n)
+        g = helpers.gcd(a, n)
         test_data[testname][n]["other_fields"]["gcd_check"].append((a, g))
         if 1 < g < n:
             test_data[testname][n]["result"] = COMPOSITE
-            test_data[testname][n]["reason"] = f"Nichttrivialer Teiler gefunden: gcd({a}, {n}) = {g}"
+            test_data[testname][n]["reason"] = f"Nichttrivialer Teiler gefunden: helpers.gcd({a}, {n}) = {g}"
             return COMPOSITE
 
     # Frühausstieg, falls n ≤ r
@@ -328,9 +328,9 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
     # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
-    phi_r = totient(r)
-    log_n = log2(n)
-    max_a = int(sqrt(phi_r) * log_n) + 1
+    phi_r = helpers.euler_totient(r)
+    log_n = helpers.log2(int(n))
+    max_a = int(helpers.sqrt(int(phi_r)) * log_n) + 1
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
@@ -352,7 +352,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
-    if n <= 1 or perfect_power(n):
+    if n <= 1 or helpers.is_perfect_power(n):
         test_data["AKS10"][n]["other_fields"]["initial_check"] = False
         test_data["AKS10"][n]["result"] = INVALID
         return INVALID
@@ -365,18 +365,18 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         "polynomial_check": []
     }
 
-    l = math.ceil(math.log2(n))
-    l_sq = pow(l, 2)
+    l = helpers.ceil(helpers.log2(int(n)))
+    l_sq = helpers.power(l, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
+        if helpers.gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
             test_data["AKS10"][n]["other_fields"]["find_r"] = r
             break
         r += 1
 
     # Prüfe kleine Primteiler
-    l_pow5 = pow(l, 5)
-    for p in primerange(2, l_pow5 + 1):
+    l_pow5 = helpers.power(l, 5)
+    for p in helpers.primerange(2, l_pow5 + 1):
         if n % p == 0:
             if p == n:
                 test_data["AKS10"][n]["result"] = PRIME
@@ -391,7 +391,7 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
 
     # polynomial condition check
-    max_a = math.floor(math.sqrt(r) * l)
+    max_a = helpers.floor(helpers.sqrt(r) * l)
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
     for a in range(1, max_a + 1):
@@ -414,7 +414,7 @@ def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"
         return INVALID
 
-    if pow(3, (n - 1) // 2, n) != n - 1: 
+    if helpers.modexp(3, (n - 1) // 2, n) != n - 1: 
         test_data["Pepin"][n]["result"] = COMPOSITE
         test_data["Pepin"][n]["reason"] = "3^(n-1)/2 mod n ≠ n - 1"
         return COMPOSITE
@@ -426,8 +426,8 @@ def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n < 2: raise ValueError("n must be greater than 1")
     is_mersenne = helpers.is_mersenne_number(n)
-    p = (n + 1).bit_length() - 1
-    if not is_mersenne or not isprime(p): 
+    p = helpers.bit_length(n + 1) - 1
+    if not is_mersenne or not helpers.is_prime(p): 
         test_data["Lucas-Lehmer"][n]["result"] = INVALID
         test_data["Lucas-Lehmer"][n]["reason"] = "Keine Mersenne-Zahl"
         return INVALID
@@ -439,7 +439,7 @@ def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     S = 4
     sequence = [S]
     for _ in range(p - 2):
-        S = (pow(S, 2, n) - 2) % n
+        S = (helpers.modexp(S, 2, n) - 2) % n
         sequence.append(S)
     if S != 0:
         test_data["Lucas-Lehmer"][n]["result"] = COMPOSITE
@@ -466,7 +466,7 @@ def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
 
     # Test
     for a in range(2, n):
-        cond = pow(a, (n - 1) // 2, n) == n - 1
+        cond = helpers.modexp(a, (n - 1) // 2, n) == n - 1
         if cond:
             test_data["Proth"][n]["a_values"].append((a, cond))
             test_data["Proth"][n]["result"] = PRIME
@@ -484,7 +484,7 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
         return COMPOSITE
 
     decomposition = helpers.find_proth_decomposition(n)
-    if decomposition is None: 
+    if any(x == -1 for x in decomposition):
         test_data["Proth Variant"][n]["reason"] = "Keine Zerlegung gefunden"
         test_data["Proth Variant"][n]["result"] = NOT_APPLICABLE
         return NOT_APPLICABLE
@@ -496,12 +496,12 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
         return NOT_APPLICABLE
 
     for a in range(2, n):
-        if pow(a, n - 1, n) != 1:
+        if helpers.modexp(a, n - 1, n) != 1:
             test_data["Proth Variant"][n]["result"] = COMPOSITE
             test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
             return COMPOSITE
 
-        if pow(a, (n - 1) // 2, n) == n - 1:
+        if helpers.modexp(a, (n - 1) // 2, n) == n - 1:
             test_data["Proth Variant"][n]["a_values"] = [(a, True)]
             test_data["Proth Variant"][n]["result"] = PRIME
             return PRIME
@@ -515,13 +515,19 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
     if n <= 1: return INVALID
 
     # Factorize n-1 as q^m * R
-    factors = factorint(n - 1)
+    factors = helpers.factorint(n - 1)
     if not factors:
         test_data["Pocklington"][n]["result"] = NOT_APPLICABLE
         test_data["Pocklington"][n]["reason"] = "Keine Faktorisierung gefunden"
         return NOT_APPLICABLE
 
-    q, m = next(iter(factors.items()))
+    if USE_NJIT:
+        keys = list(factors.keys())
+        values = list(factors.values())
+        q, m = helpers.next_item(keys, values)
+    else:
+        q, m = next(iter(factors.items()))
+
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
         test_data["Pocklington"][n]["result"] = NOT_APPLICABLE
@@ -529,8 +535,8 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
         return NOT_APPLICABLE
     # Test
     for a in range(2, n):
-        cond1 = pow(a, n - 1, n) == 1
-        cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
+        cond1 = helpers.modexp(a, n - 1, n) == 1
+        cond2 = helpers.gcd(helpers.modexp(a, (n - 1) // q, n) - 1, n) == 1
         if cond1 and cond2:
             test_data["Pocklington"][n]["a_values"].append((a, cond1, cond2))
             test_data["Pocklington"][n]["result"] = PRIME
@@ -543,13 +549,19 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
 def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.7
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
-    factors = factorint(n - 1)
+    # Factorize n-1 as F*R with helpers.gcd(F,R)=1
+    factors = helpers.factorint(n - 1)
     test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
-    F = math.prod(factors.keys())
+
+    if USE_NJIT:
+        keys = list(factors.keys())
+        F = helpers.product_keys(keys)
+    else:
+        F = helpers.product(factors.keys())
+
     R = (n - 1) // F
 
-    if gcd(F, R) != 1:
+    if helpers.gcd(F, R) != 1:
         test_data["Optimized Pocklington"][n]["result"] = NOT_APPLICABLE
         test_data["Optimized Pocklington"][n]["reason"] = "F und R müssen teilerfremd sein"
         return NOT_APPLICABLE
@@ -559,8 +571,8 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
     for q in factors:
         found = False
         for a in range(2, n):
-            cond1 = pow(a, n - 1, n) == 1
-            cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
+            cond1 = helpers.modexp(a, n - 1, n) == 1
+            cond2 = helpers.gcd(helpers.modexp(a, (n - 1) // q, n) - 1, n) == 1
             if cond1 and cond2:
                 #test_data["Optimized Pocklington"][n]["a_values"] = {q: [(a, cond1, cond2)]}
                 test_data["Optimized Pocklington"][n]["a_values"].setdefault(q, []).append((a, cond1, cond2))
@@ -577,21 +589,21 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
 def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: #4.9
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
-    factors = factorint(n - 1)
+    # Factorize n-1 as F*R with helpers.gcd(F,R)=1
+    factors = helpers.factorint(n - 1)
     test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
-    F = math.prod(pow(p, e) for p, e in factors.items())
+    F = helpers.product(helpers.power(p, e) for p, e in factors.items())
     R = (n - 1) // F
 
     if B is None:
-        B = int(math.isqrt(n) // F) + 1
+        B = int(helpers.sqrt(n) // F) + 1
 
-    if F * B <= math.isqrt(n):
+    if F * B <= helpers.sqrt(n):
         test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
         test_data["Optimized Pocklington Variant"][n]["reason"] = "FB ≤ √n condition not met"
         return NOT_APPLICABLE
 
-    for p in primerange(2, B):
+    for p in helpers.primerange(2, B):
         if R % p == 0:
             test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
             test_data["Optimized Pocklington Variant"][n]["reason"] = f"R has prime factor < B: {p}"
@@ -601,8 +613,8 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
     for q in factors:
         found = False
         for a in range(2, n):
-            cond1 = pow(a, n - 1, n) == 1
-            cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
+            cond1 = helpers.modexp(a, n - 1, n) == 1
+            cond2 = helpers.gcd(helpers.modexp(a, (n - 1) // q, n) - 1, n) == 1
             if cond1 and cond2:
                 test_data["Optimized Pocklington Variant"][n]["a_values"][q] = [(a, cond1, cond2)]
                 found = True
@@ -615,7 +627,7 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
     b = 2
     found_b = False
     while b < n:
-        if pow(b, n-1, n) == 1 and gcd(pow(b, F, n) - 1, n) == 1:
+        if helpers.modexp(b, n-1, n) == 1 and helpers.gcd(helpers.modexp(b, int(F), n) - 1, n) == 1:
             found_b = True
             break
         b += 1
@@ -633,7 +645,7 @@ def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -
     if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
-    if decomposition is None:
+    if any(x == -1 for x in decomposition):
         test_data["Generalized Pocklington"][n]["result"] = NOT_APPLICABLE
         test_data["Generalized Pocklington"][n]["reason"] = "Keine Zerlegung N = K*p^n + 1 mit K < p^n gefunden"
         return NOT_APPLICABLE
@@ -642,8 +654,8 @@ def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -
     test_data["Generalized Pocklington"][n]["other_fields"] = [K, p, e]
 
     for a in range(2, n):
-        cond1 = pow(a, n - 1, n) == 1
-        cond2 = gcd(pow(a, (n - 1) // p, n) - 1, n) == 1
+        cond1 = helpers.modexp(a, n - 1, n) == 1
+        cond2 = helpers.gcd(helpers.modexp(a, (n - 1) // p, n) - 1, n) == 1
         if cond1 and cond2:
             test_data["Generalized Pocklington"][n]["a_values"] = [(a, cond1, cond2)]
             test_data["Generalized Pocklington"][n]["result"] = PRIME
@@ -658,20 +670,20 @@ def grau_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.13
     if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
-    if not decomposition:
+    if any(x == -1 for x in decomposition):
         test_data["Grau"][n]["result"] = NOT_APPLICABLE
         test_data["Grau"][n]["reason"] = "Keine Zerlegung n=K*p^n+1 gefunden"
         return NOT_APPLICABLE
 
     K, p, n_exp = decomposition
-    a = helpers.find_quadratic_non_residue(p)
+    a = helpers.find_quad_non_residue(p)
     if a is None:
         test_data["Grau"][n]["result"] = NOT_APPLICABLE
         test_data["Grau"][n]["reason"] = f"Kein quadratischer Nichtrest für p={p} gefunden"
         return NOT_APPLICABLE
 
     exponent = (n - 1) // p
-    base = pow(a, exponent, n)
+    base = helpers.modexp(a, exponent, n)
     phi_p = cyclotomic_poly(p, base) % n
     
     test_data["Grau"][n]["a_values"] = [a]
@@ -687,7 +699,7 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
-    if not decomposition:
+    if any(x == -1 for x in decomposition):
         test_data["Grau Probability"][n]["result"] = NOT_APPLICABLE
         test_data["Grau Probability"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
         return NOT_APPLICABLE
@@ -695,14 +707,15 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     K, p, exp = decomposition
     test_data["Grau Probability"][n]["other_fields"] = [K, p, exp]
     log_p_K = math.log(K, p) if K != 0 else float("-inf")
-    a = helpers.find_quadratic_non_residue(p)
+    a = helpers.find_quad_non_residue(p)
     if a is None: 
         test_data["Grau Probability"][n]["result"] = NOT_APPLICABLE
         test_data["Grau Probability"][n]["reason"] = "Keine a gefunden"
         return NOT_APPLICABLE
 
     for j in range(exp - 1, -1, -1):
-        phi_value = pow(a, K * pow(p, exp - j - 1), n)
+        exponent = int(K * helpers.power(p, exp - j - 1))
+        phi_value = helpers.modexp(a, exponent, n)
         phi_p = cyclotomic_poly(p, phi_value) % n
 
         cond1 = (phi_p == 0)
@@ -727,7 +740,7 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     
     # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
-    if not decomposition:
+    if any(x == -1 for x in decomposition):
         test_data["Rao"][n]["result"] = NOT_APPLICABLE
         test_data["Rao"][n]["reason"] = "Keine Zerlegung R = p2^n+1 gefunden"
         return NOT_APPLICABLE
@@ -736,14 +749,14 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     test_data["Rao"][n]["other_fields"] = [p, 2, n_exp]
 
     exponent = (n - 1) // 2
-    cond1 = pow(3, exponent, n) == (n - 1)
+    cond1 = helpers.modexp(3, exponent, n) == (n - 1)
     if not cond1: 
         test_data["Rao"][n]["result"] = COMPOSITE
         test_data["Rao"][n]["a_values"].append((3, False, None))
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
         return COMPOSITE
 
-    cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
+    cond2 = (helpers.modexp(3, helpers.power(2, n_exp - 1), n) + 1) % n == 0
     if not cond2: 
         test_data["Rao"][n]["result"] = PRIME
         test_data["Rao"][n]["a_values"].append((3, cond1, cond2))
@@ -770,13 +783,13 @@ def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
     test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
     
     for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j
-        if pow(p, n_exp - 1) >= K * pow(p, j):
+        if helpers.power(p, n_exp - 1) >= K * helpers.power(p, j):
             for a in range(2, n):
                 # Bedingung (i): a^{Kp^{n-j-1}} ≡ L ≠ 1 mod N
-                exponent = K * pow(p, n_exp - j - 1)
-                L = pow(a, exponent, n)
+                exponent = int(K * helpers.power(p, n_exp - j - 1))
+                L = helpers.modexp(a, exponent, n)
                 cond1 = (L != 1)
-                cond2 = (pow(L, pow(p, j+1), n) == 1)
+                cond2 = (helpers.modexp(L, int(helpers.power(p, j+1)), n) == 1)
 
                 if cond1 and cond2:
                     test_data["Ramzy"][n]["a_values"].append((a, cond1, cond2))

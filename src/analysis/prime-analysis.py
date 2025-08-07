@@ -35,7 +35,8 @@ def run_primetest_analysis(
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True,
-    variant: int = 2,  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    use_njit: bool = USE_NJIT,
+    variant: int = 2,
     allow_partial_numbers = False,
     group_ranges: Dict[str, Dict[str, int]] = None,
     custom_group_numbers: Dict[str, List[int]] = None
@@ -44,6 +45,7 @@ def run_primetest_analysis(
 
     # Test-Konfiguration laden
     test_config = get_test_config(include_tests, prob_test_repeats, global_seed=seed)
+    print(f"Primzahlanalyse läuft mit USE_NJIT = {use_njit}\n")
 
     # Zahlengenerierung
     if variant == 1:
@@ -265,32 +267,31 @@ if __name__ == "__main__":
     #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
-        "Lucas":                {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1]},
-        "Langsam":              {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
-        "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,  "xticks": [1, h1]},
-        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
-        "Rao":                  {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
-        "Ramzy":                {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1, k1]},
-        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1]},
-        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k1,  "xticks": [1, h1]},
+        "Probabilistisch":      {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Lucas":                {"n": 10, "start": 1,  "end": h1,   "xticks": [1, h1]},
+        "Langsam":              {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Proth-Tests":          {"n": 10, "start": 1,  "end": h1,  "xticks": [1, h1]},
+        "Pocklington-Tests":    {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Rao":                  {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Ramzy":                {"n": 10, "start": 1,  "end": h1,    "xticks": [1, h1]},
+        "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": h1,   "xticks": [1, h1]},
+        "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": h1,  "xticks": [1, h1]},
     }
 
-
-
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=5,
         num_type='g:0.5',
         start=1,
-        end=k1,
-        test_repeats=10,
+        end=h1,
+        test_repeats=1,
         #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
         seed=1221,
-        protocoll=True,
+        protocoll=False,
         save_results=True,
-        show_plot=True,
+        show_plot=False,
         variant=2,
+        use_njit=False,
         allow_partial_numbers = True,
         group_ranges=my_group_ranges,
         #custom_group_numbers=pseudopimes

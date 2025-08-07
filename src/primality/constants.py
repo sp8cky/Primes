@@ -4,7 +4,7 @@ INVALID = "invalid"
 NOT_APPLICABLE = "not_applicable"
 VALID_RESULTS = {PRIME, COMPOSITE, INVALID, NOT_APPLICABLE}
 
-USE_NJIT = True
+USE_NJIT = False
 
 default_repeats = [3, 3, 3]
 prob_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]

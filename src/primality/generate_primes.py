@@ -6,7 +6,6 @@ from matplotlib.pylab import rint
 from sympy import isprime, primerange, primefactors, perfect_power, legendre_symbol
 from sympy.ntheory.primetest import mr, is_euler_pseudoprime
 from math import log2
-import src.primality.helpers as helpers
 from src.primality.test_config import *
 from src.analysis.dataset import extract_base_label
 

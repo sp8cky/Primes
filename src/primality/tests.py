@@ -1,10 +1,11 @@
-import src.primality.helpers as helpers
+import src.primality.helpermethods as helpermethods
+import src.acceleration.helpers as helpers
 from src.primality.constants import *
 from src.primality.test_protocoll import get_global_seed
 import random, math, pytest
 from math import gcd, log2, sqrt
 from statistics import mean
-from sympy import jacobi_symbol, gcd, log, factorint, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, ZZ, rem, symbols, Poly
+from sympy import jacobi_symbol, gcd, log, factorint, primerange, isprime, divisors, totient, n_order, cyclotomic_poly, GF, ZZ, rem, symbols, Poly
 from sympy.abc import X
 from typing import Optional, List, Dict, Tuple, Any, Union
 
@@ -16,12 +17,12 @@ def fermat_test(n: int, k: int = 1, seed: Optional[int] = None) -> bool:
         a_seed = get_global_seed(seed, n, "Fermat", i)
         r = random.Random(a_seed)
         a = r.randint(2, n - 1)
-        if gcd(a, n) != 1 or pow(a, n - 1, n) != 1:
+        if helpers.gcd(a, n) != 1 or pow(a, n - 1, n) != 1:
             return COMPOSITE
     return PRIME
 
 def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
-    if (n < 2) or (n % 2 == 0 and n > 2) or perfect_power(n): return INVALID
+    if (n < 2) or (n % 2 == 0 and n > 2) or helpers.is_perfect_power(n): return INVALID
     if n in (2, 3): return PRIME
     # Zerlegung von n - 1 in 2^s * m
     m = n - 1
@@ -34,7 +35,7 @@ def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) 
         a_seed = get_global_seed(seed, n, "Miller-Selfridge-Rabin", i)
         r = random.Random(a_seed)
         a = r.randint(2, n - 1)
-        if gcd(a, n) != 1: return COMPOSITE
+        if helpers.gcd(a, n) != 1: return COMPOSITE
         if pow(a, n - 1, n) == 1: continue
         if any(pow(a, 2**j * m, n) == n - 1 for j in range(s)): continue
         return COMPOSITE
@@ -116,20 +117,20 @@ def wilson_criterion(p: int, seed: Optional[int] = None) -> bool:
 
 def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     print("Prüfe AKS04-Test für", n)
-    if n <= 1 or perfect_power(n): return INVALID
+    if n <= 1 or helpers.is_perfect_power(n): return INVALID
 
     # Schritt 1: Finde kleinstes r mit ord_r(n) > log^2(n)
-    log_n = math.log2(n)
+    log_n = helpers.helpers.log2(n)
     log_sq = pow(log_n, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > log_sq:
+        if helpers.gcd(n, r) == 1 and helpers.order(n, r) > log_sq:
             break
         r += 1
 
     # Schritt 2: Prüfe ggT(n, a) für a <= r
     for a in range(2, r + 1):
-        d = gcd(a, n)
+        d = helpers.gcd(a, n)
         if 1 < d < n:
             return COMPOSITE  # echter Teiler => nicht prim
 
@@ -137,8 +138,8 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= r: return PRIME
 
     # Schritt 4: Polynomprüfung für a <= sqrt(phi(r)) * log n
-    phi_r = totient(r)
-    log_n = log2(n)
+    phi_r = helpers.totient(r)
+    log_n = helpers.log2(n)
     max_a = int(sqrt(phi_r) * log_n) + 1
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
@@ -157,19 +158,19 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     print("Prüfe AKS10-Test für", n)
-    if n <= 1 or perfect_power(n): return INVALID
+    if n <= 1 or helpers.is_perfect_power(n): return INVALID
 
-    l = math.ceil(math.log2(n))
+    l = math.ceil(helpers.log2(n))
     l_sq = pow(l, 2)
     r = 2
     while True:
-        if gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
+        if helpers.gcd(n, r) == 1 and helpers.order(n, r) > l_sq:
             break
         r += 1
 
     # Prüfe kleine Primteiler
     l_pow5 = pow(l, 5)
-    for p in primerange(2, l_pow5 + 1):
+    for p in helpers.primerange(2, l_pow5 + 1):
         if n % p == 0:
             if p == n:
                 return PRIME
@@ -177,7 +178,7 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
                 return COMPOSITE
 
     # polynomial condition check
-    max_a = math.floor(math.sqrt(r) * l)
+    max_a = helpers.floor(math.sqrt(r) * l)
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
     
     for a in range(1, max_a + 1):
@@ -202,8 +203,9 @@ def pepin_test(n: int, seed: Optional[int] = None) -> bool:
 def lucas_lehmer_test(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: return INVALID
     is_mersenne = helpers.is_mersenne_number(n)
-    p = (n + 1).bit_length() - 1
-    if not is_mersenne or not isprime(p): return INVALID
+    #p = (n + 1).bit_length() - 1
+    p = helpers.bit_length(n+1) - 1
+    if not is_mersenne or not helpers.is_prime(p): return INVALID
     if p == 2: return PRIME
     # Test
     S = 4
@@ -259,7 +261,7 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.7
     if n <= 1: return INVALID
 
     # Factorize n-1 as q^m * R
-    factors = factorint(n - 1)
+    factors = helpers.factorint(n - 1)
     if not factors: return NOT_APPLICABLE
     
     q, m = next(iter(factors.items()))
@@ -269,26 +271,26 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.7
 
     # Test
     for a in range(2, n):
-        if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
+        if pow(a, n - 1, n) == 1 and helpers.gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
             return PRIME
     return COMPOSITE
 
 def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.8
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
-    factors = factorint(n - 1)
-    F = math.prod(factors.keys())
+    # Factorize n-1 as F*R with helpers.gcd(F,R)=1
+    factors = helpers.factorint(n - 1)
+    F = helpers.prod(factors.keys())
     R = (n - 1) // F
 
-    if gcd(F, R) != 1: return NOT_APPLICABLE
+    if helpers.gcd(F, R) != 1: return NOT_APPLICABLE
 
     # test for each prime factor q of F
     for q in factors:
         found = False
 
         for a in range(2, n):
-            if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
+            if pow(a, n - 1, n) == 1 and helpers.gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
                 found = True
                 break
         if not found: return COMPOSITE
@@ -299,13 +301,13 @@ def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.
 def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: ##5.10
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
-    factors = factorint(n - 1)
-    F = math.prod(pow(p, e) for p, e in factors.items())
+    # Factorize n-1 as F*R with helpers.gcd(F,R)=1
+    factors = helpers.factorint(n - 1)
+    F = helpers.prod(pow(p, e) for p, e in factors.items())
     R = (n - 1) // F
 
-    if B is None: B = int(math.isqrt(n) // F) + 1
-    if F * B <= math.isqrt(n): return NOT_APPLICABLE
+    if B is None: B = int(helpers.sqrt(n) // F) + 1
+    if F * B <= helpers.sqrt(n): return NOT_APPLICABLE
 
     for p in primerange(2, B): 
         if R % p == 0: return COMPOSITE
@@ -313,7 +315,7 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
     for q in factors:
         found = False
         for a in range(2, n):
-            if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
+            if pow(a, n - 1, n) == 1 and helpers.gcd(pow(a, (n - 1) // q, n) - 1, n) == 1:
                 found = True
                 break
         if not found: return COMPOSITE
@@ -322,7 +324,7 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
     b = 2
     found_b = False
     while b < n:
-        if pow(b, n-1, n) == 1 and gcd(pow(b, F, n) - 1, n) == 1:
+        if pow(b, n-1, n) == 1 and helpers.gcd(pow(b, F, n) - 1, n) == 1:
             found_b = True
             break
         b += 1
@@ -339,7 +341,7 @@ def generalized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #6
     K, p, e = decomposition
     
     for a in range(2, n):
-        if pow(a, n - 1, n) == 1 and gcd(pow(a, (n - 1) // p, n) - 1, n) == 1:
+        if pow(a, n - 1, n) == 1 and helpers.gcd(pow(a, (n - 1) // p, n) - 1, n) == 1:
             return PRIME
         
     return COMPOSITE
@@ -352,7 +354,7 @@ def grau_test(n: int, seed: Optional[int] = None) -> bool: ##6.13
     if not decomposition: return NOT_APPLICABLE
 
     K, p, exp = decomposition
-    a = helpers.find_quadratic_non_residue(p)
+    a = helpers.find_quad_non_residue(p)
     if a is None: return NOT_APPLICABLE
 
     exponent = (n - 1) // p

@@ -75,30 +75,6 @@ def find_pocklington_decomposition(n: int) -> tuple:
     
     return None
 
-def fast_pocklington_decomposition(n: int, max_factors: int = 3) -> tuple | None:
-    """
-    Schnellerer Versuch, n-1 als K*p^e + 1 mit K < p^e zu schreiben.
-    max_factors: wie viele Primfaktoren maximal berücksichtigt werden (heuristisch).
-    """
-    if n <= 2:
-        return None
-
-    n_minus_1 = n - 1
-    # Nutze sympy.factorint für effizientere Faktorisierung
-    factor_map = factorint(n_minus_1)
-    sorted_factors = sorted(factor_map.items(), key=lambda x: -x[0])[:max_factors]  # größte zuerst
-
-    for p, max_e in sorted_factors:
-        for e in range(max_e, 0, -1):
-            p_pow_e = p ** e
-            if n_minus_1 % p_pow_e != 0:
-                continue
-            K = n_minus_1 // p_pow_e
-            if K < p_pow_e:
-                return (K, p, e)
-
-    return None
-
 
 # find the smallest prime p and exponent n such that N = p2^e + 1
 def find_rao_decomposition(n: int) -> tuple[int, int] | None:
@@ -143,35 +119,6 @@ def find_ramzy_decomposition(n: int) -> tuple[int, int, int] | None:
                     
     return None
 
-
-
-def compute_all_valid_decompositions(N):
-    if N <= 2:
-        return [None]
-    
-    decompositions = []
-    N_minus_1 = N - 1
-    
-    # Iterate over all prime factors of N-1
-    for p in sorted(primefactors(N_minus_1), reverse=True):
-        max_e = 0
-        # Find the maximal e such that p^e divides N-1
-        while (p ** (max_e + 1)) <= N_minus_1 and N_minus_1 % (p ** (max_e + 1)) == 0:
-            max_e += 1
-        
-        # Try all possible exponents e from 1 to max_e
-        for e in range(1, max_e + 1):
-            if N_minus_1 % (p ** e) != 0:
-                continue
-            K = N_minus_1 // (p ** e)
-            
-            # Check Ramzy condition: p^{e-1} >= K * p^j for some j in 0..e-1
-            for j in range(e):
-                if (p ** (e - 1)) >= (K * (p ** j)):
-                    decompositions.append((K, p, e))
-                    break  # Only need one valid j per (K,p,e)
-    
-    return decompositions if decompositions else [None]
 
 
 # Find smallest quadratic non-residue modulo p

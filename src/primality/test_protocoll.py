@@ -1,5 +1,6 @@
 from tkinter.messagebox import NO
-import src.primality.helpers as helpers
+import src.primality.helpermethods as helpermethods
+import src.acceleration.helpers as helpers
 from src.primality.constants import *
 import random, math, hashlib
 from math import gcd, log2, sqrt

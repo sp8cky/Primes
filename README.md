@@ -1,30 +1,52 @@
 # Primes
 
-Repo for runtime analysis of prime tests.
-
-## 01 – Einleitung und aktueller Stand
-
-In diesem Notebook wird der aktuelle Stand der Arbeit dokumentiert. Ziel ist es, die Implementierung und Analyse von Primzahlkriterien und Primzahltests im Kontext der Kryptographie vorzubereiten.
-pip-25.1.1
-Python 3.13.3
+Dies ist ein Repository für eine praktische Implementierung von Primzahltests in Python.
 ---
 
-### ✅ Projektüberblick
+## Projektüberblick
 
 - Git-Repository wurde erstellt und initial strukturiert.
 - Projektstruktur orientiert sich an einem modularen Aufbau mit:
-  - `src/` für die Implementierung
+  - `src/primality` für alle Implementierungen für die Primzahltests
+  - `src/analysis` für die Analyse durch Plots und Datenexports
   - `tests/` für Unittests
   - `requirements.txt` für alle benötigten Pakete
-- Diese Jupyter-Datei dient als Dokumentation und explorative Umgebung.
-
 
 
 ---
 
-### Theoretischer Stand
+## Installation
+### Installationsschritte
+Repo klonen:
+```bash
+git clone https://github.com/sp8cky/Primes && cd Primes
+```
 
-#### Allgemeine Primkriterien
+### Dependencies installieren
+```bash
+pip install -r requirements.txt
+```
+### Skript ausführen
+Aus dem root directory:
+```bash
+python src/analysis/prime-analysis
+```
+
+---
+## Details zur Implementierung Theoretischer Stand
+
+### Datenerhebnung pro Test
+Felder (werden für jeden Test ergänzt, wenn verfügbar):
+- `Zahl`: Die getestete Zahl n
+- `Test`: Name des Tests (z. B. Fermat, Lucas, Proth…)
+- `Ergebnis`: Ob der Test n als Primzahl erkannt hat (`True`/`False`)
+- `best_time`:	Kürzeste gemessene Laufzeit über alle Wiederholungen
+- `worst_time`:	Längste gemessene Laufzeit über alle Wiederholungen
+- `std_dev`:	Standardabweichung der Laufzeit in Millisekunden (Stabilität der Messung)
+- `a_values`: Liste der verwendeten Zufallsbasen a
+- `reason`: Begründung, falls der Test nicht durchführbar war
+- `other_fields`: Testspezifische Angaben von Zwischenergebnissen
+
 Folgende Tests wurden bereits implementiert und dokumentieren folgende Angaben:
 
 | Gr | Test                        | n   | res | TP | FP  | TN  | EC | ER  | Best  | Avg   | Worst | Std  | a_values                             | Other_fields                                      | Reason |
@@ -50,31 +72,10 @@ Folgende Tests wurden bereits implementiert und dokumentieren folgende Angaben:
 |    | Ramzy                       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n_exp]                                    |        |
 
 
+---
+## Credits
+This project was created by sp8cky.
 
-### Implementierung
-#### DIC Struktur
-# Gespeicherte Testdaten pro Primzahltest
-
-Felder (werden für jeden Test ergänzt, wenn verfügbar):
-- `Zahl`: Die getestete Zahl n
-- `Test`: Name des Tests (z. B. Fermat, Lucas, Proth…)
-- `Ergebnis`: Ob der Test n als Primzahl erkannt hat (`True`/`False`)
-- `best_time`:	Kürzeste gemessene Laufzeit über alle Wiederholungen
-- `worst_time`:	Längste gemessene Laufzeit über alle Wiederholungen
-- `std_dev`:	Standardabweichung der Laufzeit in Millisekunden (Stabilität der Messung)
-- `a_values`: Liste der verwendeten Zufallsbasen a
-- `reason`: Begründung, falls der Test nicht durchführbar war
-- `other_fields`: Testspezifische Angaben von Zwischenergebnissen
-
-
-### TODOs
-- Graphen einfügen
-  - fermat fehlt
-  - fehler bei anderen
-- Farben ändern
-- ramzy opt. kein j
 
 ---
-
-```bash
-pip install -r requirements.txt
+---

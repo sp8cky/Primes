@@ -90,7 +90,7 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
         return PRIME
 
     for i in range(k):
-        a_seed = random.Random(get_global_seed(seed, n, "Fermat", i))
+        a_seed = get_global_seed(seed, n, "Fermat", i)
         a = helpers.rand_seed(a_seed, 2, n - 1)
         cond1 = helpers.gcd(a, n) == 1 
 
@@ -128,7 +128,7 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
     test_data["Miller-Selfridge-Rabin"][n]["a_values"] = []
 
     for i in range(k):
-        a_seed = random.Random(get_global_seed(seed, n, "Miller-Selfridge-Rabin", i))
+        a_seed = get_global_seed(seed, n, "Miller-Selfridge-Rabin", i)
         a = helpers.rand_seed(a_seed, 2, n - 1)
 
         if helpers.gcd(a, n) != 1:
@@ -168,7 +168,7 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = No
     test_data["Solovay-Strassen"][n]["a_values"] = []
 
     for i in range(k):
-        a_seed = random.Random(get_global_seed(seed, n, "Solovay-Strassen", i))
+        a_seed = get_global_seed(seed, n, "Solovay-Strassen", i)
         a = helpers.rand_seed(a_seed, 2, n - 1)
         jacobi = helpers.jacobisymbol(a, n)
         cond1 = (jacobi == 0)
@@ -524,9 +524,10 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
     if USE_NJIT:
         keys = list(factors.keys())
         values = list(factors.values())
-        q, m = helpers.next_item(keys, values)
+        q, m = helpers.next_item_njit(keys, values)
     else:
-        q, m = next(iter(factors.items()))
+        #q, m = next(iter(factors.items()))
+        q, m = helpers.next_item_py(factors)
 
     R = (n - 1) // (q ** m)
     if (n - 1) % q != 0 or R % q == 0:
@@ -592,7 +593,7 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
     # Factorize n-1 as F*R with helpers.gcd(F,R)=1
     factors = helpers.factorint(n - 1)
     test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
-    F = helpers.product(helpers.power(p, e) for p, e in factors.items())
+    F = helpers.product([helpers.power(p, e) for p, e in factors.items()])
     R = (n - 1) // F
 
     if B is None:
@@ -756,7 +757,7 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
         test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
         return COMPOSITE
 
-    cond2 = (helpers.modexp(3, helpers.power(2, n_exp - 1), n) + 1) % n == 0
+    cond2 = (helpers.modexp(3, int(helpers.power(2, n_exp - 1)), n) + 1) % n == 0
     if not cond2: 
         test_data["Rao"][n]["result"] = PRIME
         test_data["Rao"][n]["a_values"].append((3, cond1, cond2))

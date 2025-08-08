@@ -154,6 +154,7 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
     return PRIME
 
 
+
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
     print("Prüfe AKS10-Test für", n)
     if n <= 1 or helpers.is_perfect_power(n): return INVALID
@@ -263,16 +264,16 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.7
     if not factors: return NOT_APPLICABLE
 
     if USE_NJIT:
-        keys = list(factors.keys())
-        values = list(factors.values())
-        q, m = helpers.next_item(keys, values)
+            keys = list(factors.keys())
+            values = list(factors.values())
+            q, m = helpers.next_item_njit(keys, values)
     else:
-        q, m = next(iter(factors.items()))
+        #q, m = next(iter(factors.items()))
+        q, m = helpers.next_item_py(factors)
     
     #q, m = next(iter(factors.items()))
     R = (n - 1) // (q ** m)
-    if (n - 1) % q != 0 or R % q == 0:
-        return NOT_APPLICABLE
+    if (n - 1) % q != 0 or R % q == 0: return NOT_APPLICABLE
 
     # Test
     for a in range(2, n):
@@ -281,6 +282,7 @@ def pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.7
     return COMPOSITE
 
 def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.8
+    print(f"Prüfe Optimized Pocklington-Test für {n}...")
     if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with helpers.gcd(F,R)=1
@@ -309,11 +311,14 @@ def optimized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: ##5.
 
 
 def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: ##5.10
+    print(f"Prüfe Optimized Pocklington-Test-Variant für {n}...")
     if n <= 1: return INVALID
 
     # Factorize n-1 as F*R with helpers.gcd(F,R)=1
     factors = helpers.factorint(n - 1)
-    F = helpers.product(helpers.power(p, e) for p, e in factors.items())
+    #F = helpers.product(helpers.power(p, e) for p, e in factors.items())
+    F = helpers.product([helpers.power(p, e) for p, e in factors.items()])
+
     R = (n - 1) // F
 
     if B is None: B = int(helpers.sqrt(n) // F) + 1
@@ -321,7 +326,6 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
 
     for p in helpers.primerange(2, B): 
         if R % p == 0: return COMPOSITE
-
     for q in factors:
         found = False
         for a in range(2, n):
@@ -329,7 +333,7 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
                 found = True
                 break
         if not found: return COMPOSITE
-
+        
     # b-Test
     b = 2
     found_b = False
@@ -343,6 +347,7 @@ def optimized_pocklington_test_variant(n: int, B: Optional[int] = None, seed: Op
     return PRIME
 
 def generalized_pocklington_test(n: int, seed: Optional[int] = None) -> bool: #6.12
+    print(f"Prüfe Generalized Pocklington-Test für {n}...")
     if n <= 1: return INVALID
 
     decomposition = helpers.find_pocklington_decomposition(n)
@@ -405,7 +410,7 @@ def rao_test(n: int, seed: Optional[int] = None) -> bool: ## 6.6
 
     exponent = (n - 1) // 2
     if helpers.modexp(3, exponent, n) != (n - 1): return COMPOSITE
-    if (helpers.modexp(3, helpers.modexp(2, n_exp - 1), n) + 1) % n != 0: return PRIME
+    if (helpers.modexp(3, int(helpers.power(2, n_exp - 1)), n) + 1) % n != 0: return PRIME
 
     return COMPOSITE
 
@@ -425,6 +430,6 @@ def ramzy_test(n: int, seed: Optional[int] = None) -> bool: #6.15
                 exponent = int(K * helpers.power(p, n_exp - j - 1))
                 L = helpers.modexp(a, exponent, n)
                 if L == 1: continue
-                if helpers.modexp(L, int(helpers.modexp(p, j + 1)), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
+                if helpers.modexp(L, int(helpers.power(p, j + 1)), n) == 1: # Bedingung (ii): L^{p^{j+1}} ≡ 1 mod n
                     return PRIME
     return COMPOSITE

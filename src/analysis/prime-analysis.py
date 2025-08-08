@@ -261,6 +261,7 @@ if __name__ == "__main__":
 
     custom_ticks = [1, h1]
     #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Wilson", "AKS04", "AKS10"]
     #repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
     repeat_prob_tests = [3,3,3,3,3]
@@ -279,14 +280,14 @@ if __name__ == "__main__":
     }
 
     run_primetest_analysis(
-        n_numbers=5,
+        n_numbers=10,
         num_type='g:0.5',
         start=1,
         end=h1,
-        test_repeats=1,
+        test_repeats=10,
         #include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=1221,
+        seed=1261,
         protocoll=True,
         save_results=True,
         show_plot=True,

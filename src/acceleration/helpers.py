@@ -5,6 +5,8 @@ from statistics import mean
 from sympy import jacobi_symbol, is_quad_residue, cyclotomic_poly,  gcd, log, factorint, primerange, isprime, divisors, totient, n_order, perfect_power, cyclotomic_poly, GF, ZZ, rem, symbols, Poly
 from numba import njit
 import math
+from numba.typed import Dict
+from numba.types import int64
 import numpy as np
 
 # -------------------- Primitive Methoden --------------------
@@ -27,9 +29,8 @@ def power_py(base: int, exponent: int) -> int:
 
 power = power_njit if USE_NJIT else power_py
 
-
+@njit
 def modexp_njit(base: int, exponent: int, modulus: int) -> int:
-    print(f"use njit {USE_NJIT}")
     result = 1
     base = base % modulus
     e = exponent
@@ -81,9 +82,8 @@ is_prime = is_prime_njit if USE_NJIT else is_prime_py
 
 @njit
 def is_quad_residue_njit(a: int, p: int) -> bool:
-    if p <= 2:
-        return False
-    return pow(a, (p - 1) // 2, p) == 1
+    if p <= 2: return False
+    return modexp_njit(a, (p - 1) // 2, p) == 1
 
 def is_quad_residue_py(a: int, p: int) -> bool:
     return sympy.is_quad_residue(a, p)
@@ -165,7 +165,11 @@ def is_perfect_power_njit(n: int) -> bool:
 def is_perfect_power_py(n: int) -> bool:
     return sympy.perfect_power(n)
 
-is_perfect_power = is_perfect_power_njit if USE_NJIT else is_perfect_power_py
+if USE_NJIT:
+    is_perfect_power = is_perfect_power_njit
+else:
+    is_perfect_power = is_perfect_power_py
+#is_perfect_power = is_perfect_power_njit if USE_NJIT else is_perfect_power_py
 
 
 @njit
@@ -209,23 +213,21 @@ euler_totient = euler_totient_njit if USE_NJIT else euler_totient_py
 
 
 @njit
-def order_njit(n: int, r: int) -> int:
-    if gcd(n, r) != 1:
-        return 0
+def order_njit(a: int, n: int) -> int:
+    if gcd(a, n) != 1: return 0
     k = 1
-    t = r % n
+    t = a % n
     while t != 1:
-        t = (t * r) % n
+        t = (t * a) % n
         k += 1
         if k > n:
             return 0
     return k
 
-def order_py(n: int, r: int) -> int:
-    if gcd(n, r) != 1:
-        return 0
+def order_py(a: int, n: int) -> int:
+    if gcd(a, n) != 1: return 0
     try:
-        return sympy.n_order(n, r)
+        return sympy.n_order(a, n)
     except ValueError:
         return 0
 
@@ -262,15 +264,18 @@ def divisors(n: int):
 
 @njit
 def factorint_njit(n: int):
-    factors = []
+    factors = Dict.empty(key_type=int64, value_type=int64)
     i = 2
     while i * i <= n:
+        count = 0
         while n % i == 0:
-            factors.append(i)
+            count += 1
             n //= i
+        if count > 0:
+            factors[i] = count
         i += 1
     if n > 1:
-        factors.append(n)
+        factors[n] = 1
     return factors
 
 def factorint_py(n: int):
@@ -331,7 +336,6 @@ calc_prime_factors = calc_prime_factors_njit if USE_NJIT else calc_prime_factors
 
 @njit
 def next_item_njit(keys: List[int], values: List[int]) -> Tuple[int, int]:
-    # Einfach das erste Element zurückgeben
     return keys[0], values[0]
 
 def next_item_py(d: dict) -> Tuple[int, int]:
@@ -347,9 +351,13 @@ def product_keys_njit(keys: List[int]) -> int:
         result *= k
     return result
 
-def product_keys_py(d: dict) -> int:
+def product_keys_py(d) -> int:
+    if isinstance(d, dict):
+        iterable = d.keys()
+    else:
+        iterable = d
     result = 1
-    for k in d.keys():
+    for k in iterable:
         result *= k
     return result
 

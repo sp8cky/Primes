@@ -173,7 +173,7 @@ def run_primetest_analysis(
                        "#8c6d31", "#756bb1",
                        "#9467bd", "#e377c2", "#7b4173", "#843c39", "#72302e", "#8c564b", "#636363", "#7f7f7f", "#1f77b4", "#ff1493"],
         }
-        measure_section("Plotten", plot_runtime,
+        """measure_section("Plotten", plot_runtime,
             n_lists=plot_data["n_values"],
             time_lists=plot_data["avg_times"],
             std_lists=plot_data["std_devs"],
@@ -192,7 +192,7 @@ def run_primetest_analysis(
             end=end,
             custom_xticks=custom_ticks,
             number_type=num_type
-        )
+        )"""
         # Gruppierten Plot aufrufen
         measure_section("Plots",
             plot_grouped_all,
@@ -210,8 +210,8 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        #filename = f"-test-data-seed{seed}-v{variant}.csv"
-        filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
+        filename = f"d1-k3-test-data-seed{seed}-v{variant}.csv"
+        #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
             filename = filename,
@@ -258,14 +258,14 @@ if __name__ == "__main__":
 
 
     custom_ticks = [1, h1]
-    #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
     #repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
     repeat_prob_tests = [3,3,3,3,3]
     #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
+        "Probabilistisch":      {"n": 1000, "start": 1,  "end": 10**15,    "xticks": [1, 10**3, 10**6, 10**9, 10**12, 10**15]},
         "Lucas":                {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1]},
         "Langsam":              {"n": 10, "start": 1,  "end": k1,    "xticks": [1, h1]},
         "Proth-Tests":          {"n": 10, "start": 1,  "end": k1,  "xticks": [1, h1]},
@@ -279,14 +279,14 @@ if __name__ == "__main__":
 
 
     run_primetest_analysis(
-        n_numbers=10,
+        n_numbers=1000,
         num_type='g:0.5',
         start=1,
-        end=k1,
-        test_repeats=10,
-        #include_tests=run_tests,
+        end=10**15,
+        test_repeats=100,
+        include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=1221,
+        seed=11932,
         protocoll=True,
         save_results=True,
         show_plot=True,

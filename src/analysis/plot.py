@@ -449,8 +449,8 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     fig.tight_layout()
 
     safe_group = group.replace(" ", "_").replace("/", "_")
-    filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
-    #filename = f"d5-k4-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    #filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    filename = f"d51-k1-group-{safe_group}-graph-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()
@@ -640,8 +640,8 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
-    filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
-    #filename = f"d5-k4-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    #filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    filename = f"d1-k3-group-{safe_group}-stats-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
     plt.close()

@@ -35,9 +35,11 @@ def miller_selfridge_rabin_test(n: int, k: int = 5, seed: Optional[int] = None) 
         r = random.Random(a_seed)
         a = r.randint(2, n - 1)
         if gcd(a, n) != 1: return COMPOSITE
-        if pow(a, n - 1, n) == 1: continue
-        if any(pow(a, 2**j * m, n) == n - 1 for j in range(s)): continue
-        return COMPOSITE
+        if pow(a, m, n) == 1: continue
+        for j in range(s):
+            if pow(a, 2**j * m, n) == n - 1: break
+        else:
+            return COMPOSITE
 
     return PRIME
 

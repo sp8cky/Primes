@@ -205,12 +205,14 @@ def run_primetest_analysis(
                 runs_per_n=test_repeats,
                 prob_test_repeats=repeat_prob_tests,
                 figsize=(24, 16),
-                number_type=num_type
+                number_type=num_type,
+                filename1=f"d4-k1-group_Probabilistisch-graph-s{seed}-v{variant}.png",
+                filename2=f"d4-k1-group_Probabilistisch-stats-s{seed}-v{variant}.png"
         )
 
     # CSV-Export
     if save_results:
-        filename = f"d1-k3-test-data-seed{seed}-v{variant}.csv"
+        filename = f"d4-k1-testdata-seed{seed}-v{variant}.csv"
         #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
@@ -243,25 +245,12 @@ if __name__ == "__main__":
     k1 = 10**3
     k10 = 10**4
     k100 = 10**5
-    m1 = 10**6
-    m10 = 10**7
-    m100 = 10**8
-    md1 = 10**9
-    md10 = 10**10
-    md100 = 10**11
-    b1 = 10**12
-    b10 = 10**13
-    b100 = 10**14
-    bd1 = 10**15
-    bd10 = 10**16
-    bd100 = 10**17
-
-
+ 
     custom_ticks = [1, h1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    #repeat_prob_tests = [1,1,1,1,1]
+    repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
-    repeat_prob_tests = [3,3,3,3,3]
+    #repeat_prob_tests = [3,3,3,3,3]
     #repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
@@ -286,7 +275,8 @@ if __name__ == "__main__":
         test_repeats=100,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=11932,
+        #seed=22026,
+        seed=random.randint(10000, 100000),
         protocoll=True,
         save_results=True,
         show_plot=True,

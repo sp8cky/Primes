@@ -140,16 +140,12 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
             test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, True, None))
             continue
 
-        found = False
         for j in range(s):
             if pow(a, 2**j * m, n) == n - 1:
-                found = True
+                test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1, True))
                 break
-
-        test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1, found))
-
-        if not found:
-            test_data["Miller-Selfridge-Rabin"][n]["result"] = COMPOSITE
+        else:
+            test_data["Miller-Selfridge-Rabin"][n]["a_values"].append((a, cond1, False))
             test_data["Miller-Selfridge-Rabin"][n]["reason"] = "Keine passende Potenz gefunden"
             return COMPOSITE
 

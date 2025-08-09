@@ -206,13 +206,13 @@ def run_primetest_analysis(
                 prob_test_repeats=repeat_prob_tests,
                 figsize=(24, 16),
                 number_type=num_type,
-                filename1=f"d4-k1-group_Probabilistisch-graph-s{seed}-v{variant}.png",
-                filename2=f"d4-k1-group_Probabilistisch-stats-s{seed}-v{variant}.png"
+                filename1=f"d5-k4-group_Probabilistisch-graph-s{seed}-v{variant}.png",
+                filename2=f"d5-k4-group_Probabilistisch-stats-s{seed}-v{variant}.png"
         )
 
     # CSV-Export
     if save_results:
-        filename = f"d4-k1-testdata-seed{seed}-v{variant}.csv"
+        filename = f"d5-k4-testdata-seed{seed}-v{variant}.csv"
         #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
@@ -248,10 +248,10 @@ if __name__ == "__main__":
  
     custom_ticks = [1, h1]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
-    repeat_prob_tests = [1,1,1,1,1]
+    #repeat_prob_tests = [1,1,1,1,1]
     #repeat_prob_tests = [2,2,2,2,2]
     #repeat_prob_tests = [3,3,3,3,3]
-    #repeat_prob_tests = [4,4,4,4,4]
+    repeat_prob_tests = [4,4,4,4,4]
 
     my_group_ranges={ 
         "Probabilistisch":      {"n": 1000, "start": 1,  "end": 10**15,    "xticks": [1, 10**3, 10**6, 10**9, 10**12, 10**15]},
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         "Fermat-Zahlen":        {"n": 10, "start": 1,  "end": k1,   "xticks": [1, h1]},
         "Mersenne-Zahlen":      {"n": 10, "start": 1,  "end": k1,  "xticks": [1, h1]},
     }
-
+# TODO: DURCHLAUF 5
 
 
     run_primetest_analysis(
@@ -275,8 +275,8 @@ if __name__ == "__main__":
         test_repeats=100,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        #seed=22026,
-        seed=random.randint(10000, 100000),
+        seed=89744,
+        #seed=random.randint(10000, 100000),
         protocoll=True,
         save_results=True,
         show_plot=True,

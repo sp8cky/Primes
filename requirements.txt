@@ -3,3 +3,4 @@ pytest
 matplotlib
 seaborn
 scipy
+scikit-learn

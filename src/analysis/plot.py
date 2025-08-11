@@ -42,7 +42,7 @@ def plot_runtime(
     n_lists, time_lists, std_lists=None, best_lists=None, worst_lists=None,
     labels=None, colors=None, figsize=(24, 14), use_log=True,
     total_numbers=None, runs_per_n=None, group_ranges=None,
-    seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None, number_type=None
+    seed=None, timestamp=None, variant=None, start=None, end=None, custom_xticks=None, number_type=None, filename=None
 ):
     # === Fallbacks für Labels/Farben ===
     if labels is None: labels = [None] * len(n_lists)
@@ -449,9 +449,9 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
     fig.tight_layout()
 
     safe_group = group.replace(" ", "_").replace("/", "_")
-    #filename = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
+    fname = f"{timestamp}-group-{safe_group}-graph-s{seed}-v{variant}.png"
     #filename = f"d2-k2-group-{safe_group}-graph-s{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, filename)
+    path = os.path.join(DATA_DIR, fname)
     plt.savefig(path)
     plt.close()
 
@@ -640,9 +640,9 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
 
     fig.tight_layout()
     safe_group = group.replace(" ", "_").replace("/", "_")
-    #filename = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
+    fname = f"{timestamp}-group-{safe_group}-stats-s{seed}-v{variant}.png"
     #filename = f"d2-k2-group-{safe_group}-stats-s{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, filename)
+    path = os.path.join(DATA_DIR, fname)
     plt.savefig(path)
     plt.close()
 

@@ -158,7 +158,7 @@ def aks04_test(n: int, seed: Optional[int] = None) -> bool:
 
 
 def aks10_test(n: int, seed: Optional[int] = None) -> bool:
-    print("Prüfe AKS10-Test für", n)
+    #print("Prüfe AKS10-Test für", n)
     if n <= 1 or perfect_power(n): return INVALID
 
     l = math.ceil(math.log2(n))

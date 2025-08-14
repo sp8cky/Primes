@@ -192,7 +192,7 @@ def run_primetest_analysis(
             end=end,
             custom_xticks=custom_ticks,
             number_type=num_type,
-            #filename=f"d1-plot-seed{seed}-v{variant}.png"
+            filename=f"d10-plot-seed{seed}-v{variant}.png"
         )
         # Gruppierten Plot aufrufen
         measure_section("Plots",
@@ -206,15 +206,13 @@ def run_primetest_analysis(
                 runs_per_n=test_repeats,
                 prob_test_repeats=repeat_prob_tests,
                 figsize=(24, 16),
-                number_type=num_type,
-                #filename1=f"d1-group_Probabilistisch-graph-s{seed}-v{variant}.png",
-                #filename2=f"d1-group_Probabilistisch-stats-s{seed}-v{variant}.png"
+                number_type=num_type
         )
 
     # CSV-Export
     if save_results:
-        #filename = f"d1-testdata-seed{seed}-v{variant}.csv"
-        filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
+        filename = f"d2-testdata-seed{seed}-v{variant}.csv"
+        #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
             filename = filename,
@@ -272,8 +270,6 @@ if __name__ == "__main__":
         "Fermat-Zahlen":        {"n": 100, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
         "Mersenne-Zahlen":      {"n": 100, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
     }
-# TODO: DURCHLAUF 5
-
 
     run_primetest_analysis(
         n_numbers=100,
@@ -283,8 +279,8 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        #seed=10176,
-        seed=random.randint(1000, 10000),
+        seed=9888,
+        #seed=random.randint(1000, 10000),
         protocoll=True,
         save_results=True,
         show_plot=True,

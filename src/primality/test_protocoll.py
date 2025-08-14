@@ -404,6 +404,9 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 
 def pepin_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
+    if n == 3:
+        test_data["Pepin"][n]["result"] = PRIME
+        return PRIME
     if not helpers.is_fermat_number(n):
         test_data["Pepin"][n]["result"] = INVALID
         test_data["Pepin"][n]["reason"] = "n ist keine Fermat-Zahl"

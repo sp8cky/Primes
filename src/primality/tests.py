@@ -193,8 +193,8 @@ def aks10_test(n: int, seed: Optional[int] = None) -> bool:
 
 # Prüft ob eine Fermat-Zahl n prim ist
 def pepin_test(n: int, seed: Optional[int] = None) -> bool:
+    if n == 3: return PRIME
     if not helpers.is_fermat_number(n): return INVALID
-
     if pow(3, (n - 1) // 2, n) != n - 1: 
         return COMPOSITE
     

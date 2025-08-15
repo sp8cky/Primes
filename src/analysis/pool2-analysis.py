@@ -2,24 +2,20 @@ import pandas as pd
 import numpy as np
 import glob
 import os, csv
+from scipy.optimize import curve_fit
+from sklearn.metrics import r2_score
+from sklearn.linear_model import LinearRegression
+
+
+
 csv.field_size_limit(10**7)  # Erlaubt Felder bis ca. 10 MB
 # Gruppenzuordnung
 CATEGORY_MAP = {
-    "Zusammengesetzte": [
-        "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"
-    ],
-    "Spezielle Tests": [
-        "Pepin", "Lucas-Lehmer"
-    ],
-    "Langsame Tests": [
-        "AKS10", "Wilson"
-    ],
-    "Lucas-Tests": [
-        "Initial Lucas", "Lucas", "Optimized Lucas"
-    ],
-    "Probabilistische Tests": [
-        "Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"
-    ]
+    "Probabilistische Tests": ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"],
+    "Lucas-Tests": ["Initial Lucas", "Lucas", "Optimized Lucas"],
+    "Langsame Tests": ["AKS10", "Wilson"],
+    "Spezielle Tests": ["Pepin", "Lucas-Lehmer"],
+    "Zusammengesetzte": ["Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"]
 }
 def classify_test(test_name: str) -> str:
     for group, patterns in CATEGORY_MAP.items():
@@ -31,132 +27,92 @@ def classify_test(test_name: str) -> str:
 # ---------------------------
 # Parsen einer Datei
 # ---------------------------
-def parse_pool2_csv(path):
+def read_pool2_csv(file_path):
     """
-    Liest eine Datei im "Pool2"-Format:
-    - Meta-Zeilen (ignoriert)
-    - test_avg-Zeilen -> kompaktes DF
-    - Detailtabelle ("Gruppe,Test,....") -> DF
+    Liest eine Pool-2 CSV ein und gibt einen DataFrame im Pool-3-kompatiblen Detail-Format zurück.
     """
-    avg_rows = []
     detail_rows = []
-    detail_headers = None
+    headers = None
     in_detail = False
 
-    with open(path, newline="", encoding="utf-8") as f:
-        rdr = csv.reader(f)
-        for row in rdr:
-            # Leere Zeilen überspringen
-            if not row or all((c is None or str(c).strip() == "") for c in row):
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
                 continue
 
-            first = row[0].strip()
-
-            # test_avg-Zeilen: test_avg,<Testname>,key=val, key=val, ...
-            if first == "test_avg":
-                test_name = row[1].strip()
-                rec = {"test": test_name}
-                for field in row[2:]:
-                    field = field.strip()
-                    if not field or "=" not in field:
-                        continue
-                    k, v = field.split("=", 1)
-                    v = v.strip()
-                    # "0.065 ms" -> 0.065
-                    if v.endswith(" ms"):
-                        v = v.replace(" ms", "").strip()
-                    try:
-                        rec[k.strip()] = float(v)
-                    except ValueError:
-                        rec[k.strip()] = v
-                avg_rows.append(rec)
-                continue
-
-            # Beginn der Detailtabelle: Kopfzeile "Gruppe,Test,Zahl,..."
-            if not in_detail and first == "Gruppe":
-                detail_headers = [c.strip() for c in row]
+            # Beginn der Detail-Tabelle erkennen
+            if line.startswith("Gruppe,Test,Zahl"):
+                headers = [h.strip() for h in line.split(",")]
                 in_detail = True
                 continue
 
-            # Detailzeilen
-            if in_detail:
-                # Manche Zeilen haben viele trailing commas -> auf Header-Länge kürzen/padden
-                row = list(row[:len(detail_headers)]) + [""] * max(0, len(detail_headers) - len(row))
-                detail_rows.append(dict(zip(detail_headers, row)))
-                continue
+            if not in_detail:
+                continue  # alles vor der Detail-Tabelle ignorieren
 
-            # Alles andere (Meta-/group_range) ignorieren
+            # Detailzeilen parsen
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) < len(headers):
+                parts += [""] * (len(headers) - len(parts))  # auffüllen
 
-    avg_df = pd.DataFrame(avg_rows)
+            row = dict(zip(headers, parts))
 
-    detail_df = pd.DataFrame(detail_rows)
-    if not detail_df.empty:
-        # Typkonvertierungen
-        def to_float_ms(x):
-            s = str(x).strip()
-            if s.endswith(" ms"):
-                s = s[:-3].strip()
+            # Typkonvertierung
             try:
-                return float(s)
-            except Exception:
-                return np.nan
+                row["Zahl"] = pd.to_numeric(row.get("Zahl", ""), errors="coerce")
+            except:
+                row["Zahl"] = None
 
-        num_cols_ms = ["best_time", "avg_time", "worst_time", "std_dev"]
-        for c in num_cols_ms:
-            if c in detail_df.columns:
-                detail_df[c] = detail_df[c].map(to_float_ms)
+            for col in ["false_positive", "false_negative", "error_rate", "best_time", "avg_time", "worst_time", "std_dev"]:
+                val = row.get(col, "")
+                if isinstance(val, str):
+                    val = val.replace(" ms", "").strip()
+                try:
+                    row[col] = float(val)
+                except:
+                    row[col] = None
 
-        if "Zahl" in detail_df.columns:
-            detail_df["Zahl"] = pd.to_numeric(detail_df["Zahl"], errors="coerce")
+            for col in ["true_prime", "is_error", "false_positive", "false_negative"]:
+                val = row.get(col, "")
+                if isinstance(val, str):
+                    row[col] = 1 if val.strip().lower() == "true" else 0
+                else:
+                    row[col] = 0
 
-        # Bool/Fehler
-        for bc in ["true_prime", "is_error", "false_positive", "false_negative"]:
-            if bc in detail_df.columns:
-                detail_df[bc] = detail_df[bc].astype(str).str.strip().str.lower().map(
-                    {"true": 1, "false": 0}
-                ).fillna(0).astype(int)
+            detail_rows.append(row)
 
-        if "error_rate" in detail_df.columns:
-            detail_df["error_rate"] = pd.to_numeric(detail_df["error_rate"], errors="coerce")
+    df = pd.DataFrame(detail_rows)
 
-        # Spaltennamen säubern
-        if "Test" in detail_df.columns:
-            detail_df["test"] = detail_df["Test"].astype(str)
-        else:
-            detail_df["test"] = ""
+    # Kategorie anhand des Testnamens zuordnen
+    if not df.empty:
+        df["category"] = df["Test"].apply(classify_test)
 
-    # Kategorie (Gruppe) je Test zuweisen – sowohl für avg als auch für detail
-    if not avg_df.empty:
-        avg_df["category"] = avg_df["test"].map(classify_test)
-    if not detail_df.empty:
-        detail_df["category"] = detail_df["test"].map(classify_test)
+    return df
 
-    return avg_df, detail_df
-
-
-def load_all_csv(folder):
-    all_avg = []
-    all_detail = []
-    for file in glob.glob(os.path.join(folder, "*.csv")):
-        print(f"Reading file: {os.path.basename(file)}")
-        avg_df, detail_df = parse_pool2_csv(file)
-        if not avg_df.empty:
-            all_avg.append(avg_df)
-        if not detail_df.empty:
-            all_detail.append(detail_df)
-
-    avg_df_all = pd.concat(all_avg, ignore_index=True) if all_avg else pd.DataFrame()
-    detail_df_all = pd.concat(all_detail, ignore_index=True) if all_detail else pd.DataFrame()
-    return avg_df_all, detail_df_all
-
-# ---------------------------
-# Analysen
-# ---------------------------
-def analyse_overall_from_avg(avg_df):
+def load_all_pool2(folder_path):
     """
-    Gesamt-Auswertung aus den test_avg-Zeilen (über alle Dateien gemittelt).
+    Lädt alle Pool-2 CSVs aus einem Ordner in einen kombinierten DataFrame.
     """
-    if avg_df.empty:
+    all_data = []
+    for file in os.listdir(folder_path):
+        if file.endswith(".csv"):
+            file_path = os.path.join(folder_path, file)
+            df = read_pool2_csv(file_path)
+            all_data.append(df)
+
+    if all_data:
+        combined_df = pd.concat(all_data, ignore_index=True)
+    else:
+        combined_df = pd.DataFrame()
+
+    return combined_df
+
+
+def analyse_overall(detail_df):
+    """
+    Aggregiert alle Detaildaten je Test und Kategorie (Durchschnittswerte).
+    """
+    if detail_df.empty:
         return pd.DataFrame()
 
     cols = [
@@ -164,150 +120,252 @@ def analyse_overall_from_avg(avg_df):
         "avg_best_time","avg_avg_time","avg_worst_time","avg_std_dev"
     ]
     for c in cols:
-        if c in avg_df.columns:
-            avg_df[c] = pd.to_numeric(avg_df[c], errors="coerce")
+        if c in detail_df.columns:
+            detail_df[c] = pd.to_numeric(detail_df[c], errors="coerce")
 
-    overall = (avg_df
-               .groupby(["test","category"], as_index=False)[cols]
-               .mean()
-               .sort_values(["category","avg_avg_time","avg_error_rate"], ascending=[True, True, True]))
+    overall = (
+        detail_df
+        .groupby(["Test","category"], as_index=False)
+        .agg(
+            avg_false_positive=("false_positive","mean"),
+            avg_false_negative=("false_negative","mean"),
+            avg_error_rate=("error_rate","mean"),
+            avg_best_time=("best_time","mean"),
+            avg_avg_time=("avg_time","mean"),
+            avg_worst_time=("worst_time","mean"),
+            avg_std_dev=("std_dev","std")
+        )
+        .sort_values(["category","avg_avg_time","avg_error_rate"], ascending=[True, True, True])
+    )
     return overall
 
-def runtime_stats_from_detail(detail_df):
+
+def runtime_stats(detail_df):
     """
-    Laufzeit-Statistik je Test aus Detaildaten (unabhängig von k; hier gibt es k nicht).
+    Laufzeit-Statistik je Test aus Detaildaten.
     """
     if detail_df.empty:
         return pd.DataFrame()
 
-    grp = detail_df.groupby(["test","category"])
-    out = grp.agg(
-        time_min=("avg_time","min"),
-        time_max=("avg_time","max"),
-        time_avg=("avg_time","mean"),
-        time_std=("avg_time","std"),
-        best_time_min=("best_time","min"),
-        worst_time_max=("worst_time","max"),
-    ).reset_index()
-    return out
+    return (
+        detail_df
+        .groupby(["Test","category"], as_index=False)
+        .agg(
+            best_time_min=("best_time","min"),
+            time_avg=("avg_time","mean"),
+            worst_time_max=("worst_time","max"),
+            time_std=("avg_time","std"),
+        )
+    )
 
-def error_stats_from_detail(detail_df):
+def fit_runtime_complexities_pool2(detail_df):
+    """
+    Führt Laufzeit-Fits für Pool-2-Daten durch.
+    Gibt DataFrame mit theoretischer und praktischer Laufzeit pro Test zurück.
+    """
+    fit_results = []
+
+    # Standardmodelle für praktische Laufzeit (erweitert)
+    standard_models = {
+        "O(1)": lambda n: np.ones_like(n),
+        "O(log n)": lambda n: np.log(n),
+        "O(log^2 n)": lambda n: np.log(n)**2,
+        "O(log^3 n)": lambda n: np.log(n)**3,
+        "O(n)": lambda n: n,
+        "O(n log n)": lambda n: n * np.log(n),
+        "O(n log^2 n)": lambda n: n * np.log(n)**2,
+        "O(n^2)": lambda n: n**2,
+        "O(n^2 log n)": lambda n: n**2 * np.log(n),
+        "O(n^3)": lambda n: n**3,
+        "O(n^3 log n)": lambda n: n**3 * np.log(n),
+        "O(2^n)": lambda n: 2**n,
+        "O(n!)": lambda n: np.array([np.math.factorial(int(x)) for x in n]),
+        "O(sqrt(n))": lambda n: np.sqrt(n),
+        "O(n^(1/3))": lambda n: n**(1/3),
+        "O(n^(1/4))": lambda n: n**(1/4)
+    }
+
+    # Theoretische Komplexität für bekannte Tests
+    complexity_funcs = {
+        "Fermat": lambda n: np.log(n)**3,
+        "Miller-Selfridge-Rabin": lambda n: np.log(n)**4,
+        "Solovay-Strassen": lambda n: np.log(n)**3,
+        "Initial Lucas": lambda n: np.log(n)**3,
+        "Lucas": lambda n: np.sqrt(n) * np.log(n)**3,
+        "Optimized Lucas": lambda n: np.log(n)**5, # k * np.log(n)**3,# TODO
+        "Wilson": lambda n: n * np.log(n)**2,
+        "AKS10": lambda n: np.log(n)**18,
+        "Proth": lambda n: np.log(n)**3,
+        "Proth Variant": lambda n: np.log(n)**3,
+        "Pocklington": lambda n: np.log(n)**3,
+        "Optimized Pocklington": lambda n: np.log(n)**5, # TODO
+        "Optimized Pocklington Variant": lambda n: np.log(n)**5, # k * np.log(n)**3,# TODO
+        "Generalized Pocklington": lambda n: np.log(n)**5, # k * np.log(n)**3,# TODO
+        "Rao": lambda n: np.log(n)**5, # TODO# TODO
+        "Ramzy": lambda n: np.log(n)**5, # TODO
+        "Pepin": lambda n: np.log(n)**5, # TODO
+        "Lucas-Lehmer": lambda n: np.log(n)**5 # TODO
+    }
+    complexity_notation = {
+        "Fermat": "O(log^3 n)",
+        "Miller-Selfridge-Rabin": "O(log^4 n)",
+        "Solovay-Strassen": "O(log^3 n)",
+        "Initial Lucas": "O(log^3 n)",
+        "Lucas": "O(sqrt(n) log^3 n)",
+        "Optimized Lucas": "O(k log^3 n)",
+        "Wilson": "O(n log^2 n)",
+        "AKS10": "O(log^18 n)",
+        "Proth": "O(log^3 n)",
+        "Proth Variant": "O(log^3 n)",
+        "Pocklington": "O(log^3 n)",
+        "Optimized Pocklington": "O(log^5 n)",
+        "Optimized Pocklington Variant": "O(k log^3 n)",
+        "Generalized Pocklington": "O(k log^3 n)",
+        "Rao": "O(log^5 n)",
+        "Ramzy": "O(log^5 n)",
+        "Pepin": "O(log^5 n)",
+        "Lucas-Lehmer": "O(log^5 n)"
+    }
+    # Für jeden Test
+    for test_name in detail_df["Test"].str.replace(r"\(k\s*=\s*\d+\)", "", regex=True).str.strip().unique():
+        df_test = detail_df[detail_df["Test"].str.contains(test_name)]
+
+        # Aggregation: Mittelwert der avg_time pro Zahl
+        df_agg = df_test.groupby("Zahl", as_index=False)["avg_time"].mean()
+        n_vals = df_agg["Zahl"].to_numpy()
+        times = df_agg["avg_time"].to_numpy()
+
+        # --- Fit theoretische Laufzeit ---
+        th_func = complexity_funcs.get(test_name)
+        th_label = complexity_notation.get(test_name, "unbekannt")
+        if th_func is not None:
+            x_th = th_func(n_vals).reshape(-1, 1)
+            linreg = LinearRegression().fit(x_th, times)
+            y_th_pred = linreg.predict(x_th)
+            a_th = linreg.coef_[0]
+            b_th = linreg.intercept_
+            r2_th = r2_score(times, y_th_pred)
+        else:
+            a_th = b_th = r2_th = np.nan
+            th_label = "unbekannt"
+
+        # --- Fit praktische Laufzeit ---
+        best_model_name = None
+        best_r2 = -np.inf
+        best_a = best_b = None
+        for model_name, model_func in standard_models.items():
+            try:
+                x_model = model_func(n_vals).reshape(-1, 1)
+                if np.std(x_model) < 1e-8:  # zu kleine Variation überspringen
+                    continue
+                linreg = LinearRegression().fit(x_model, times)
+                y_pred = linreg.predict(x_model)
+                r2 = r2_score(times, y_pred)
+                if r2 > best_r2:
+                    best_r2 = r2
+                    best_model_name = model_name
+                    best_a = linreg.coef_[0]
+                    best_b = linreg.intercept_
+            except Exception:
+                continue
+
+        fit_results.append({
+            "Test": test_name,
+            "th_laufzeit": th_label,
+            "a_th": a_th,
+            "b_th": b_th,
+            "r2_th": r2_th,
+            "prak_laufzeit": best_model_name,
+            "a_prak": best_a,
+            "b_prak": best_b,
+            "r2_prak": best_r2
+        })
+
+    return pd.DataFrame(fit_results)
+
+
+def error_stats(detail_df):
     """
     Fehleranalyse je Test aus Detaildaten.
     """
     if detail_df.empty:
         return pd.DataFrame()
 
-    grp = detail_df.groupby(["test","category"])
-    out = grp.agg(
-        false_pos_sum=("false_positive","sum"),
-        false_neg_sum=("false_negative","sum"),
-        errors_sum=("is_error","sum"),
-        error_rate_avg=("error_rate","mean"),
-    ).reset_index()
-    return out
+    return (
+        detail_df
+        .groupby(["Test","category"], as_index=False)
+        .agg(
+            false_pos_sum=("false_positive","sum"),
+            false_neg_sum=("false_negative","sum"),
+            errors_sum=("is_error","sum"),
+            error_rate_avg=("error_rate","mean"),
+        )
+    )
 
-def group_summaries(avg_overall):
+
+def group_summaries(overall_df):
     """
-    Pro gewünschter Kategorie: schnellster & genauester Test.
-    Nutzt die Aggregation aus den avg-Werten.
+    Schnellster & Genauester Test pro Kategorie.
     """
-    if avg_overall.empty:
+    if overall_df.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    # Schnellster (kleinstes avg_avg_time) pro category
-    fastest_idx = avg_overall.groupby("category")["avg_avg_time"].idxmin()
-    fastest = avg_overall.loc[fastest_idx].reset_index(drop=True)
-
-    # Genauester (kleinstes avg_error_rate) pro category
-    accurate_idx = avg_overall.groupby("category")["avg_error_rate"].idxmin()
-    most_accurate = avg_overall.loc[accurate_idx].reset_index(drop=True)
+    fastest = overall_df.loc[overall_df.groupby("category")["avg_avg_time"].idxmin()].reset_index(drop=True)
+    most_accurate = overall_df.loc[overall_df.groupby("category")["avg_error_rate"].idxmin()].reset_index(drop=True)
 
     return fastest, most_accurate
 
-# ---------------------------
-# Ausgabe & Export
-# ---------------------------
-def print_section(title, df, cols=None):
-    print(f"\n--- {title} ---")
-    if df is None or df.empty:
-        print("(keine Daten)")
-        return
-    if cols:
-        print(df[cols].to_string(index=False))
-    else:
-        print(df.to_string(index=False))
 
-def export_df(file_path, df):
-    if df is None or df.empty:
-        print(f"[warn] {file_path} – keine Daten, übersprungen")
+def export_df(df, filename):
+    if not isinstance(df, pd.DataFrame):
+        print(f"Error: {filename} ist kein DataFrame!")
         return
-    dirname = os.path.dirname(file_path)
+    # Ordner erstellen, falls nicht existent
+    dirname = os.path.dirname(filename)
     if dirname:
         os.makedirs(dirname, exist_ok=True)
-    df.to_csv(file_path, index=False, encoding="utf-8")
-    print(f"[export] wrote: {os.path.abspath(file_path)}  rows={len(df)}")
+    df.to_csv(filename, index=False)
+    print(f"Exportiert: {filename}")
 
 # ---------------------------
 # Main
 # ---------------------------
 if __name__ == "__main__":
-    # Ordner anpassen:
     folder = "C:\\Users\\julia\\Downloads\\testpool2"
 
-    avg_df_all, detail_df_all = load_all_csv(folder)
+    # Nur noch ein einheitlicher Detail-DF
+    detail_df_all = load_all_pool2(folder)
 
-    # 1) Gesamtauswertung (aus avg)
-    overall_avg = analyse_overall_from_avg(avg_df_all)
-    print_section(
-        "Gesamtauswertung (aus test_avg)",
-        overall_avg,
-        cols=[
-            "category","test",
-            "avg_false_positive","avg_false_negative","avg_error_rate",
-            "avg_best_time","avg_avg_time","avg_worst_time","avg_std_dev"
-        ],
-    )
+    # Gesamtauswertung
+    overall_df = analyse_overall(detail_df_all)
+    print("\n ---Gesamtauswertung (Detaildaten)", overall_df)
 
-    # 2) Laufzeit-Statistik (Detaildaten)
-    rt_stats = runtime_stats_from_detail(detail_df_all)
-    print_section(
-        "Laufzeitanalyse - Statistik (Detaildaten)",
-        rt_stats,
-        cols=[
-            "category","test",
-            "best_time_min","time_avg","worst_time_max","time_std"
-        ],
-    )
+    # Laufzeit
+    rt_stats = runtime_stats(detail_df_all)
+    rt_stats_sort = rt_stats.sort_values(["category","time_avg"], ascending=[True, True])
+    print("\n ---Laufzeit-Statistik", rt_stats_sort)
 
-    # 3) Fehleranalyse (Detaildaten)
-    err_stats = error_stats_from_detail(detail_df_all)
-    print_section(
-        "Fehleranalyse (Detaildaten)",
-        err_stats,
-        cols=[
-            "category","test","false_pos_sum","false_neg_sum","error_rate_avg","errors_sum"
-        ],
-    )
+    # Fit
+    fit_results = fit_runtime_complexities_pool2(detail_df_all)
+    fit_results["category"] = fit_results["Test"].apply(classify_test)
+    fit_results_sort = fit_results.sort_values(["category", "r2_th"], ascending=[True, False])
+    print("\n ---Fit-Statistik", fit_results_sort)
 
-    # 4) Gruppenauswertung (aus avg)
-    fastest, most_accurate = group_summaries(overall_avg)
-    print_section(
-        "Gruppenauswertung – Schnellster Test je Kategorie (aus avg)",
-        fastest,
-        cols=["category","test","avg_avg_time","avg_error_rate"]
-    )
-    print_section(
-        "Gruppenauswertung – Genauester Test je Kategorie (aus avg)",
-        most_accurate,
-        cols=["category","test","avg_error_rate","avg_avg_time"]
-    )
+    # Fehler
+    err_stats = error_stats(detail_df_all)
+    err_stats_sort = err_stats.sort_values(["category","error_rate_avg"], ascending=[True, True])
+    print("\n ---Fehleranalyse", err_stats_sort)
 
-    # Export nur 1 CSV
-    export_df("p2-result/1pool2_overall_avg.csv", overall_avg)
-    export_df("p2-result/2pool2_runtime_stats.csv", rt_stats)
-    export_df("p2-result/3pool2_error_stats.csv", err_stats)
-    export_df("p2-result/4pool2_fastest_by_group.csv", fastest)
-    export_df("p2-result/5pool2_most_accurate_by_group.csv", most_accurate)
-    export_df("p2-result/pool2_detail_raw.csv", detail_df_all)
-    export_df("p2-result/pool2_avg_raw.csv", avg_df_all)
+    # Gruppen
+    fastest, most_accurate = group_summaries(overall_df)
+    most_accurate_sort = most_accurate.sort_values("category")
+    fastest_sort = fastest.sort_values("category")
+    print("\n ---Schnellster Test je Kategorie", fastest_sort)
+    print("\n ---Genauester Test je Kategorie", most_accurate_sort)
+
+    # Export
+    export_df(overall_df, "p2-result/1pool2_overall.csv")
+    export_df(rt_stats, "p2-result/2pool2_runtime_stats.csv")
+    export_df(err_stats, "p2-result/3pool2_error_stats.csv")
+    export_df(fastest, "p2-result/4pool2_fastest_by_group.csv")
+    export_df(most_accurate, "p2-result/5pool2_most_accurate_by_group.csv")

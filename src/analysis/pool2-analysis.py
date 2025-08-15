@@ -238,11 +238,15 @@ def print_section(title, df, cols=None):
     else:
         print(df.to_string(index=False))
 
-def export_csvs(base_dir, **named_dfs):
-    os.makedirs(base_dir, exist_ok=True)
-    for name, df in named_dfs.items():
-        if df is not None and not df.empty:
-            df.to_csv(os.path.join(base_dir, f"{name}.csv"), index=False)
+def export_df(file_path, df):
+    if df is None or df.empty:
+        print(f"[warn] {file_path} – keine Daten, übersprungen")
+        return
+    dirname = os.path.dirname(file_path)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+    df.to_csv(file_path, index=False, encoding="utf-8")
+    print(f"[export] wrote: {os.path.abspath(file_path)}  rows={len(df)}")
 
 # ---------------------------
 # Main
@@ -286,7 +290,7 @@ if __name__ == "__main__":
         ],
     )
 
-    # 4) Gruppenauswertung (aus avg): schnellster / genauester Test je Gruppe
+    # 4) Gruppenauswertung (aus avg)
     fastest, most_accurate = group_summaries(overall_avg)
     print_section(
         "Gruppenauswertung – Schnellster Test je Kategorie (aus avg)",
@@ -299,14 +303,11 @@ if __name__ == "__main__":
         cols=["category","test","avg_error_rate","avg_avg_time"]
     )
 
-    # Exporte
-    export_csvs(
-        base_dir="data",
-        pool2_overall_avg=overall_avg,
-        pool2_runtime_stats=rt_stats,
-        pool2_error_stats=err_stats,
-        pool2_fastest_by_group=fastest,
-        pool2_most_accurate_by_group=most_accurate,
-        pool2_detail_raw=detail_df_all,
-        pool2_avg_raw=avg_df_all,
-    )
+    # Export nur 1 CSV
+    export_df("p2-result/1pool2_overall_avg.csv", overall_avg)
+    export_df("p2-result/2pool2_runtime_stats.csv", rt_stats)
+    export_df("p2-result/3pool2_error_stats.csv", err_stats)
+    export_df("p2-result/4pool2_fastest_by_group.csv", fastest)
+    export_df("p2-result/5pool2_most_accurate_by_group.csv", most_accurate)
+    export_df("p2-result/pool2_detail_raw.csv", detail_df_all)
+    export_df("p2-result/pool2_avg_raw.csv", avg_df_all)

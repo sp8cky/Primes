@@ -1,11 +1,11 @@
 
 import os, csv, re, warnings
-
 import numpy as np
 import pandas as pd
 from math import log
 from scipy.optimize import curve_fit
 from sklearn.metrics import r2_score
+from sklearn.linear_model import LinearRegression
 
 
 # ----------------------------------------------------
@@ -114,7 +114,6 @@ def read_csv_folder(folder_path):
 # ----------------------------------------------------
 
 def parse_avg_data(avg_entries):
-    """Parst test_avg Zeilen in ein DataFrame"""
     records = []
     for row in avg_entries:
         if not row or row[0] != "test_avg":
@@ -152,19 +151,16 @@ def parse_detail_data(detail_entries):
 
 # Beispiel-Ausgabe für alle Modelle sortiert nach R2 pro Test
 def analyse_k_influence(results_df):
-    """Berechnet den Einfluss von k auf die Laufzeit mit mehreren Modellen, Ausgabe aller Modelle sortiert nach R2 pro Test."""
-    # Basis-Testnamen ohne (k = ...)
+# Basis-Testnamen ohne (k = ...)
     results_df["base_test"] = results_df["test"].str.replace(r"\(k\s*=\s*\d+\)", "", regex=True).str.strip()
 
     def models(k, a, b=None, c=None):
-        # Definiere hier die Modelle
-        models = {
+        return {
             "linear": lambda k, a, b: a * k + b,
             "quadratisch": lambda k, a, b, c: a * k**2 + b * k + c,
             "logarithmisch": lambda k, a, b: a * np.log(k) + b if np.all(k > 0) else np.full_like(k, np.nan),
             "wurzel": lambda k, a, b: a * np.sqrt(k) + b,
         }
-        return models
 
     results = []
 
@@ -176,9 +172,7 @@ def analyse_k_influence(results_df):
 
         k_vals = df_k["k"].to_numpy()
         times = df_k["avg_time"].to_numpy()
-
         model_funcs = models(k_vals, None, None, None)
-        model_results = []
 
         for model_name, func in model_funcs.items():
             try:
@@ -188,28 +182,18 @@ def analyse_k_influence(results_df):
                     popt, _ = curve_fit(func, k_vals, times)
                 predicted = func(k_vals, *popt)
                 r2 = r2_score(times, predicted)
-                model_results.append({
-                    "test": base_test_name,
-                    "model": model_name,
-                    "params": popt,
-                    "r2": r2
-                })
+                # Parameter korrekt benennen
+                param_names = ["a", "b", "c"][:len(popt)]
+                row = {"Test": base_test_name, "model": model_name, "r2": r2}
+                for name, val in zip(param_names, popt):
+                    row[f"param_{name}"] = val
+                results.append(row)
             except Exception as e:
                 print(f"Fit Fehler bei {base_test_name} Modell {model_name}: {e}")
-
-        # Sortiere Ergebnisse nach R2 absteigend
-        model_results.sort(key=lambda x: x["r2"], reverse=True)
-        results.extend(model_results)
-
-    # Ausgabe
-    for base_test_name in results_df["base_test"].unique():
-        print(f"\n--- Einfluss von k für Test: {base_test_name} ---")
-        models_for_test = [r for r in results if r["test"] == base_test_name]
-        for r in models_for_test:
-            params_str = ", ".join(f"{p:.5f}" for p in r["params"])
-            print(f"Modell: {r['model']:12} | R² = {r['r2']:.4f} | Parameter: [{params_str}]")
+                continue
 
     return pd.DataFrame(results)
+
 
 
 def runtime_analysis(df, complexity_func):
@@ -235,6 +219,8 @@ def runtime_analysis(df, complexity_func):
 
 def fit_runtime_complexities(detail_df, complexity_funcs, complexity_notation):
     fit_results = []
+
+    # Standardmodelle für praktische Laufzeit
     standard_models = {
         "O(1)": lambda n: np.ones_like(n),
         "O(log n)": lambda n: np.log(n),
@@ -244,60 +230,92 @@ def fit_runtime_complexities(detail_df, complexity_funcs, complexity_notation):
         "O(n^2)": lambda n: n**2,
     }
 
-    for test in detail_df["Test"].unique():
-        df_test = detail_df[detail_df["Test"] == test]
-        n_vals = df_test["Zahl"].to_numpy()
-        times = df_test["avg_time"].to_numpy()
+    for test_name in detail_df["Test"].str.replace(r"\(k\s*=\s*\d+\)", "", regex=True).str.strip().unique():
+        df_test = detail_df[detail_df["Test"].str.contains(test_name)]
 
-        th_name = next((name for name in complexity_funcs if name in test), None)
-        if not th_name:
-            continue
-        th_func = complexity_funcs[th_name]
-        th_label = complexity_notation.get(th_name, "unbekannt")
+        # Aggregation über k: Mittelwert der Laufzeiten pro n
+        df_agg = df_test.groupby("Zahl", as_index=False)["avg_time"].mean()
+        n_vals = df_agg["Zahl"].to_numpy()
+        times = df_agg["avg_time"].to_numpy()
 
-        x_th = th_func(n_vals)
-        a_th, _ = np.polyfit(x_th, times, 1)
-        r2_th = r2_score(times, a_th * x_th)
+        # --- Fit theoretische Laufzeit ---
+        th_func = complexity_funcs.get(test_name)
+        th_label = complexity_notation.get(test_name, "unbekannt")
+        if th_func is not None:
+            x_th = th_func(n_vals).reshape(-1,1)
+            linreg = LinearRegression().fit(x_th, times)
+            y_th_pred = linreg.predict(x_th)
+            a_th = linreg.coef_[0]
+            b_th = linreg.intercept_
+            r2_th = r2_score(times, y_th_pred)
+        else:
+            th_label = "unbekannt"
+            a_th = b_th = r2_th = np.nan
 
+        # --- Fit praktische Laufzeit ---
         best_model_name = None
         best_r2 = -np.inf
-        best_a = None
-
+        best_a = best_b = None
         for model_name, model_func in standard_models.items():
             try:
-                x_model = model_func(n_vals)
-                if np.std(x_model) < 1e-8:  # zu wenig Variation, skip
+                x_model = model_func(n_vals).reshape(-1,1)
+                if np.std(x_model) < 1e-8:
                     continue
-                a_model, _ = np.polyfit(x_model, times, 1)
-                pred = a_model * x_model
-                r2 = r2_score(times, pred)
+                linreg = LinearRegression().fit(x_model, times)
+                y_pred = linreg.predict(x_model)
+                r2 = r2_score(times, y_pred)
                 if r2 > best_r2:
                     best_r2 = r2
                     best_model_name = model_name
-                    best_a = a_model
+                    best_a = linreg.coef_[0]
+                    best_b = linreg.intercept_
             except Exception:
                 continue
 
         fit_results.append({
-            "test": test,
+            "Test": test_name,
             "th_laufzeit": th_label,
             "a_th": a_th,
+            "b_th": b_th,
             "r2_th": r2_th,
             "prak_laufzeit": best_model_name,
             "a_prak": best_a,
+            "b_prak": best_b,
             "r2_prak": best_r2
         })
 
     return pd.DataFrame(fit_results)
 
-def error_analysis(df):
-    """Fehleranalyse pro k-Wert und Test"""
-    return df.groupby(["Test"]).agg({
-        "false_positive": "sum",
-        "false_negative": "sum",
-        "is_error": "sum",
-        "error_rate": "mean"
-    }).reset_index()
+def error_analysis(detail_df):
+    df = detail_df.copy()
+
+    # k extrahieren
+    df["k"] = df["Test"].apply(
+        lambda x: int(re.search(r"k\s*=\s*(\d+)", x).group(1)) if re.search(r"k\s*=\s*(\d+)", x) else 1
+    )
+
+    # Basis-Testnamen ohne k
+    df["base_test"] = df["Test"].str.replace(r"\(k\s*=\s*\d+\)", "", regex=True).str.strip()
+
+    # 1. Gruppieren nach Test und k (abhängig von k)
+    agg_k = df.groupby(["base_test", "k"]).agg(
+        false_pos_sum=("false_positive", "sum"),
+        false_neg_sum=("false_negative", "sum"),
+        avg_error_rate=("is_error", "mean")  # falls "is_error" 1/0 für Fehler ist
+    ).reset_index()
+
+    # 2. Gesamtauswertung unabhängig von k (nur 1 Zeile pro Test)
+    agg_total = df.groupby("base_test").agg(
+        false_pos_sum=("false_positive", "sum"),
+        false_neg_sum=("false_negative", "sum"),
+        avg_error_rate=("is_error", "mean")
+    ).reset_index()
+    agg_total["k"] = "all"  # Kennzeichnung, dass alle k zusammengefasst sind
+
+    # Beide DataFrames zurückgeben
+    return agg_k, agg_total
+
+
 
 # ----------------------------------------------------
 # Main-Auswertung
@@ -316,13 +334,16 @@ def analyse_folder(folder_path, complexity_funcs):
     avg_df = pd.concat(all_avg, ignore_index=True)
     detail_df = pd.concat(all_detail, ignore_index=True)
 
+    # Fehleranalyse: gibt zwei DataFrames zurück
+    err_k_df, err_total_df = error_analysis(detail_df)
+
     results = []
     for test in detail_df["Test"].unique():
         df_test = detail_df[detail_df["Test"] == test]
 
         # k extrahieren
         match = re.search(r"k\s*=\s*(\d+)", test)
-        k_val = int(match.group(1)) if match else None
+        k_val = int(match.group(1)) if match else 1
 
         # passende theoretische Laufzeit finden
         if any(name in test for name in complexity_funcs):
@@ -332,7 +353,17 @@ def analyse_folder(folder_path, complexity_funcs):
             base_name = None
             runtime_res = {}
 
-        err_res = error_analysis(df_test)
+        # Fehlerwerte aus k-abhängigem DataFrame extrahieren
+        base_test_name = test.replace(f"(k = {k_val})", "").strip()
+        err_row = err_k_df[(err_k_df["base_test"] == base_test_name) & (err_k_df["k"] == k_val)]
+        if len(err_row) == 0:
+            false_pos_sum = 0
+            false_neg_sum = 0
+            avg_error_rate = 0
+        else:
+            false_pos_sum = err_row["false_pos_sum"].values[0]
+            false_neg_sum = err_row["false_neg_sum"].values[0]
+            avg_error_rate = err_row["avg_error_rate"].values[0]
 
         results.append({
             "test": test,
@@ -343,9 +374,9 @@ def analyse_folder(folder_path, complexity_funcs):
             "avg_time": df_test["avg_time"].mean(),
             "worst_time": df_test["worst_time"].max(),
             "std_dev": df_test["avg_time"].std(),
-            "false_pos_sum": int(err_res["false_positive"].sum()),
-            "false_neg_sum": int(err_res["false_negative"].sum()),
-            "avg_error_rate": float(err_res["error_rate"].mean())
+            "false_pos_sum": false_pos_sum,
+            "false_neg_sum": false_neg_sum,
+            "avg_error_rate": avg_error_rate
         })
 
     results_df = pd.DataFrame(results)
@@ -361,39 +392,52 @@ def analyse_folder(folder_path, complexity_funcs):
         avg_std_dev=("std_dev", "mean")
     ).reset_index()
 
-    print("\n--- Gesamtauswertung (unabhängig von k) ---")
-    print(total_stats.to_string(index=False))
+    # Sortieren nach avg_avg_time
+    total_stats_sorted = total_stats.sort_values(by="avg_avg_time", ascending=False)
 
-    # 2. Laufzeit-Statistik
-    print("\n--- Laufzeitanalyse - Statistik ---")
-    print(results_df[["test", "k", "best_time", "avg_time", "worst_time", "std_dev"]].to_string(index=False))
+    print("\n--- Gesamtauswertung (sortiert nach avg_avg_time) ---")
+    print(total_stats_sorted.to_string(index=False))
+
+    # 2. Laufzeit-Statistik sortiert nach avg_time
+    print("\n--- Laufzeitanalyse - Statistik (sortiert nach avg_time) ---")
+    runtime_sorted = results_df.sort_values(by="avg_time", ascending=False)
+    print(runtime_sorted[["test", "k", "best_time", "avg_time", "worst_time", "std_dev"]]
+          .to_string(index=False, float_format="%.10f"))
 
     # 3. Laufzeit-K-Analyse (lineare Abhängigkeit testen)
-    k_analysis_df = analyse_k_influence(results_df)
     print("\n--- Laufzeitanalyse - Einfluss von k ---")
-    print(k_analysis_df.to_string(index=False))
+    k_analysis_df = analyse_k_influence(results_df)
+    k_analysis_df_sorted = k_analysis_df.sort_values(by="r2", ascending=False)
+    print(k_analysis_df_sorted.to_string(index=False, float_format="%.10f"))
 
     # 4. Laufzeit-Fit-Analyse unabhängig von k
     print("\n--- Laufzeitanalyse - Fit-Güte ---")
-    results = fit_runtime_complexities(detail_df, complexity_funcs, complexity_notation)
-    print(results)
+    fit_df = fit_runtime_complexities(detail_df, complexity_funcs, complexity_notation)
+    print(fit_df)
 
     # 5. Fehleranalyse
     print("\n--- Fehleranalyse - Abhängig von k ---")
-    print(results_df[["test", "k", "false_pos_sum", "false_neg_sum", "avg_error_rate"]].to_string(index=False))
+    err_k_sorted = err_k_df.sort_values(by="avg_error_rate", ascending=False)
+    print(err_k_sorted.to_string(index=False, float_format="%.10f"))
 
-    # CSV speichern in der gewünschten Reihenfolge
+    print("\n--- Fehleranalyse - Gesamt (unabhängig von k) ---")
+    err_total_sorted = err_total_df.sort_values(by="avg_error_rate", ascending=False)
+    print(err_total_sorted.to_string(index=False, float_format="%.10f"))
+
+    # CSV speichern in gewünschter Reihenfolge
     csv_df = pd.concat([
         total_stats.assign(section="Gesamtauswertung"),
         results_df.assign(section="Laufzeit-Statistik"),
         k_analysis_df.assign(section="Laufzeit-K-Analyse"),
-        #fit_df.assign(section="Laufzeit-Fit-Analyse"),
-        results_df[["test", "k", "false_pos_sum", "false_neg_sum", "avg_error_rate"]].assign(section="Fehleranalyse")
+        fit_df.assign(section="Laufzeit-Fit-Analyse"),
+        err_k_df.assign(section="Fehleranalyse_k"),
+        err_total_df.assign(section="Fehleranalyse_gesamt")
     ], ignore_index=True, sort=False)
 
-    csv_df.to_csv("data\\testpool3_analysis4.csv", index=False)
+    csv_df.to_csv("p3-result/pool3_analysis.csv", index=False)
 
-    return results_df
+    return results_df, err_k_df, err_total_df
+
 
 
 if __name__ == "__main__":
@@ -401,9 +445,22 @@ if __name__ == "__main__":
         "O(1)": lambda n: np.ones_like(n),
         "O(log n)": lambda n: np.log(n),
         "O(log^2 n)": lambda n: np.log(n)**2,
+        "O(log^3 n)": lambda n: np.log(n)**3,
+        "O(log^4 n)": lambda n: np.log(n)**4,
+        "O(log^5 n)": lambda n: np.log(n)**5,
+        "O(log^6 n)": lambda n: np.log(n)**6,
         "O(n)": lambda n: n,
         "O(n log n)": lambda n: n * np.log(n),
+        "O(n log^2 n)": lambda n: n * np.log(n)**2,
         "O(n^2)": lambda n: n**2,
+        "O(n^2 log n)": lambda n: n**2 * np.log(n),
+        "O(n^3)": lambda n: n**3,
+        "O(n^3 log n)": lambda n: n**3 * np.log(n),
+        "O(n^4)": lambda n: n**4,
+        "O(2^n)": lambda n: 2**n,
+        "O(n!)": lambda n: np.array([np.math.factorial(int(x)) for x in n]),
+        "O(sqrt(n))": lambda n: np.sqrt(n),
+        "O(n^(1/3))": lambda n: n**(1/3)
     }
     
     complexity_funcs = {

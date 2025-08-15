@@ -108,20 +108,4 @@ def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
             test_runs += len(valid_results)
             test_n += 1
 
-        total_errors += test_errors
-        total_tests += test_runs
-        total_n += test_n
-
-        rate = round(test_errors / test_runs, 4) if test_runs else 0.0
-        print(
-            f"- {testname}: Fehlerrate {rate:.2%} bei {test_n} gültigen Zahlen "
-            f"(insg. {test_runs} gültige Testwiederholungen, {test_errors} Fehler), "
-            f"{excluded_inputs} ignorierte Tests (kein Ergebnis: {INVALID} oder {NOT_APPLICABLE})"
-        )
-
-    if total_tests > 0:
-        error_percent = (total_errors / total_tests) * 100
-    else:
-        error_percent = 0.0
-
-    print(f"\nGesamt: {total_errors} Fehler bei {total_tests} gültigen Wiederholungen über {total_n} Zahlen ({error_percent:.2f}%)")
+    print(f"Fehleranalyse abgeschlossen")

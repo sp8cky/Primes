@@ -658,7 +658,7 @@ def error_stats_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
               false_neg_sum=("false_negative","sum"),
               avg_error_rate=("is_error","mean")
           )
-          .sort_values("avg_error_rate", ascending=False)
+          .sort_values("avg_error_rate", ascending=True)
     )
     return err_total
 
@@ -681,109 +681,103 @@ def export_df(df: pd.DataFrame, filename: str):
 # =============================================================================
 if __name__ == "__main__":
     # >>>>> Pfade anpassen <<<<<
-    folder1 = "C:\\Users\\julia\\Downloads\\testpool2"
-    folder2 = "C:\\Users\\julia\\Downloads\\testpool3"
+    folder1 = "C:\\Users\\julia\\Downloads\\Testpool 1 - alle"
+    folder2 = "C:\\Users\\julia\\Downloads\\Testpool 2 - prob"
 
-    # ------------------------------------------------
+# ------------------------------------------------
     # Daten einlesen
     # ------------------------------------------------
     print("\n=== Schritt 1: Daten laden ===")
-    data1 = load_all_pool1(folder1)                       # Pool1-Detaildaten
-    avg2, data2 = load_all_pool2(folder2)                 # Pool2-Avg & Pool2-Detaildaten
+    data1 = load_all_pool1(folder1)
+    avg2, data2 = load_all_pool2(folder2)
     print(f"Pool1 Detail: {len(data1)} Zeilen")
     print(f"Pool2 Detail: {len(data2)} Zeilen")
 
     # ------------------------------------------------
-    # POOL2: Analyse von k
-    # ------------------------------------------------
-    print("\n=== Schritt 2 (POOL2): Analyse von k (analyse_k_influence) ===")
-    pool2_results = build_pool2_results(data2)
-    k_analysis_df = analyse_k_influence_pool2(pool2_results)
-    k_analysis_sorted = k_analysis_df.sort_values(["model","r2"], ascending=[False, False])
-    print(k_analysis_sorted.to_string(index=False, float_format="%.10f"))
-    export_df(pool2_results, "results/p2_1_results_compact.csv")
-    export_df(k_analysis_sorted, "results/p2_2_k_influence.csv")
-
-    # ------------------------------------------------
-    # BEIDE: Analyse gesamt (analyse_overall)
+    # ANALYSE
     # ------------------------------------------------
     print("\n=== Schritt 3a (BEIDE): Gesamtauswertung (analyse_overall) ===")
+    print("\n--- Pool1: Gesamtauswertung ---")
     overall1 = analyse_overall(data1)
     overall1_sorted = overall1.sort_values(by="avg_avg_time", ascending=True)
-    overall2 = analyse_overall(data2)
-    overall2_sorted = overall2.sort_values(by="avg_avg_time", ascending=True)
-    print("\n--- Pool1: Gesamtauswertung ---")
     print(overall1_sorted.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Gesamtauswertung ---")
-    print(overall2_sorted.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Gesamtauswertung (unabhängig von k) ---")
-    overall2_indep = analyse_overall_independent_k(data2)
-    overall2_indep_sorted = overall2_indep.sort_values(by="avg_avg_time", ascending=True)
-    print(overall2_indep_sorted.to_string(index=False, float_format="%.10f"))
-    export_df(overall1_sorted, "results/p1_1_overall.csv")
-    export_df(overall2_sorted, "results/p2_3_overall.csv")
-    export_df(overall2_indep_sorted, "results/p2_4_overall_independent.csv")
-
-
-    # ------------------------------------------------
-    # BEIDE: Laufzeit-Analyse (sortiert ausgegeben)
-    # ------------------------------------------------
+    
     print("\n=== Schritt 4 (BEIDE): Laufzeit-Statistik (sortiert) ===")
-    rt1 = runtime_stats(data1).sort_values(["category","time_avg"], ascending=[True, True])
-    rt2 = runtime_stats(data2).sort_values(["category","time_avg"], ascending=[True, True])
+    rt1 = runtime_stats(data1).sort_values("time_avg", ascending=True)
+    rt2 = runtime_stats(data2).sort_values("time_avg", ascending=True)
     print("\n--- Pool1: Laufzeit-Statistik ---")
     print(rt1.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Laufzeit-Statistik ---")
-    print(rt2.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Laufzeit-Statistik (unabhängig von k) ---")
-    rt2_indep = runtime_stats_independent_k(data2).sort_values(["category","time_avg"], ascending=[True, True])
-    print(rt2_indep.to_string(index=False, float_format="%.10f"))
-    export_df(rt1, "results/p1_2_runtime_stats.csv")
-    export_df(rt2, "results/p2_5_runtime_stats.csv")
-    export_df(rt2_indep, "results/p2_6_runtime_stats_independent.csv")
 
-    # ------------------------------------------------
-    # BEIDE: Runtime-Complexity (Fit: theoretisch & praktisch)
-    # ------------------------------------------------
     print("\n=== Schritt 5 (BEIDE): Runtime-Complexity (Fit theoretisch & praktisch) ===")
     fit1 = fit_runtime_complexities_unified(data1)
     fit2 = fit_runtime_complexities_unified(data2)
-    fit1_sorted = fit1.sort_values("r2_th", ascending=False)
-    fit2_sorted = fit2.sort_values("r2_th", ascending=False)
+    fit1_sorted = fit1.sort_values("r2_th", ascending=True)
+    fit2_sorted = fit2.sort_values("r2_th", ascending=True)
     print("\n--- Pool1: Fit-Statistik ---")
     print(fit1_sorted.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Fit-Statistik ---")
-    print(fit2_sorted.to_string(index=False, float_format="%.10f"))
-    export_df(fit1_sorted, "results/p1_3_fit_stats.csv")
-    export_df(fit2_sorted, "results/p2_7_fit_stats.csv")
 
-    # ------------------------------------------------
-    # BEIDE: Fehleranalyse
-    # ------------------------------------------------
+
     print("\n=== Schritt 6 (BEIDE): Fehleranalyse ===")
     err1 = error_stats(data1).sort_values(["category","error_rate_avg"], ascending=[True, True])
     err2 = error_stats(data2).sort_values(["category","error_rate_avg"], ascending=[True, True])
     print("\n--- Pool1: Fehleranalyse ---")
     print(err1.to_string(index=False, float_format="%.10f"))
-    print("\n--- Pool2: Fehleranalyse ---")
-    print(err2.to_string(index=False, float_format="%.10f"))
-    export_df(err1, "results/p1_4_error_stats.csv")
-    export_df(err2, "results/p2_8_error_stats.csv")
-    print("\n--- Pool2: Fehleranalyse (gesamt, unabhängig von k) ---")
-    err_total = error_stats_independent_k(data2)
-    print(err_total.to_string(index=False, float_format="%.10f"))
-    export_df(err_total, "results/p2_9_error_total.csv")
 
-    # ------------------------------------------------
-    # POOL1: Gruppen-Zusammenfassung (Schnellster / Genauester je Kategorie)
-    # ------------------------------------------------
     print("\n=== Schritt 7 (POOL1): Gruppen-Zusammenfassung ===")
     fastest, accurate = group_summaries(overall1)
     print("\n--- Pool1: Schnellster Test je Kategorie ---")
     print(fastest.sort_values("category").to_string(index=False, float_format="%.10f"))
     print("\n--- Pool1: Genauester Test je Kategorie ---")
     print(accurate.sort_values("category").to_string(index=False, float_format="%.10f"))
+
+
+    print("\n=== Schritt 2 (POOL2): Analyse von k (analyse_k_influence) ===")
+    pool2_results = build_pool2_results(data2)
+    k_analysis_df = analyse_k_influence_pool2(pool2_results)
+    k_analysis_sorted = k_analysis_df.sort_values(["model","r2"], ascending=[False, False])
+    print(k_analysis_sorted.to_string(index=False, float_format="%.10f"))
+
+    print("\n=== Schritt 3a (BEIDE): Gesamtauswertung (analyse_overall) ===")
+    overall2 = analyse_overall(data2)
+    overall2_sorted = overall2.sort_values(by="avg_avg_time", ascending=True)
+    print("\n--- Pool2: Gesamtauswertung ---")
+    print(overall2_sorted.to_string(index=False, float_format="%.10f"))
+    print("\n--- Pool2: Gesamtauswertung (unabhängig von k) ---")
+    overall2_indep = analyse_overall_independent_k(data2)
+    overall2_indep_sorted = overall2_indep.sort_values(by="avg_avg_time", ascending=True)
+    print(overall2_indep_sorted.to_string(index=False, float_format="%.10f"))
+
+    print("\n=== Schritt 4 (BEIDE): Laufzeit-Statistik (sortiert) ===")
+    print("\n--- Pool2: Laufzeit-Statistik ---")
+    print(rt2.to_string(index=False, float_format="%.10f"))
+    print("\n--- Pool2: Laufzeit-Statistik (unabhängig von k) ---")
+    rt2_indep = runtime_stats_independent_k(data2).sort_values("time_avg", ascending=True)
+    print(rt2_indep.to_string(index=False, float_format="%.10f"))
+
+    print("\n=== Schritt 5 (BEIDE): Runtime-Complexity (Fit theoretisch & praktisch) ===")
+    print("\n--- Pool2: Fit-Statistik ---")
+    print(fit2_sorted.to_string(index=False, float_format="%.10f"))
+
+    print("\n=== Schritt 6 (BEIDE): Fehleranalyse ===")
+    print("\n--- Pool2: Fehleranalyse ---")
+    print(err2.to_string(index=False, float_format="%.10f"))
+    
+    print("\n--- Pool2: Fehleranalyse (gesamt, unabhängig von k) ---")
+    err_total = error_stats_independent_k(data2)
+    print(err_total.to_string(index=False, float_format="%.10f"))
+
+    export_df(overall1_sorted, "results/p1_1_overall.csv")
+    export_df(rt1, "results/p1_2_runtime_stats.csv")
+    export_df(fit1_sorted, "results/p1_3_fit_stats.csv")
+    export_df(err1, "results/p1_4_error_stats.csv")
     export_df(fastest, "results/p1_5_fastest_by_group.csv")
     export_df(accurate, "results/p1_6_most_accurate_by_group.csv")
-
-    print("\n=== Fertig. ===")
+    export_df(pool2_results, "results/p2_1_results_compact.csv")
+    export_df(k_analysis_sorted, "results/p2_2_k_influence.csv")
+    export_df(overall2_sorted, "results/p2_3_overall.csv")
+    export_df(overall2_indep_sorted, "results/p2_4_overall_independent.csv")
+    export_df(rt2, "results/p2_5_runtime_stats.csv")
+    export_df(rt2_indep, "results/p2_6_runtime_stats_independent.csv")
+    export_df(fit2_sorted, "results/p2_7_fit_stats.csv")
+    export_df(err2, "results/p2_8_error_stats.csv")
+    export_df(err_total, "results/p2_9_error_total.csv")

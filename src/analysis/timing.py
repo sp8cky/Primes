@@ -65,47 +65,49 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str
 
 
 def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
-    total_n = 0
-    total_tests = 0
-    total_errors = 0
-
     print("\nFehleranalyse pro Test:\n")
     for testname, numbers in test_data.items():
-        test_errors = 0
-        test_runs = 0
-        test_n = 0
-        excluded_inputs = 0
-
         for n, data in numbers.items():
+            result = data.get("result")
             true_prime = isprime(n)
             data["true_prime"] = true_prime
 
-            repeat_results = data.get("repeat_results", [data.get("result")])
-            repeat_count = len(repeat_results)
-
-            # Nur PRIME/COMPOSITE zählen zur Fehleranalyse
-            valid_results = [r for r in repeat_results if r in {PRIME, COMPOSITE}]
-            excluded = repeat_count - len(valid_results)
-
-            if not valid_results:
-                excluded_inputs += 1
+            # Explizit NOT_APPLICABLE überspringen
+            if result == NOT_APPLICABLE or INVALID is None:
+                data["error_rate"] = None
+                data["is_error"] = False
+                data["false_positive"] = False
+                data["false_negative"] = False
+                data["repeat_count"] = 0
+                data["error_count"] = 0
                 continue
 
-            # Fehler zählen (abweichend vom wahren Primstatus)
+            # Ergebnisse aus wiederholten Tests oder Single-Result
+            repeat_results = data.get("repeat_results", [result])
+
+            # Nur PRIME/COMPOSITE zählen
+            valid_results = [r for r in repeat_results if r in {PRIME, COMPOSITE}]
+            if not valid_results:
+                data["error_rate"] = None
+                data["is_error"] = False
+                data["false_positive"] = False
+                data["false_negative"] = False
+                data["repeat_count"] = len(repeat_results)
+                data["error_count"] = 0
+                continue
+
+            # Fehler zählen
             error_count = sum(
-                1 for res in valid_results
-                if (res == PRIME and not true_prime) or (res == COMPOSITE and true_prime)
+                1 for r in valid_results
+                if (r == PRIME and not true_prime) or (r == COMPOSITE and true_prime)
             )
 
-            error_rate = error_count / len(valid_results) if valid_results else 0.0
-
-            data["error_rate"] = error_rate
+            # Fehlerstatistiken speichern
+            data["error_rate"] = error_count / len(valid_results)
             data["is_error"] = (error_count > 0)
             data["false_positive"] = (not true_prime and any(r == PRIME for r in valid_results))
-            data["false_negative"] = (true_prime and all(r == COMPOSITE for r in valid_results))
+            data["false_negative"] = (true_prime and any(r == COMPOSITE for r in valid_results))
+            data["repeat_count"] = len(repeat_results)
+            data["error_count"] = error_count
 
-            test_errors += error_count
-            test_runs += len(valid_results)
-            test_n += 1
-
-    print(f"Fehleranalyse abgeschlossen")
+    print("Fehleranalyse abgeschlossen")

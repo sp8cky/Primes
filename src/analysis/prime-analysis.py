@@ -192,7 +192,7 @@ def run_primetest_analysis(
             end=end,
             custom_xticks=custom_ticks,
             number_type=num_type,
-            filename=f"d10-plot-seed{seed}-v{variant}.png"
+            filename=f"d2-plot-seed{seed}-v{variant}.png"
         )
         # Gruppierten Plot aufrufen
         measure_section("Plots",
@@ -244,9 +244,9 @@ if __name__ == "__main__":
     k1 = 10**3
     k10 = 10**4
     k100 = 10**5
- 
+
     custom_ticks = [1, h1, k1, k10, k100]
-    #run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]
+    #run_tests2 = ["Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant"]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", 
               "Initial Lucas", "Lucas", "Optimized Lucas", 
               "Wilson", "AKS10", "Pepin", 
@@ -279,8 +279,7 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=9888,
-        #seed=random.randint(1000, 10000),
+        seed=random.randint(1000, 100000),
         protocoll=True,
         save_results=True,
         show_plot=True,

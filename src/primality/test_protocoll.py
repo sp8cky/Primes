@@ -172,7 +172,7 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = No
         test_data["Solovay-Strassen"][n]["a_values"].append((a, cond1, cond2))
 
         if cond1:
-            test_data["Solovay-Strassen"][n]["reason"] = "Jacobi-Symbol ist 0"
+            test_data["Solovay-Strassen"][n]["reason"] = "Jacobi-Symbol = 0"
             test_data["Solovay-Strassen"][n]["result"] = COMPOSITE
             return COMPOSITE
 
@@ -194,13 +194,12 @@ def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
-        test_data["Initial Lucas"][n]["a_values"].append((a, cond1, None))
 
         if not cond1: continue  # Wichtig: nicht abbrechen, sondern nächstes a testen
 
         for m in range(1, n - 1):
             cond2 = pow(a, m, n) == 1
-            test_data["Initial Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
+            test_data["Initial Lucas"][n]["a_values"] = (a, cond1, cond2)
             if cond2:
                 break  # a ist ungeeignet → nächstes a
         else:
@@ -208,7 +207,7 @@ def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
             return PRIME
 
     test_data["Initial Lucas"][n]["result"] = COMPOSITE
-    test_data["Initial Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
+    test_data["Initial Lucas"][n]["reason"] = "Kein passendes a gefunden"
     return COMPOSITE
 
 
@@ -222,13 +221,12 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
 
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
-        test_data["Lucas"][n]["a_values"].append((a, cond1, None))
 
         if not cond1: continue  # nächstes a versuchen
 
         for m in divisors(n - 1)[:-1]:
             cond2 = pow(a, m, n) == 1
-            test_data["Lucas"][n]["a_values"][-1] = (a, cond1, cond2)
+            test_data["Lucas"][n]["a_values"] = (a, cond1, cond2)
             if cond2:
                 break  # Bedingung (ii) verletzt, nächstes a
         else:
@@ -236,7 +234,7 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
             return PRIME  # EIN gültiges a gefunden
 
     test_data["Lucas"][n]["result"] = COMPOSITE
-    test_data["Lucas"][n]["reason"] = "Kein a erfüllt beide Bedingungen"
+    test_data["Lucas"][n]["reason"] = "Kein passendes a gefunden"
     return COMPOSITE
 
 
@@ -259,7 +257,7 @@ def optimized_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
                 break
         else:
             test_data["Optimized Lucas"][n]["result"] = COMPOSITE
-            test_data["Optimized Lucas"][n]["reason"] = f"No valid a for q = {q}"
+            test_data["Optimized Lucas"][n]["reason"] = f"Kein valides a für q = {q}"
             return COMPOSITE
 
     test_data["Optimized Lucas"][n]["result"] = PRIME
@@ -478,7 +476,7 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
     if n <= 1: return INVALID
     if n % 2 == 0:
         test_data["Proth Variant"][n]["result"] = COMPOSITE
-        test_data["Proth Variant"][n]["reason"] = "n must be odd"
+        test_data["Proth Variant"][n]["reason"] = "n ist nicht ungerade"
         return COMPOSITE
 
     decomposition = helpers.find_proth_decomposition(n)
@@ -496,7 +494,7 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
     for a in range(2, n):
         if pow(a, n - 1, n) != 1:
             test_data["Proth Variant"][n]["result"] = COMPOSITE
-            test_data["Proth Variant"][n]["reason"] = f"a={a} fails a^(n-1) ≡ 1 mod n"
+            test_data["Proth Variant"][n]["reason"] = f"a^(n-1) ≠ 1 mod n"
             return COMPOSITE
 
         if pow(a, (n - 1) // 2, n) == n - 1:
@@ -549,7 +547,7 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
 
     if gcd(F, R) != 1:
         test_data["Optimized Pocklington"][n]["result"] = NOT_APPLICABLE
-        test_data["Optimized Pocklington"][n]["reason"] = "F und R müssen teilerfremd sein"
+        test_data["Optimized Pocklington"][n]["reason"] = "ggT(F, R) != 1"
         return NOT_APPLICABLE
 
     # test for each prime factor q of F
@@ -586,13 +584,13 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
 
     if F * B <= math.isqrt(n):
         test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
-        test_data["Optimized Pocklington Variant"][n]["reason"] = "FB ≤ √n condition not met"
+        test_data["Optimized Pocklington Variant"][n]["reason"] = "FB !≤ √n"
         return NOT_APPLICABLE
 
     for p in primerange(2, B):
         if R % p == 0:
             test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
-            test_data["Optimized Pocklington Variant"][n]["reason"] = f"R has prime factor < B: {p}"
+            test_data["Optimized Pocklington Variant"][n]["reason"] = f"R hat Primfaktor < B: {p}"
             return NOT_APPLICABLE
 
     test_data["Optimized Pocklington Variant"][n]["a_values"] = {}
@@ -618,9 +616,9 @@ def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None
             break
         b += 1
     if not found_b:
-        test_data["Optimized Pocklington Variant"][n]["result"] = COMPOSITE
-        test_data["Optimized Pocklington Variant"][n]["reason"] = "Kein pasendes b gefunden"
-        return COMPOSITE
+        test_data["Optimized Pocklington Variant"][n]["result"] = NOT_APPLICABLE
+        test_data["Optimized Pocklington Variant"][n]["reason"] = "Kein passendes b gefunden"
+        return NOT_APPLICABLE
 
     test_data["Optimized Pocklington Variant"][n]["other_fields"] = [b]
     test_data["Optimized Pocklington Variant"][n]["result"] = PRIME
@@ -633,7 +631,7 @@ def generalized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -
     decomposition = helpers.find_pocklington_decomposition(n)
     if decomposition is None:
         test_data["Generalized Pocklington"][n]["result"] = NOT_APPLICABLE
-        test_data["Generalized Pocklington"][n]["reason"] = "Keine Zerlegung N = K*p^n + 1 mit K < p^n gefunden"
+        test_data["Generalized Pocklington"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
     K, p, e = decomposition
@@ -658,14 +656,14 @@ def grau_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.13
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
         test_data["Grau"][n]["result"] = NOT_APPLICABLE
-        test_data["Grau"][n]["reason"] = "Keine Zerlegung n=K*p^n+1 gefunden"
+        test_data["Grau"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
     K, p, n_exp = decomposition
     a = helpers.find_quadratic_non_residue(p)
     if a is None:
         test_data["Grau"][n]["result"] = NOT_APPLICABLE
-        test_data["Grau"][n]["reason"] = f"Kein quadratischer Nichtrest für p={p} gefunden"
+        test_data["Grau"][n]["reason"] = f"Kein QNR für p={p} gefunden"
         return NOT_APPLICABLE
 
     exponent = (n - 1) // p
@@ -687,7 +685,7 @@ def grau_probability_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
         test_data["Grau Probability"][n]["result"] = NOT_APPLICABLE
-        test_data["Grau Probability"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
+        test_data["Grau Probability"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
     K, p, exp = decomposition
@@ -727,7 +725,7 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition:
         test_data["Rao"][n]["result"] = NOT_APPLICABLE
-        test_data["Rao"][n]["reason"] = "Keine Zerlegung R = p2^n+1 gefunden"
+        test_data["Rao"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
     p, n_exp = decomposition
@@ -738,18 +736,18 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
     if not cond1: 
         test_data["Rao"][n]["result"] = COMPOSITE
         test_data["Rao"][n]["a_values"].append((3, False, None))
-        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R → R nicht prim, nicht primover"
+        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≠ -1 mod R"
         return COMPOSITE
 
     cond2 = (pow(3, pow(2, n_exp - 1), n) + 1) % n == 0
     if not cond2: 
         test_data["Rao"][n]["result"] = PRIME
         test_data["Rao"][n]["a_values"].append((3, cond1, cond2))
-        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1) → R ist prim"
+        test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R ∤ GF(3, n-1)"
         return PRIME
 
     test_data["Rao"][n]["result"] = COMPOSITE
-    test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R | GF(3, n-1) → R ist primover"
+    test_data["Rao"][n]["reason"] = "3^{(R-1)/2} ≡ -1 und R | GF(3, n-1)"
     return COMPOSITE
 
 
@@ -761,7 +759,7 @@ def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
     decomposition = helpers.find_pocklington_decomposition(n)
     if not decomposition:
         test_data["Ramzy"][n]["result"] = NOT_APPLICABLE    
-        test_data["Ramzy"][n]["reason"] = "Keine Zerlegung N=K*p^n+1 gefunden"
+        test_data["Ramzy"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
     K, p, n_exp = decomposition  # N = K*p^n + 1

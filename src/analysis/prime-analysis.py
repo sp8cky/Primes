@@ -192,7 +192,7 @@ def run_primetest_analysis(
             end=end,
             custom_xticks=custom_ticks,
             number_type=num_type,
-            filename=f"d2-plot-seed{seed}-v{variant}.png"
+            filename=f"d10-plot-seed{seed}-v{variant}.png"
         )
         # Gruppierten Plot aufrufen
         measure_section("Plots",
@@ -211,7 +211,7 @@ def run_primetest_analysis(
 
     # CSV-Export
     if save_results:
-        filename = f"d2-testdata-seed{seed}-v{variant}.csv"
+        filename = f"d10-testdata-seed{seed}-v{variant}.csv"
         #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,

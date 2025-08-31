@@ -681,8 +681,8 @@ def export_df(df: pd.DataFrame, filename: str):
 # =============================================================================
 if __name__ == "__main__":
     # >>>>> Pfade anpassen <<<<<
-    folder1 = "C:\\Users\\julia\\Downloads\\Testpool 1 - alle"
-    folder2 = "C:\\Users\\julia\\Downloads\\Testpool 2 - prob"
+    folder1 = "C:\\Users\\julia\\Downloads\\T1"
+    folder2 = "C:\\Users\\julia\\Downloads\\T2"
 
 # ------------------------------------------------
     # Daten einlesen

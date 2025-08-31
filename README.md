@@ -44,7 +44,7 @@ python src/analysis/prime-analysis.py
 - Die Protokollversionen aller Tests werden folgend durchgeführt, um weitere Daten zu protokollieren (siehe [Datenerhebung pro Test](#Datenerhebung-pro-Test))
 - Die Ergebnisse werden über Plots visualisiert und per csv-Datei exportiert
 
-### Datenerhebnung pro Test
+### Datenerhebung pro Test
 Felder (werden für jeden Test ergänzt, wenn verfügbar):
 - `Zahl`: Die getestete Zahl n
 - `Test`: Name des Tests (z. B. Fermat, Lucas, Proth…)

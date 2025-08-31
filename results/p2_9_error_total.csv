@@ -1,0 +1,4 @@
+base_test,false_pos_sum,false_neg_sum,avg_error_rate
+Solovay-Strassen,23,0,0.0008518518518518519
+Miller-Selfridge-Rabin,32,0,0.0011851851851851852
+Fermat,47,0,0.0017407407407407408

@@ -1,0 +1,19 @@
+Test,category,false_pos_sum,false_neg_sum,errors_sum,error_rate_avg
+AKS10,Langsame Tests,0,0,0,0.0
+Wilson,Langsame Tests,0,0,0,0.0
+Initial Lucas,Lucas-Tests,0,0,0,0.0
+Lucas,Lucas-Tests,0,0,0,0.0
+Lucas-Lehmer,Lucas-Tests,0,0,0,0.0
+Optimized Lucas,Lucas-Tests,0,0,0,0.0
+Fermat (k = 3),Probabilistische Tests,0,0,0,0.0
+Miller-Selfridge-Rabin (k = 3),Probabilistische Tests,0,0,0,0.0
+Solovay-Strassen (k = 3),Probabilistische Tests,0,0,0,0.0
+Pepin,Spezielle Tests,0,0,0,0.0
+Generalized Pocklington,Zusammengesetzte,0,0,0,0.0
+Optimized Pocklington,Zusammengesetzte,0,0,0,0.0
+Optimized Pocklington Variant,Zusammengesetzte,0,0,0,0.0
+Proth,Zusammengesetzte,0,0,0,0.0
+Proth Variant,Zusammengesetzte,0,0,0,0.0
+Ramzy,Zusammengesetzte,0,0,0,0.0
+Rao,Zusammengesetzte,0,0,3,0.003
+Pocklington,Zusammengesetzte,0,0,234,0.234

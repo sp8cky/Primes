@@ -1,0 +1,4 @@
+base_test,category,best_time_min,time_avg,worst_time_max,time_std
+Solovay-Strassen,Probabilistische Tests,0.0,0.027781888888888887,46.16,0.028109488767651392
+Fermat,Probabilistische Tests,0.0,0.11420407407407408,76.299,0.12228868123532263
+Miller-Selfridge-Rabin,Probabilistische Tests,0.0,0.12920914814814816,166.005,0.12804400592039844

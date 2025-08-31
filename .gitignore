@@ -1,11 +1,4 @@
-# ignore data directory and its contents
-/data/
-
 # ignore specific file types
-*.csv
-*.json
-*.png
-
 __pycache__/
 *.py[cod]
 *.so

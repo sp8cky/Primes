@@ -1,0 +1,6 @@
+Test,category,avg_false_positive,avg_false_negative,avg_error_rate,avg_best_time,avg_avg_time,avg_worst_time,avg_std_dev
+Solovay-Strassen (k = 3),Probabilistische Tests,0.0,0.0,0.0,0.014964,0.016266,0.023852,0.011960142976570979
+Lucas-Lehmer,Lucas-Tests,0.0,0.0,0.0,0.0012333333333333332,0.0015,0.0037500000000000003,0.0008561838864739438
+AKS10,Langsame Tests,0.0,0.0,0.0,5.404196,5.789191,6.998814,0.8960616727080206
+Pepin,Spezielle Tests,0.0,0.0,0.0,0.00032,0.00072,0.00244,0.0005799366608624125
+Proth Variant,Zusammengesetzte,0.0,0.0,0.0,0.0013820000000000002,0.001486,0.002115,0.0004456339188050992

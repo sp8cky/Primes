@@ -1,0 +1,16 @@
+Test,category,best_time_min,time_avg,worst_time_max,time_std
+Solovay-Strassen (k = 1),Probabilistische Tests,0.0,0.0178719,46.16,0.01351072701095085
+Solovay-Strassen (k = 2),Probabilistische Tests,0.0,0.0273443,43.372,0.02378304692090749
+Solovay-Strassen (k = 4),Probabilistische Tests,0.0,0.028925,1.189,0.019411341405868254
+Solovay-Strassen (k = 5),Probabilistische Tests,0.0,0.031907,2.018,0.02328455542890012
+Solovay-Strassen (k = 3),Probabilistische Tests,0.0,0.0474234,39.092,0.044732059240155414
+Fermat (k = 1),Probabilistische Tests,0.0,0.0775136,76.299,0.07443125967146882
+Miller-Selfridge-Rabin (k = 1),Probabilistische Tests,0.0,0.0881022,49.548,0.05445720626226979
+Fermat (k = 4),Probabilistische Tests,0.0,0.09308,7.05,0.05709910601671372
+Fermat (k = 2),Probabilistische Tests,0.0,0.1118133,68.342,0.11053207487904886
+Miller-Selfridge-Rabin (k = 4),Probabilistische Tests,0.0,0.11288899999999999,4.561,0.06779747175357041
+Fermat (k = 5),Probabilistische Tests,0.0,0.114647,6.968,0.07860216722006902
+Miller-Selfridge-Rabin (k = 2),Probabilistische Tests,0.0,0.12076920000000001,166.005,0.08979413694703556
+Miller-Selfridge-Rabin (k = 5),Probabilistische Tests,0.0,0.134329,7.325,0.08906031944418065
+Fermat (k = 3),Probabilistische Tests,0.0,0.1965028,69.002,0.1838342182405638
+Miller-Selfridge-Rabin (k = 3),Probabilistische Tests,0.0,0.23054299999999997,58.962,0.2239062700206294

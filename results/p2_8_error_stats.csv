@@ -1,0 +1,16 @@
+Test,category,false_pos_sum,false_neg_sum,errors_sum,error_rate_avg
+Fermat (k = 3),Probabilistische Tests,0,0,0,0.0
+Fermat (k = 4),Probabilistische Tests,0,0,0,0.0
+Fermat (k = 5),Probabilistische Tests,0,0,0,0.0
+Miller-Selfridge-Rabin (k = 3),Probabilistische Tests,0,0,0,0.0
+Miller-Selfridge-Rabin (k = 4),Probabilistische Tests,0,0,0,0.0
+Miller-Selfridge-Rabin (k = 5),Probabilistische Tests,0,0,0,0.0
+Solovay-Strassen (k = 5),Probabilistische Tests,0,0,0,0.0
+Miller-Selfridge-Rabin (k = 2),Probabilistische Tests,1,0,1,0.0001
+Solovay-Strassen (k = 3),Probabilistische Tests,1,0,1,0.0002
+Solovay-Strassen (k = 2),Probabilistische Tests,3,0,3,0.0003
+Fermat (k = 2),Probabilistische Tests,4,0,4,0.0004
+Solovay-Strassen (k = 4),Probabilistische Tests,1,0,1,0.001
+Solovay-Strassen (k = 1),Probabilistische Tests,18,0,18,0.0018
+Miller-Selfridge-Rabin (k = 1),Probabilistische Tests,31,0,31,0.0031
+Fermat (k = 1),Probabilistische Tests,43,0,43,0.0043

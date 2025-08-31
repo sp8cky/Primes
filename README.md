@@ -59,25 +59,25 @@ Felder (werden für jeden Test ergänzt, wenn verfügbar):
 
 Folgende Tests dokumentieren folgende Angaben:
 
-| Gr | Test                        | n   | res | TP | FP  | TN  | EC | ER  | Best  | Avg   | Worst | Std  | a_values                             | Other_fields                                      | Reason |
-|----|-----------------------------|-----|-----|----|-----|-----|----|-----|-------|-------|-------|------|--------------------------------------|--------------------------------------------------|--------|
-|    | Fermat (k=)                 |     |     |    |     |     |    |     |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
-|    | Miller-Rabin (k=)           |     |     |    |     |     |    |     |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
-|    | Solovay-Strassen (k=)       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
-|    | Initial Lucas               |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
-|    | Lucas                       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
-|    | Optimized Lucas             |     |     |    |     |     |    |     |       |       |       |      | {q1: (a1, cond1, cond2), q2: (...)}  |                                                  |        |
-|    | Pepin                       |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
-|    | Lucas-Lehmer                |     |     |    |     |     |    |     |       |       |       |      |                                      | [p, sequence, S]                                 |        |
-|    | Wilson                      |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
-|    | AKS10                       |     |     |    |     |     |    |     |       |       |       |      |                                      | [initial_check, find_r, prime_divisor_check, polynomial_check] |        |
-|    | Proth Variant               |     |     |    |     |     |    |     |       |       |       |      | [(a_1, result), (...)]               |                                                  |        |
-|    | Pocklington                 |     |     |    |     |     |    |     |       |       |       |      |                                      |                                                  |        |
-|    | Optimized Pocklington       |     |     |    |     |     |    |     |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} |                                                  |        |
-|    | Optimized Pocklington Var.  |     |     |    |     |     |    |     |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} | [b, pow(b, (n - 1) // F, n)]                     |        |
-|    | Generalized Pocklington     |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n]                                        |        |
-|    | Rao                         |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [p, 2, n_exp]                                    |        |
-|    | Ramzy                       |     |     |    |     |     |    |     |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n_exp]                                    |        |
+| Gr | Test                        | n   | res | TP | FP  | TN  | EC | Best  | Avg   | Worst | Std  | a_values                             | Other_fields                                      | Reason |
+|----|-----------------------------|-----|-----|----|-----|-----|----|-------|-------|-------|------|--------------------------------------|--------------------------------------------------|--------|
+|    | Fermat (k=)                 |     |     |    |     |     |    |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
+|    | Miller-Rabin (k=)           |     |     |    |     |     |    |       |       |       |      | [(a1, result), (...)]                |                                                  |        |
+|    | Solovay-Strassen (k=)       |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Initial Lucas               |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Lucas                       |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          |                                                  |        |
+|    | Optimized Lucas             |     |     |    |     |     |    |       |       |       |      | {q1: (a1, cond1, cond2), q2: (...)}  |                                                  |        |
+|    | Pepin                       |     |     |    |     |     |    |       |       |       |      |                                      |                                                  |        |
+|    | Lucas-Lehmer                |     |     |    |     |     |    |       |       |       |      |                                      | [p, sequence, S]                                 |        |
+|    | Wilson                      |     |     |    |     |     |    |       |       |       |      |                                      |                                                  |        |
+|    | AKS10                       |     |     |    |     |     |    |       |       |       |      |                                      | [initial_check, find_r, prime_divisor_check, polynomial_check] |        |
+|    | Proth Variant               |     |     |    |     |     |    |       |       |       |      | [(a_1, result), (...)]               |                                                  |        |
+|    | Pocklington                 |     |     |    |     |     |    |       |       |       |      |                                      |                                                  |        |
+|    | Optimized Pocklington       |     |     |    |     |     |    |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} |                                                  |        |
+|    | Optimized Pocklington Var.  |     |     |    |     |     |    |       |       |       |      | {q1: (a_1, cond1, cond2), q2: (...)} | [b, pow(b, (n - 1) // F, n)]                     |        |
+|    | Generalized Pocklington     |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n]                                        |        |
+|    | Rao                         |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          | [p, 2, n_exp]                                    |        |
+|    | Ramzy                       |     |     |    |     |     |    |       |       |       |      | [(a1, cond1, cond2), (...)]          | [K, p, n_exp]                                    |        |
 
 ### Ergebnisse
 - Daten werden im CSV-Format und die Plots im PNG-Format gespeichert

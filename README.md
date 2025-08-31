@@ -31,7 +31,7 @@ pip install -r requirements.txt
 ### Skript ausführen
 Aus dem root directory:
 ```bash
-python src/analysis/prime-analysis
+python src/analysis/prime-analysis.py
 ```
 
 ---
@@ -41,14 +41,14 @@ python src/analysis/prime-analysis
 - Testdaten werden initialisiert
 - Für jeden Test wird ein Pool an Zahlen n erzeugt 
 - Die Laufzeitmessung wird über t Wiederholungen durchgeführt
-- Die Protokollversionen aller Tests werden folgend durchgeführt, um weitere Daten zu protokollieren (siehe [Datenerhebnung pro Test](#Datenerhebnung-pro-Test))
+- Die Protokollversionen aller Tests werden folgend durchgeführt, um weitere Daten zu protokollieren (siehe [Datenerhebung pro Test](#Datenerhebung-pro-Test))
 - Die Ergebnisse werden über Plots visualisiert und per csv-Datei exportiert
 
 ### Datenerhebnung pro Test
 Felder (werden für jeden Test ergänzt, wenn verfügbar):
 - `Zahl`: Die getestete Zahl n
 - `Test`: Name des Tests (z. B. Fermat, Lucas, Proth…)
-- `Ergebnis`: Ob der Test n als Primzahl erkannt hat (`True`/`False`)
+- `Ergebnis`: Ob der Test n als Primzahl erkannt hat (`PRIME`/`COMPOSITE`/`INVALID`/`NOT_APPLICABLE`)
 - `best_time`:	Kürzeste gemessene Laufzeit über alle Wiederholungen
 - `avg_time`:	Durchschnittlich gemessene Laufzeit über alle Wiederholungen
 - `worst_time`:	Längste gemessene Laufzeit über alle Wiederholungen

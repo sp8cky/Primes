@@ -67,8 +67,7 @@ def read_pool1_csv(file_path: str) -> pd.DataFrame:
                 row["Zahl"] = None
 
             for col in [
-                "false_positive","false_negative","error_rate",
-                "best_time","avg_time","worst_time","std_dev"
+                "error_rate","best_time","avg_time","worst_time","std_dev"
             ]:
                 val = row.get(col, "")
                 if isinstance(val, str):
@@ -84,7 +83,6 @@ def read_pool1_csv(file_path: str) -> pd.DataFrame:
                     row[col] = 1 if val.strip().lower() == "true" else 0
                 else:
                     row[col] = 0
-
             detail_rows.append(row)
 
     df = pd.DataFrame(detail_rows)
@@ -681,8 +679,8 @@ def export_df(df: pd.DataFrame, filename: str):
 # =============================================================================
 if __name__ == "__main__":
     # >>>>> Pfade anpassen <<<<<
-    folder1 = "C:\\Users\\julia\\Downloads\\T1"
-    folder2 = "C:\\Users\\julia\\Downloads\\T2"
+    folder1 = "C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Testpool 1"
+    folder2 = "C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Testpool 2"
 
 # ------------------------------------------------
     # Daten einlesen

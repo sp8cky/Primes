@@ -367,7 +367,7 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
         "Optimized Pocklington":         lambda n: np.log2(n) * np.log(n)**3, 
         "Optimized Pocklington Variant": lambda n: np.log2(n) * np.log(n)**3, 
         "Generalized Pocklington":       lambda n: np.log2(n) * np.log(n)**3, 
-        "Rao":                           lambda n: (np.log(n)**2) * n,
+        "Rao":                           lambda n: np.log(n)**2,
         "Ramzy":                         lambda n: np.log(np.log(n)) * (np.log(n)**3),
         # Spezielle
         "Pepin":                         lambda n: 2**n * np.log(2),
@@ -392,7 +392,7 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
         "Optimized Pocklington": "O(log n * (log n)^3)",
         "Optimized Pocklington Variant": "O(log n * (log n)^3)",
         "Generalized Pocklington": "O(log n * (log n)^3)",
-        "Rao": "O(n (log n)^2)",
+        "Rao": "O(log n)^2",
         "Ramzy": "O(log(log n) * (log n)^3)",
         # Spezielle
         "Pepin": "O(2^n * log(2))",

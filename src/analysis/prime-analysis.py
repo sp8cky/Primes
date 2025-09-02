@@ -1,3 +1,4 @@
+import time
 from src.primality.tests import *
 from src.primality.constants import *
 from src.primality.test_protocoll import *
@@ -6,9 +7,7 @@ from src.analysis.timing import *
 from src.analysis.plot import *
 from src.analysis.dataset import *
 from src.primality.test_config import *
-import time
 from typing import List, Dict
-from datetime import datetime
 
 
 # Zeitmessungshilfe
@@ -260,15 +259,15 @@ if __name__ == "__main__":
     #repeat_prob_tests = [5,5,5]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Lucas":                {"n": 100, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Langsam":              {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Proth-Tests":          {"n": 100, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
-        "Pocklington-Tests":    {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Rao":                  {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Ramzy":                {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Fermat-Zahlen":        {"n": 100, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Mersenne-Zahlen":      {"n": 100, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
+        "Probabilistisch":      {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Lucas":                {"n": 1, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
+        "Langsam":              {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Proth-Tests":          {"n": 1, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
+        "Pocklington-Tests":    {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Rao":                  {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Ramzy":                {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Fermat-Zahlen":        {"n": 1, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
+        "Mersenne-Zahlen":      {"n": 1, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
     }
 
     run_primetest_analysis(

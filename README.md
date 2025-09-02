@@ -5,7 +5,6 @@ Dies ist ein Repository für eine praktische Implementierung von Primzahltests i
 ---
 
 ## Projektüberblick
-
 - Git-Repository wurde erstellt und initial strukturiert.
   - `src/primality` für alle Implementierungen für die Primzahltests
   - `src/analysis` für die Analyse durch Plots und Datenexports
@@ -13,7 +12,6 @@ Dies ist ein Repository für eine praktische Implementierung von Primzahltests i
   - `data/` für die Datensammlung der Testpools
   - `results/` für die Analyseauswertung der Daten 
   - `requirements.txt` für alle benötigten Pakete
-
 
 ---
 
@@ -36,7 +34,6 @@ python src/analysis/prime-analysis.py
 
 ---
 ## Details zur Implementierung
-
 ### Testablauf
 - Testdaten werden initialisiert
 - Für jeden Test wird ein Pool an Zahlen n erzeugt 
@@ -90,7 +87,6 @@ Folgende Tests dokumentieren folgende Angaben:
 ---
 ## Credits
 This project was created by sp8cky.
-
 
 ---
 ---

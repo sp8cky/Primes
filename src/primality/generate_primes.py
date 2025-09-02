@@ -1,31 +1,14 @@
 import random, math
-from tracemalloc import start
 from typing import List, Dict
 from collections import defaultdict
-from matplotlib.pylab import rint
-from sympy import isprime, primerange, primefactors, perfect_power, legendre_symbol
-from sympy.ntheory.primetest import mr, is_euler_pseudoprime
+from sympy import isprime, primerange, perfect_power
 from math import log2
 import src.primality.helpers as helpers
 from src.primality.test_config import *
-from src.analysis.dataset import extract_base_label
 
-def assign_custom_numbers_to_group(
-    group_name: str,
-    number_list: List[int],
-    TEST_CONFIG: dict
-) -> Dict[str, List[int]]:
-    """
-    Weist eine benutzerdefinierte Liste von Zahlen allen Tests einer bestimmten Gruppe zu.
+# Weist eine benutzerdefinierte Liste von Zahlen allen Tests einer bestimmten Gruppe zu.
+def assign_custom_numbers_to_group(group_name: str, number_list: List[int], TEST_CONFIG: dict) -> Dict[str, List[int]]:
 
-    Args:
-        group_name (str): Name der Zielgruppe (z. B. "MillerTests")
-        number_list (List[int]): Liste von Zahlen, die zugewiesen werden sollen
-        TEST_CONFIG (dict): Konfiguration aller Tests
-
-    Returns:
-        Dict[str, List[int]]: Mapping von Testnamen zu der gemeinsam zugewiesenen Liste
-    """
     assigned = {}
     for testname, conf in TEST_CONFIG.items():
         if conf.get("testgroup") == group_name:
@@ -35,7 +18,7 @@ def assign_custom_numbers_to_group(
         print(f"⚠️ Keine Tests mit der Gruppe '{group_name}' gefunden.")
     return assigned
 
-# calculate the distribution of prime and composite numbers based on the num_type
+# Berechnet die gewünschte Verteilung von Primzahlen und Kompositzahlen aus num_type.
 def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]:
     # num_type bleibt so wie bisher (p, z, g:x)
     if num_type == "p":
@@ -62,6 +45,7 @@ def compute_number_distribution(n: int, num_type: str) -> tuple[int, int, float]
 def is_valid_composite(candidate: int) -> bool:
     return candidate >= 2 and candidate % 2 == 1 and not perfect_power(candidate) and not isprime(candidate)
 
+# Weist einer Testgruppe eine benutzerdefinierte Menge an Zahlen zu.
 def generate_numbers_per_group(
     n, start, end, TEST_CONFIG, group_ranges=None, allow_partial_numbers=True, seed=None, num_type: str = "g:x"
 ):
@@ -92,9 +76,7 @@ def generate_numbers_per_group(
         group_number_types = {TEST_CONFIG[t].get("number_type", "") for t in relevant_tests}
         unique_number_type = group_number_types.pop() if len(group_number_types) == 1 else ""
 
-        if unique_number_type and unique_number_type in {
-            "fermat", "mersenne", "proth", "pocklington", "rao", "ramzy" #"lucas", 
-        }:
+        if unique_number_type and unique_number_type in {"fermat", "mersenne", "proth", "pocklington", "rao", "ramzy"}:
             try:
                 result = generate_numbers_for_test(
                     group_n, group_start, group_end,
@@ -134,10 +116,9 @@ def generate_numbers_per_group(
     print("\nAbschnitt 'Zahlengenerierung pro Test' abgeschlossen")
     return numbers_per_test 
 
-
+# Erzeugt eine Liste von Zufallszahlen (Prims und Komposite) im angegebenen Bereich.
 def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count=None, max_attempts=10000, use_log_intervals: bool = False) -> List[int]:
-    if r is None:
-        r = random.Random()
+    if r is None: r = random.Random()
 
     if start < 1:
         start = 1
@@ -149,10 +130,7 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
         z_count = n - p_count
 
     if use_log_intervals:
-        boundaries = [
-            1, 10, 100, 1000, 10**4, 10**5, 10**6, 10**7, 10**8, 10**9,
-            10**10, 10**11, 10**12, 10**13, 10**14, 10**15, 10**16, 10**17, 10**18
-        ]
+        boundaries = [1, 10, 100, 1000, 10**4, 10**5, 10**6, 10**7, 10**8, 10**9, 10**10, 10**11, 10**12, 10**13, 10**14, 10**15, 10**16, 10**17, 10**18]
         boundaries = [b for b in boundaries if start <= b <= end]
         if len(boundaries) == 0 or boundaries[0] != start:
             boundaries.insert(0, start)
@@ -240,7 +218,7 @@ def generate_numbers(n: int, start: int, end: int, r=None, p_count=None, z_count
     return sorted(primes.union(composites))[:n]
 
 
-# 2. Spezielle Generatoren:
+# Spezielle Generatoren:
 def generate_fermat_numbers(n: int, start: int, end: int, r=None) -> List[int]:
     if r is None:
         r = random.Random()
@@ -261,7 +239,7 @@ def generate_mersenne_numbers(n: int, start: int, end: int, r=None) -> List[int]
     if r is None:
         r = random.Random()
     mersenne_candidates = []
-    max_p = (end + 1).bit_length()  # größtes p so dass 2^p -1 <= end
+    max_p = (end + 1).bit_length()
     for p in primerange(2, max_p + 1):
         m = 2 ** p - 1
         if m > end:
@@ -358,7 +336,7 @@ def generate_ramzy_numbers(n: int, start: int, end: int, r=None, max_attempts=No
         raise ValueError(f"Nicht genug Ramzy-Zahlen im Bereich [{start}, {end}] (nur {len(results)})")
     return sorted(results)
 
-# 3. Mapping Testtyp → Generator
+# Mapping Testtyp → Generator
 def generate_numbers_for_test(
     n: int, start: int, end: int, num_type: str = "g:x", number_type: str = "", r=None, testname: str = ""
 ) -> List[int]:
@@ -389,112 +367,13 @@ def generate_numbers_for_test(
             except ValueError:
                 pass
             result = sorted(primes + composites)
-            #print(f"33🔍 Test '{testname}' num_type='{num_type}', number_type='{number_type}': {len(result)} Zahlen (p: {len(primes)}, z: {len(composites)}): {result}")
             return result
 
         else:
             p_count, z_count, _ = compute_number_distribution(n, num_type)
             result = generate_numbers(n, start, end, r=r, p_count=p_count, z_count=z_count, max_attempts=10000)
-            #print(f"44🔍 Test '{testname}' num_type='{num_type}', number_type='{number_type}': {len(result)} Zufallszahlen (p: {p_count}, z: {z_count}): {result}")
             return result
 
     except ValueError as e:
         print(f"⚠️ Fehler bei Test '{testname}': {e}")
         return []
-
-
-def generate_pseudoprimes(n, start=3, end=None, fermat=True, euler=False, strong=False, bases=[2, 3, 5, 7, 11]):
-    assert fermat or euler or strong, "Mindestens ein Testtyp muss aktiviert sein."
-    candidate = start | 1  # ungerade Startzahl
-    max_candidate = end if end is not None else float('inf')
-
-    # Sammler
-    fermat_pps = set()
-    euler_pps = set()
-    strong_pps = set()
-
-    # Typen aktiv
-    types_active = [fermat, euler, strong]
-    count_active = sum(types_active)
-
-    # Mindestens gleich verteilen
-    targets = [0, 0, 0]
-    for i, active in enumerate(types_active):
-        targets[i] = n // count_active
-    # Eventueller Rest wird unten verteilt
-
-    # Hilfsfunktionen
-    def is_fermat_pp(n, a):
-        return not isprime(n) and gcd(a, n) == 1 and pow(a, n-1, n) == 1
-
-    def is_euler_pp(n, a):
-        return not isprime(n) and gcd(a, n) == 1 and is_euler_pseudoprime(n, a)
-
-    def is_strong_pp(n, a):
-        return not isprime(n) and gcd(a, n) == 1 and mr(n, [a])
-
-    # Hauptschleife
-    while candidate <= max_candidate:
-        # Check ob alle Ziele erreicht
-        done = True
-        if fermat and len(fermat_pps) < targets[0]:
-            done = False
-        if euler and len(euler_pps) < targets[1]:
-            done = False
-        if strong and len(strong_pps) < targets[2]:
-            done = False
-        if done:
-            break
-
-        for a in bases:
-            if fermat and len(fermat_pps) < targets[0] and is_fermat_pp(candidate, a):
-                fermat_pps.add(candidate)
-                break
-            if euler and len(euler_pps) < targets[1] and is_euler_pp(candidate, a):
-                euler_pps.add(candidate)
-                break
-            if strong and len(strong_pps) < targets[2] and is_strong_pp(candidate, a):
-                strong_pps.add(candidate)
-                break
-        candidate += 2
-
-    # Falls nicht genug gefunden, restliche Slots auf andere verteilen
-    total_found = len(fermat_pps) + len(euler_pps) + len(strong_pps)
-    missing = n - total_found
-    if missing > 0:
-        # Berechne Verteilung restlicher Plätze
-        deficits = [
-            max(0, targets[0] - len(fermat_pps)),
-            max(0, targets[1] - len(euler_pps)),
-            max(0, targets[2] - len(strong_pps)),
-        ]
-        # Erhöhe Targets für die Typen, die noch Platz haben
-        while missing > 0:
-            for i, active in enumerate(types_active):
-                if active and deficits[i] > 0:
-                    targets[i] += 1
-                    deficits[i] -= 1
-                    missing -= 1
-                    if missing <= 0:
-                        break
-
-        # Suche weiter nach fehlenden Zahlen
-        while candidate <= max_candidate and missing > 0:
-            for a in bases:
-                if fermat and len(fermat_pps) < targets[0] and is_fermat_pp(candidate, a):
-                    fermat_pps.add(candidate)
-                    missing -= 1
-                    break
-                if euler and len(euler_pps) < targets[1] and is_euler_pp(candidate, a):
-                    euler_pps.add(candidate)
-                    missing -= 1
-                    break
-                if strong and len(strong_pps) < targets[2] and is_strong_pp(candidate, a):
-                    strong_pps.add(candidate)
-                    missing -= 1
-                    break
-            candidate += 2
-
-    # Ergebnis: sortiert und kombiniert
-    result = sorted(fermat_pps | euler_pps | strong_pps)
-    return result

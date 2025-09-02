@@ -1,18 +1,13 @@
-# -*- coding: utf-8 -*-
 import os, csv, re, warnings
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-# =============================================================================
-# Globale Einstellungen
-# =============================================================================
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-# ----------------------------------------------------
+
 # Kategorien (für Pool1 & Pool2)
-# ----------------------------------------------------
 CATEGORY_MAP = {
     "Probabilistische Tests": ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"],
     "Lucas-Tests": ["Initial Lucas", "Lucas", "Optimized Lucas",],
@@ -27,14 +22,10 @@ def classify_test(test_name: str) -> str:
                 return group
     return "Spezielle Tests"  # Fallback
 
-# =============================================================================
-# Laden/Parsen
-# =============================================================================
+
+# Liest eine Pool-1 CSV ein und gibt einen DataFrame im Detail-Format zurück.
 def read_pool1_csv(file_path: str) -> pd.DataFrame:
-    """
-    Liest eine Pool-1 CSV ein und gibt einen DataFrame im Detail-Format zurück.
-    Erwartete Detail-Header: 'Gruppe,Test,Zahl,...'
-    """
+
     detail_rows = []
     headers = None
     in_detail = False
@@ -51,12 +42,11 @@ def read_pool1_csv(file_path: str) -> pd.DataFrame:
                 in_detail = True
                 continue
 
-            if not in_detail:
-                continue  # alles vor der Detail-Tabelle ignorieren
+            if not in_detail: continue
 
             parts = [p.strip() for p in line.split(",")]
             if len(parts) < len(headers):
-                parts += [""] * (len(headers) - len(parts))  # auffüllen
+                parts += [""] * (len(headers) - len(parts))
 
             row = dict(zip(headers, parts))
 
@@ -90,11 +80,8 @@ def read_pool1_csv(file_path: str) -> pd.DataFrame:
         df["category"] = df["Test"].apply(classify_test)
     return df
 
-
+# Lädt alle Pool-1 CSVs aus einem Ordner in einen kombinierten DataFrame.
 def load_all_pool1(folder_path: str) -> pd.DataFrame:
-    """
-    Lädt alle Pool-1 CSVs aus einem Ordner in einen kombinierten DataFrame.
-    """
     all_data = []
     for file in os.listdir(folder_path):
         if file.endswith(".csv"):
@@ -105,11 +92,8 @@ def load_all_pool1(folder_path: str) -> pd.DataFrame:
     combined_df = pd.concat(all_data, ignore_index=True) if all_data else pd.DataFrame()
     return combined_df
 
-
+# Liest alle Pool-2 CSVs und extrahiert 'test_avg' & Detailzeilen ('Probabilistisch').
 def read_pool2_folder(folder_path: str):
-    """
-    Liest alle Pool-3 CSVs und extrahiert 'test_avg' & Detailzeilen ('Probabilistisch').
-    """
     results = []
     for fname in os.listdir(folder_path):
         if not fname.endswith(".csv"):
@@ -133,7 +117,7 @@ def read_pool2_folder(folder_path: str):
         results.append({"file": fname, "avg": avg_entries, "data": data_entries})
     return results
 
-
+# Parst die Durchschnittswerte aus den 'test_avg' Zeilen.
 def parse_pool2_avg(avg_entries) -> pd.DataFrame:
     records = []
     for row in avg_entries:
@@ -152,7 +136,7 @@ def parse_pool2_avg(avg_entries) -> pd.DataFrame:
         records.append(record)
     return pd.DataFrame(records)
 
-
+# Parst die Detailzeilen
 def parse_pool2_detail(detail_entries) -> pd.DataFrame:
     headers = [
         "Gruppe","Test","Zahl","Ergebnis","true_prime","is_error",
@@ -161,24 +145,19 @@ def parse_pool2_detail(detail_entries) -> pd.DataFrame:
     ]
     df = pd.DataFrame(detail_entries, columns=headers)
 
-    # Zahlenfelder
     numeric_cols = ["Zahl","error_rate","best_time","avg_time","worst_time","std_dev"]
     for col in numeric_cols:
         df[col] = df[col].apply(
             lambda x: float(str(x).replace(" ms","")) if x not in [None,""," "] else np.nan
         )
 
-    # Bools zu 0/1
     bool_cols = ["false_positive","false_negative","is_error","true_prime"]
     for col in bool_cols:
         df[col] = df[col].astype(str).str.strip().map(lambda v: 1 if v.lower() == "true" else 0)
     return df
 
-
+# Lädt alle Pool-2 CSVs
 def load_all_pool2(folder_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Lädt alle Pool-2 CSVs → (avg_df, detail_df).
-    """
     raw = read_pool2_folder(folder_path)
     all_avg, all_detail = [], []
     for r in raw:
@@ -197,12 +176,10 @@ def load_all_pool2(folder_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
 # =============================================================================
 # Gemeinsame Analysen
 # =============================================================================
+
+# Aggregiert alle Detaildaten je Test und Kategorie (Durchschnittswerte).
 def analyse_overall(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Aggregiert alle Detaildaten je Test und Kategorie (Durchschnittswerte).
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
 
     overall = (
         detail_df
@@ -221,12 +198,9 @@ def analyse_overall(detail_df: pd.DataFrame) -> pd.DataFrame:
     return overall
 
 
+# Laufzeit-Statistik je Test aus Detaildaten.
 def runtime_stats(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Laufzeit-Statistik je Test aus Detaildaten.
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
     return (
         detail_df
         .groupby(["Test","category"], as_index=False)
@@ -239,12 +213,9 @@ def runtime_stats(detail_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Fehleranalyse je Test aus Detaildaten.
 def error_stats(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Fehleranalyse je Test aus Detaildaten.
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
     return (
         detail_df
         .groupby(["Test","category"], as_index=False)
@@ -256,25 +227,20 @@ def error_stats(detail_df: pd.DataFrame) -> pd.DataFrame:
         )
     )
 
+# Schnellster & Genauester Test pro Kategorie
 def group_summaries(overall_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Schnellster & Genauester Test pro Kategorie (nur Pool1 gefordert).
-    """
-    if overall_df.empty:
-        return pd.DataFrame(), pd.DataFrame()
+    if overall_df.empty: return pd.DataFrame(), pd.DataFrame()
 
     fastest_list = []
     most_accurate_list = []
 
     for cat_name, test_list in CATEGORY_MAP.items():
-        # Filter auf Tests dieser Kategorie
         cat_df = overall_df[overall_df["Test"].apply(lambda x: any(t in x for t in test_list))]
-        if cat_df.empty:
-            continue
+        if cat_df.empty: continue
 
         # Schnellster Test
         fastest = cat_df.loc[cat_df["avg_avg_time"].idxmin()].copy()
-        fastest["category"] = cat_name  # Kategorie aus CATEGORY_MAP erzwingen
+        fastest["category"] = cat_name 
         fastest_list.append(fastest)
 
         # Genauester Test
@@ -288,16 +254,10 @@ def group_summaries(overall_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFram
     return fastest_df, most_accurate_df
 
 
-# -------------------------
-# Runtime Complexity (Unified)
-# -------------------------
+
+# Führt Laufzeit-Fits (theoretisch & praktisch) für einen Detail-DataFrame durch.
 def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Führt Laufzeit-Fits (theoretisch & praktisch) für einen Detail-DataFrame durch.
-    Erwartet Spalten: ['Test','Zahl','avg_time'] (+ optional 'category').
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
 
     fit_results = []
 
@@ -353,7 +313,7 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
         "Fermat":                        lambda n: np.log(n)**3,
         "Miller-Selfridge-Rabin":        lambda n: np.log(n)**4,
         "Solovay-Strassen":              lambda n: np.log(n)**3,
-        # Lucas-Familie
+        # Lucas
         "Initial Lucas":                 lambda n: n**2 * np.log(n)**3,
         "Lucas":                         lambda n: n * np.log2(n) * np.log(n)**3,
         "Optimized Lucas":               lambda n: n * np.log(n)**3,
@@ -378,7 +338,7 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
         "Fermat": "O((log n)^3)",
         "Miller-Selfridge-Rabin": "O((log n)^4)",
         "Solovay-Strassen": "O((log n)^3)",
-        # Lucas-Familie
+        # Lucas
         "Initial Lucas": "O(n^2 (log n)^3)",
         "Lucas": "O(n log n * (log n)^3)",
         "Optimized Lucas": "O(n (log n)^3)",
@@ -405,20 +365,17 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
     )
     for test_name in base_names:
         df_test = detail_df[detail_df["Test"].str.contains(re.escape(test_name))]
-        if df_test.empty:
-            continue
+        if df_test.empty: continue
 
         # Aggregation: Mittelwert der avg_time pro Zahl
         df_agg = df_test.groupby("Zahl", as_index=False)["avg_time"].mean().dropna()
-        if df_agg.empty:
-            continue
+        if df_agg.empty: continue
 
         n_vals = df_agg["Zahl"].to_numpy(dtype=float)
         times = df_agg["avg_time"].to_numpy(dtype=float)
         finite_mask = np.isfinite(n_vals) & np.isfinite(times)
         n_vals, times = n_vals[finite_mask], times[finite_mask]
-        if len(n_vals) < 2:
-            continue
+        if len(n_vals) < 2: continue
 
         # --- Fit theoretische Laufzeit ---
         th_func = complexity_funcs.get(test_name)
@@ -429,8 +386,8 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
                     # Spezieller Fall für Pepin
                     if test_name == "Pepin":
                         # log-Fit, um Overflow zu vermeiden
-                        x_th = n_vals.reshape(-1, 1)   # exponent in 2^n
-                        y_th = np.log(times)           # log(y) statt y
+                        x_th = n_vals.reshape(-1, 1)
+                        y_th = np.log(times)
                         linreg = LinearRegression().fit(x_th, y_th)
                         y_th_pred = linreg.predict(x_th)
                         a_th = float(linreg.coef_[0])
@@ -452,7 +409,7 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
             a_th = b_th = r2_th = np.nan
             th_label = "unbekannt"
 
-        # --- Fit praktische Laufzeit (Best-of) ---
+        # --- Fit praktische Laufzeit ---
         best_model_name = None
         best_r2 = -np.inf
         best_a = best_b = np.nan
@@ -492,15 +449,10 @@ def fit_runtime_complexities_unified(detail_df: pd.DataFrame) -> pd.DataFrame:
         res["category"] = res["Test"].apply(classify_test)
     return res
 
-# =============================================================================
-# POOL 2 – K-Analyse & Fehleranalyse (k-spezifisch)
-# =============================================================================
+
+# Baut ein kompaktes Ergebnis-DF je Test(k) ür k-Analyse
 def build_pool2_results(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Baut ein kompaktes Ergebnis-DF je Test(k) für POOL2 (für k-Analyse).
-    """
-    if detail_df.empty:
-        return pd.DataFrame(columns=["test","k","avg_time","best_time","worst_time","std_dev"])
+    if detail_df.empty: return pd.DataFrame(columns=["test","k","avg_time","best_time","worst_time","std_dev"])
 
     def extract_k(name: str) -> int:
         m = re.search(r"\(k\s*=\s*(\d+)\)", str(name))
@@ -522,14 +474,9 @@ def build_pool2_results(detail_df: pd.DataFrame) -> pd.DataFrame:
     )
     return results
 
-
+# Analysiert den Einfluss von k auf die Laufzeit
 def analyse_k_influence_pool2(results_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Beispiel-Ausgabe für mehrere Modelle sortiert nach R2 pro Basis-Test (POOL3).
-    Erwartet Spalten: ['test','k','avg_time'].
-    """
-    if results_df.empty:
-        return pd.DataFrame(columns=["Test","model","r2","param_a","param_b","param_c"])
+    if results_df.empty: return pd.DataFrame(columns=["Test","model","r2","param_a","param_b","param_c"])
 
     # Basis-Testnamen ohne (k = ...)
     results_df = results_df.copy()
@@ -555,7 +502,6 @@ def analyse_k_influence_pool2(results_df: pd.DataFrame) -> pd.DataFrame:
 
         for model_name, func in model_funcs.items():
             try:
-                # Anzahl Parameter je Modell
                 if model_name == "quadratisch":
                     p0 = [1.0, 1.0, 1.0]
                 else:
@@ -573,23 +519,17 @@ def analyse_k_influence_pool2(results_df: pd.DataFrame) -> pd.DataFrame:
                 continue
     return pd.DataFrame(out)
 
-
+# Helper
 def _curve_fit_dispatch(func, x, y, p0=None):
-    """
-    Hilfsfunktion: robustes curve_fit mit maxfev.
-    """
     from scipy.optimize import curve_fit
     if p0 is not None:
         return curve_fit(func, x, y, p0=p0, maxfev=10000)
     return curve_fit(func, x, y, maxfev=10000)
 
 
+#  Aggregiert alle Detaildaten je Test und Kategorie, unabhängig von k.
 def analyse_overall_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Aggregiert alle Detaildaten je Test und Kategorie, unabhängig von k.
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
 
     # Entferne "(k = …)" aus Testnamen
     df = detail_df.copy()
@@ -612,12 +552,9 @@ def analyse_overall_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
     return overall_indep
 
 
+# Laufzeit-Statistik je Test, unabhängig von k.
 def runtime_stats_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Laufzeit-Statistik je Test, unabhängig von k.
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
 
     # Entferne "(k = …)" aus Testnamen
     df = detail_df.copy()
@@ -636,13 +573,10 @@ def runtime_stats_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
     )
     return rt_indep
 
+
+# Fehleranalyse je Test, unabhängig von k.
 def error_stats_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Fehleranalyse je Test, unabhängig von k.
-    Aggregiert alle Detaildaten pro Basis-Test (ohne k) für Pool2.
-    """
-    if detail_df.empty:
-        return pd.DataFrame()
+    if detail_df.empty: return pd.DataFrame()
 
     df = detail_df.copy()
     # k aus Testnamen entfernen, Basis-Test extrahieren
@@ -661,9 +595,8 @@ def error_stats_independent_k(detail_df: pd.DataFrame) -> pd.DataFrame:
     return err_total
 
 
-# =============================================================================
+
 # Export
-# =============================================================================
 def export_df(df: pd.DataFrame, filename: str):
     if not isinstance(df, pd.DataFrame):
         print(f"Error: {filename} ist kein DataFrame!")
@@ -672,17 +605,17 @@ def export_df(df: pd.DataFrame, filename: str):
     if dirname:
         os.makedirs(dirname, exist_ok=True)
     df.to_csv(filename, index=False)
-    #print(f"Exportiert: {filename}")
+
+
 
 # =============================================================================
 # MAIN
 # =============================================================================
 if __name__ == "__main__":
-    # >>>>> Pfade anpassen <<<<<
-    folder1 = "C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Testpool 1"
-    folder2 = "C:\\Users\\julia\\OneDrive\\Dokumente\\Studium\\Semester M4\\MA\\Datensammlung\\Testpool 2"
+    folder1 = "" # TODO: path
+    folder2 = "" # TODO: path
 
-# ------------------------------------------------
+    # ------------------------------------------------
     # Daten einlesen
     # ------------------------------------------------
     print("\n=== Schritt 1: Daten laden ===")

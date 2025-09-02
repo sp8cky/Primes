@@ -1,10 +1,7 @@
-import os, json, csv
-from datetime import datetime
-from typing import Dict, Any
+import os, csv
 from src.primality.test_protocoll import test_data
 from src.primality.test_config import *
 
-# creates data directory relative to the src directory
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 
 # Entfernt z.B. '(k = 3)' oder andere Klammerzusätze vom Label
@@ -14,6 +11,7 @@ def extract_base_label(label: str) -> str:
     return label.split(" (")[0].strip()
 
 
+# Exportiert die Testdaten als CSV-Datei
 def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, numbers_per_test: dict, metadata: dict = None):
     path = os.path.join(DATA_DIR, filename)
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -24,8 +22,6 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
 
     rows = []
 
-    # Testlabels aus test_config basierend auf 'testgroup' und sortiert
-    # Wir sortieren hier nach testgroup und dann nach Label, um eine stabile Reihenfolge zu bekommen
     sorted_tests = sorted(
         test_config.items(),
         key=lambda item: (item[1].get("testgroup", ""), item[1].get("label", item[0]))
@@ -70,14 +66,13 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
         return
 
     # Sortieren nach Gruppe (testgroup) und Zahl
-    # Erstelle Map der Tests mit Index (Sortierreihenfolge)
-    test_order = list(test_config.keys())  # Reihenfolge wie in der Konfig
+    test_order = list(test_config.keys())
     test_order_map = {name: i for i, name in enumerate(test_order)}
 
     # Sortiere rows nach Testreihenfolge und Zahl
     rows.sort(
         key=lambda r: (
-            test_order_map.get(extract_base_label(r["Test"]), 9999),  # Default 9999 für unbekannte Tests
+            test_order_map.get(extract_base_label(r["Test"]), 9999),
             int(r["Zahl"])
         )
     )
@@ -125,7 +120,7 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
                     parsed = parser(value)
                     test_stats[test][key].append(parsed)
                 except ValueError:
-                    continue  # ungültiger Eintrag -> überspringen
+                    continue
 
         for test in sorted(test_stats.keys(), key=lambda t: test_order_map.get(extract_base_label(t), 9999)):
             values = test_stats[test]
@@ -144,7 +139,6 @@ def export_test_data_to_csv(test_data: dict, filename: str, test_config: dict, n
             f.write(line + "\n")
 
         f.write("\n")
-
 
         writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()

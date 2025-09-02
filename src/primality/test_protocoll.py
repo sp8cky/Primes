@@ -5,25 +5,24 @@ from math import gcd, log2, sqrt
 from sympy import factorint
 from sympy import gcd, primerange, isprime, divisors, perfect_power, cyclotomic_poly, GF, totient
 from sympy.abc import X
-from sympy.polys.domains import ZZ
 from sympy.polys.polytools import Poly
-from typing import Optional, List, Dict, Tuple, Any, Union
+from typing import Optional, List, Dict, Any
 
 test_data = {}
 def init_dictionary() -> Dict[str, Any]:
     """Erzeugt ein standardisiertes Dictionary für Testdaten eines einzelnen n."""
     return {
-        "true_prime": None,      # True/False, tatsächlicher Primstatus
-        "is_error": None,        # True/False, Fehler bei Testausgabe
-        "false_positive": None,  # True/False
-        "false_negative": None,  # True/False
-        "repeat_count": 0,       # Für Fehleranalyse   
-        "error_count": 0,        # Für Fehleranalyse      
-        "error_rate": None,      # Für Fehleranalyse
-        "a_values": [],          # Liste von Tupeln/Integers (je nach Test)
-        "other_fields": None,    # Kann später zu einem Dict/Tuple/List werden
-        "result": None,          # True/False/None
-        "reason": None,          # String oder None
+        "true_prime": None,
+        "is_error": None,
+        "false_positive": None,
+        "false_negative": None,
+        "repeat_count": 0,   
+        "error_count": 0,     
+        "error_rate": None,
+        "a_values": [],
+        "other_fields": None,
+        "result": None,
+        "reason": None,
     }
 def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
     """Initialisiert das globale `test_data`-Dictionary für einen bestimmten Test."""
@@ -61,7 +60,6 @@ def init_dictionary_fields(numbers: List[int], test_name: str) -> None:
 
     for n in numbers:
         entry = init_dictionary()
-        # Spezifische Defaults setzen
         for key, value in test_config.items():
             entry[key] = value
         test_data[test_name][n] = entry
@@ -82,7 +80,7 @@ def fermat_test_protocoll(n: int, k: int = 1, seed: Optional[int] = None) -> boo
 
     if n == 2:
         test_data["Fermat"][n]["result"] = PRIME
-        test_data["Fermat"][n]["a_values"].append((2, True, True))  # alle Bedingungen erfüllt
+        test_data["Fermat"][n]["a_values"].append((2, True, True))
         return PRIME
 
     for i in range(k):
@@ -149,6 +147,7 @@ def miller_selfridge_rabin_test_protocoll(n: int, k: int = 5, seed: int | None =
     test_data["Miller-Selfridge-Rabin"][n]["result"] = PRIME
     return PRIME
 
+
 def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = None) -> bool:
     if n < 2 or (n % 2 == 0 and n > 2): return INVALID
 
@@ -181,6 +180,7 @@ def solovay_strassen_test_protocoll(n: int, k: int = 5, seed: Optional[int] = No
     test_data["Solovay-Strassen"][n]["result"] = PRIME
     return PRIME
 
+
 def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     if n <= 1: return INVALID
     test_data["Initial Lucas"][n]["a_values"] = []
@@ -192,13 +192,13 @@ def initial_lucas_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
 
-        if not cond1: continue  # Wichtig: nicht abbrechen, sondern nächstes a testen
+        if not cond1: continue
 
         for m in range(1, n - 1):
             cond2 = pow(a, m, n) == 1
             test_data["Initial Lucas"][n]["a_values"] = (a, cond1, cond2)
             if cond2:
-                break  # a ist ungeeignet → nächstes a
+                break 
         else:
             test_data["Initial Lucas"][n]["result"] = PRIME
             return PRIME
@@ -219,16 +219,16 @@ def lucas_test_protocoll(n: int, seed: int | None = None) -> bool:
     for a in range(2, n):
         cond1 = pow(a, n - 1, n) == 1
 
-        if not cond1: continue  # nächstes a versuchen
+        if not cond1: continue
 
         for m in divisors(n - 1)[:-1]:
             cond2 = pow(a, m, n) == 1
             test_data["Lucas"][n]["a_values"] = (a, cond1, cond2)
             if cond2:
-                break  # Bedingung (ii) verletzt, nächstes a
+                break
         else:
             test_data["Lucas"][n]["result"] = PRIME
-            return PRIME  # EIN gültiges a gefunden
+            return PRIME
 
     test_data["Lucas"][n]["result"] = COMPOSITE
     test_data["Lucas"][n]["reason"] = "Kein passendes a gefunden"
@@ -299,8 +299,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
             break
         r += 1
 
-    # GCD-Prüfungen: 1 < (a, n) < n für a ≤ r
-    found_gcd_witness = False
+    # GGT-Prüfungen
     for a in range(2, r + 1):
         g = gcd(a, n)
         test_data[testname][n]["other_fields"]["gcd_check"].append((a, g))
@@ -317,7 +316,7 @@ def aks04_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
     else:
         test_data[testname][n]["other_fields"]["early_prime_check"] = False
 
-    # Polynomtest: (X+a)^n ≡ X^n + a mod (X^r−1, n)
+    # Polynomtest
     phi_r = totient(r)
     log_n = log2(n)
     max_a = int(sqrt(phi_r) * log_n) + 1
@@ -347,7 +346,7 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
         test_data["AKS10"][n]["result"] = INVALID
         return INVALID
 
-    # Reset steps if test has to be run again
+    # Reset steps bei erneutem Test
     test_data["AKS10"][n]["other_fields"] = {
         "initial_check": True,
         "find_r": None,
@@ -380,7 +379,7 @@ def aks10_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
     test_data["AKS10"][n]["other_fields"]["prime_divisor_check"] = "Keine kleinen Teiler gefunden"
 
-    # polynomial condition check
+    # Polynomtest
     max_a = math.floor(math.sqrt(r) * l)
     mod_poly = Poly(X**r - 1, X, domain=GF(n))
 
@@ -445,8 +444,8 @@ def lucas_lehmer_test_protocoll(n: int, seed: Optional[int] = None) -> bool:
 
 def proth_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.5
     if n <= 1: return INVALID
-    
-    # Check if n is of the form K*2^m + 1 with K < 2^m
+
+    # Überprüfe, ob n die Form K*2^m + 1 hat mit K < 2^m
     m, temp = 0, n - 1
     while temp % 2 == 0:
         temp //= 2
@@ -507,7 +506,7 @@ def proth_test_variant_protocoll(n: int, seed: Optional[int] = None) -> bool: #4
 def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
     if n <= 1: return INVALID
 
-    # Factorize n-1 as q^m * R
+    # Faktorisierung von n-1 als q^m * R
     factors = factorint(n - 1)
     if not factors:
         test_data["Pocklington"][n]["result"] = NOT_APPLICABLE
@@ -536,7 +535,7 @@ def pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.6
 def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #4.7
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
+    # Faktorisierung von n-1 als F*R mit ggT(F,R)=1
     factors = factorint(n - 1)
     test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
     F = math.prod(factors.keys())
@@ -547,7 +546,6 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
         test_data["Optimized Pocklington"][n]["reason"] = "ggT(F, R) != 1"
         return NOT_APPLICABLE
 
-    # test for each prime factor q of F
     test_data["Optimized Pocklington"][n]["a_values"] = {}
     for q in factors:
         found = False
@@ -555,7 +553,6 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
             cond1 = pow(a, n - 1, n) == 1
             cond2 = gcd(pow(a, (n - 1) // q, n) - 1, n) == 1
             if cond1 and cond2:
-                #test_data["Optimized Pocklington"][n]["a_values"] = {q: [(a, cond1, cond2)]}
                 test_data["Optimized Pocklington"][n]["a_values"].setdefault(q, []).append((a, cond1, cond2))
                 found = True
                 break
@@ -570,7 +567,7 @@ def optimized_pocklington_test_protocoll(n: int, seed: Optional[int] = None) -> 
 def optimized_pocklington_test_variant_protocoll(n: int, B: Optional[int] = None, seed: Optional[int] = None) -> bool: #4.9
     if n <= 1: return INVALID
 
-    # Factorize n-1 as F*R with gcd(F,R)=1
+    # Faktorisierung von n-1 als F*R mit ggT(F,R)=1
     factors = factorint(n - 1)
     test_data["Optimized Pocklington"][n]["other_fields"] = {"num_prime_factors": len(factors)}
     F = math.prod(pow(p, e) for p, e in factors.items())
@@ -718,7 +715,6 @@ def rao_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.6
         test_data["Rao"][n]["result"] = PRIME
         return PRIME
     
-    # Spezielle Zerlegung für Rao-Test (R = p2^n + 1)
     decomposition = helpers.find_rao_decomposition(n)
     if not decomposition:
         test_data["Rao"][n]["result"] = NOT_APPLICABLE
@@ -759,7 +755,7 @@ def ramzy_test_protocoll(n: int, seed: Optional[int] = None) -> bool: #6.15
         test_data["Ramzy"][n]["reason"] = "Keine Zerlegung gefunden"
         return NOT_APPLICABLE
 
-    K, p, n_exp = decomposition  # N = K*p^n + 1
+    K, p, n_exp = decomposition
     test_data["Ramzy"][n]["other_fields"] = [K, p, n_exp]
     
     for j in range(n_exp): # Finde passendes j gemäß Bedingung p^{n-1} ≥ Kp^j

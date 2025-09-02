@@ -1,12 +1,11 @@
 import time
 from src.primality.constants import *
 from typing import Callable, List, Dict, Any
-from src.analysis import dataset
-import statistics, timeit
 from statistics import mean, stdev
 from src.primality.test_protocoll import test_data
 from sympy import isprime
 
+# Misst die Laufzeiten der Funktion fn für verschiedene Eingabewerte.
 def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str, label: str = "", runs_per_n: int = 5) -> List[Dict]:
     results = []
 
@@ -25,15 +24,14 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str
             except ValueError as e:
                 test_data[test_name][n] = {
                     "was_value_error": True,
-                    "reason": str(e),  # optional, für Logging oder Debug
+                    "reason": str(e),
                     "repeat_results": [],
                     "repeat_count": 0,
                     "result": None
                 }
                 break
 
-        if not repeat_results:
-            continue  # keine gültige Wiederholung für n
+        if not repeat_results: continue  # keine gültige Wiederholung für n
 
         avg_t = mean(runtimes)
         best_t = min(runtimes)
@@ -63,7 +61,7 @@ def measure_runtime(fn: Callable[[int], bool], inputs: List[int], test_name: str
 
 
 
-
+# Führt eine Fehleranalyse der Testergebnisse durch.
 def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
     print("\nFehleranalyse pro Test:\n")
     for testname, numbers in test_data.items():
@@ -72,7 +70,7 @@ def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
             true_prime = isprime(n)
             data["true_prime"] = true_prime
 
-            # Explizit NOT_APPLICABLE überspringen
+            # NOT_APPLICABLE überspringen
             if result == NOT_APPLICABLE or INVALID is None:
                 data["error_rate"] = None
                 data["is_error"] = False
@@ -82,10 +80,9 @@ def analyze_errors(test_data: Dict[str, Dict[int, Dict[str, Any]]]) -> None:
                 data["error_count"] = 0
                 continue
 
-            # Ergebnisse aus wiederholten Tests oder Single-Result
             repeat_results = data.get("repeat_results", [result])
 
-            # Nur PRIME/COMPOSITE zählen
+            # PRIME/COMPOSITE zählen
             valid_results = [r for r in repeat_results if r in {PRIME, COMPOSITE}]
             if not valid_results:
                 data["error_rate"] = None

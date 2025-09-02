@@ -2,20 +2,13 @@ import os, math, statistics
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from matplotlib.lines import Line2D
-import matplotlib.ticker as ticker
 import numpy as np
-from matplotlib.ticker import FuncFormatter, LogLocator, ScalarFormatter, MaxNLocator, NullLocator
+from matplotlib.ticker import FuncFormatter, NullLocator
 from src.analysis.dataset import *
 from src.primality.test_config import *
 
 
-
-   
-# graph: avg runtime über alle wiederholungen in ms
-# balken oben/unten: fehlerbalken, die standardabweichung zeigt
-# schattierung: bereich zwischen best/worst case
-
-
+# Logarithmische Achsenbeschriftung für Basis 10
 def log_base_10_label(x, _):
     if x == 0:
         return "0"
@@ -26,6 +19,7 @@ def log_base_10_label(x, _):
     else:
         return f"${base}\\times 10^{{{exp}}}$"
 
+# Wissenschaftliche Notation formatieren
 def format_scientific_str(x):
     if x == 0:
         return "0"
@@ -197,11 +191,7 @@ def plot_runtime(
     plt.close()
 
 
-
-
-
-############################################################################
-
+# Gruppierte Plots für alle Tests
 def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant, runs_per_n, prob_test_repeats, figsize=(20, 14), number_type=None, filename1=None, filename2=None):
 
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -212,7 +202,7 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
         if test_name not in TEST_CONFIG or not data:
             continue
         plotgroup = TEST_CONFIG[test_name].get("plotgroup", TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe"))
-        testgroup = TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe")  # wichtig!
+        testgroup = TEST_CONFIG[test_name].get("testgroup", "Unbekannte Gruppe") 
         
         n_values = [entry["n"] for entry in data]
         avg_times = [entry["avg_time"] * 1000 for entry in data]
@@ -247,45 +237,12 @@ def plot_grouped_all(datasets, test_data, group_ranges, timestamp, seed, variant
         ymin = min(all_lower_bounds)
         ymax = max(all_upper_bounds)
 
-        ylim = (ymin * 0.8, ymax * 1.2)  # oder nach Wunsch z. B. (ymin * 0.5, ymax * 2)
+        ylim = (ymin * 0.8, ymax * 1.2)
 
-        
-        plot_graph(
-            group=group,
-            tests=tests,
-            config=config,
-            color_map=color_map,
-            group_ranges=group_ranges,
-            timestamp=timestamp,
-            seed=seed,
-            variant=variant,
-            runs_per_n=runs_per_n,
-            test_data=test_data,
-            datasets=datasets,
-            ylim=ylim,
-            figsize=figsize,
-            number_type=number_type,
-            filename=filename1,
-        )
+        plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type, filename1)
+        plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type, filename2)
 
-        plot_stats(
-            group=group,
-            tests=tests,
-            config=config,
-            color_map=color_map,
-            group_ranges=group_ranges,
-            timestamp=timestamp,
-            seed=seed,
-            variant=variant,
-            runs_per_n=runs_per_n,
-            test_data=test_data,
-            datasets=datasets,
-            ylim=ylim,
-            figsize=figsize,
-            number_type=number_type,
-            filename=filename2,
-        )
-
+# plottet die Laufzeitmittelwerte für eine Gruppe von Tests
 def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, variant, runs_per_n, test_data, datasets, ylim, figsize, number_type, filename):
     fig, ax1 = plt.subplots(figsize=figsize)
     all_n_values = []
@@ -443,7 +400,6 @@ def plot_graph(group, tests, config, color_map, group_ranges, timestamp, seed, v
         frameon=True
     )
 
-    # Finalisieren
     ax1.tick_params(axis='both', which='major', labelsize=20)
     ax2.tick_params(axis='both', which='major', labelsize=20)
     fig.tight_layout()
@@ -644,112 +600,4 @@ def plot_stats(group, tests, config, color_map, group_ranges, timestamp, seed, v
     filename = f"d10-group-{safe_group}-stats-s{seed}-v{variant}.png"
     path = os.path.join(DATA_DIR, filename)
     plt.savefig(path)
-    plt.close()
-
-
-
-
-
-
-# plottet theoretische Laufzeiten für die Tests in einer Gruppe
-def plot_theory_runtimes(
-    group,
-    tests,
-    testname_to_label,
-    color_map,
-    TEST_CONFIG,
-    group_ranges,
-    timestamp,
-    seed,
-    variant,
-    DATA_DIR,
-    figsize=(12, 7)
-):
-    fig, ax = plt.subplots(figsize=figsize)
-    all_n_values = []
-    all_y_values = []
-
-    for test_name, avg_times, n_values, std_devs, best_times, worst_times in tests:
-        label = testname_to_label.get(test_name, test_name)
-        color = color_map.get(test_name, None)
-
-        # Empirische Werte (Punkte + Linien)
-        if avg_times and n_values:
-            if test_name == "fermat":
-                ax.plot(n_values, avg_times, marker='o', markersize=3, linestyle='-', color='red', linewidth=3, label=f"{label} (empirisch)")
-            else:
-                ax.plot(n_values, avg_times, marker='o', markersize=3, linestyle='-', color=color, alpha=0.3, label=f"{label} (empirisch)")
-            all_n_values.extend(n_values)
-            all_y_values.extend(avg_times)
-
-        # Theoretische Werte berechnen
-        fn_theory = TEST_CONFIG[test_name].get("runtime_theoretical_fn")
-        if fn_theory:
-            try:
-                theory_vals = []
-                for x in n_values:
-                    m = int(math.log2(x)) + 1
-                    val = fn_theory(m)
-                    try:
-                        val = float(val.evalf())
-                    except Exception:
-                        val = float(val)
-                    val = val * 1000  # ms
-                    theory_vals.append(val)
-                ax.plot(n_values, theory_vals, linestyle='--', linewidth=2, color=color, label=f"{label} (theoretisch)")
-                all_y_values.extend(theory_vals)
-            except Exception as e:
-                print(f"⚠️Fehler bei Theoriefunktion {test_name}: {e}")
-
-    # Achsenbereich bestimmen
-    min_y = max(min(all_y_values) * 0.5, 1e-4)
-    max_y = max(all_y_values) * 2
-    print(f"Min Y: {min_y}, Max Y: {max(all_y_values)}")
-    ax.set_yscale("log")
-    ax.set_ylim(min_y, max_y)
-
-    # x-Achsenbereich (analog zu vorher)
-    if group_ranges and group in group_ranges:
-        gr = group_ranges[group]
-        start = gr.get('start', 0)
-        end = gr.get('end', max(all_n_values) if all_n_values else 1)
-        custom_xticks = gr.get("xticks")
-        n = gr.get('n', '?')
-    else:
-        start = 0
-        end = max(all_n_values) if all_n_values else 1
-        custom_xticks = None
-        n = "?"
-
-    subtitle = f"Gruppenauswertung mit {n} Zahlen, zufällig gewählt im Bereich [{format_scientific_str(start)}, {format_scientific_str(end)}], jeweils mit Wiederholungen (Seed = {seed})"
-    ax.set_xlim(start, end)
-
-    if custom_xticks:
-        ax.set_xscale("log")
-        ax.set_xticks(custom_xticks)
-        ax.set_xlim(min(custom_xticks), max(custom_xticks))
-        ax.xaxis.set_minor_locator(NullLocator())
-        if 0 in custom_xticks:
-            ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: "0" if x == 0 else log_base_10_label(x, _)))
-        else:
-            ax.xaxis.set_major_formatter(FuncFormatter(log_base_10_label))
-    else:
-        if start is not None and end is not None:
-            ax.set_xticks([start, end])
-            ax.set_xlim(start, end)
-        ax.get_xaxis().set_major_formatter(FuncFormatter(log_base_10_label))
-
-    # Achsenbeschriftungen und Titel
-    ax.set_title(f"Laufzeitverhalten Gruppe: {group}\n{subtitle}")
-    ax.set_xlabel("Testzahl n (log.)", fontsize=20)
-    ax.set_ylabel("Laufzeit [ms] (log.)", fontsize=20)
-    ax.grid(True, which='both', linestyle='--', alpha=0.5)
-    ax.legend(fontsize=10, loc='upper left', ncol=1)
-    ax.tick_params(axis='both', which='major', labelsize=20)
-
-    fig.tight_layout()
-    safe_group = group.replace(" ", "_").replace("/", "_")
-    fname = f"{timestamp}-group-{safe_group}-theory-seed{seed}-v{variant}.png"
-    path = os.path.join(DATA_DIR, fname)
-    #plt.savefig(path) TODO: Uncomment this line to save the plot
     plt.close()

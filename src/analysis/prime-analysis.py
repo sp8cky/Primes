@@ -10,9 +10,7 @@ from src.primality.test_config import *
 from typing import List, Dict
 
 
-# Zeitmessungshilfe
 def measure_section(label: str, func, *args, **kwargs):
-    #print(f"Starte Abschnitt: {label}...")
     start = time.perf_counter()
     result = func(*args, **kwargs)
     end = time.perf_counter()
@@ -20,8 +18,7 @@ def measure_section(label: str, func, *args, **kwargs):
     print(f"Abschnitt '{label}' abgeschlossen in {duration:.2f} Sekunden")
     return result
 
-
-
+# ANALYSE-FUNKTION
 def run_primetest_analysis(
     n_numbers: int = 100,
     num_type: str = 'g',
@@ -34,7 +31,7 @@ def run_primetest_analysis(
     protocoll: bool = True,
     save_results: bool = True,
     show_plot: bool = True,
-    variant: int = 2,  # NEU: 1 = eine Liste für alle Tests, 2 = eigene Zahlen pro Test
+    variant: int = 2,
     allow_partial_numbers = False,
     group_ranges: Dict[str, Dict[str, int]] = None,
     custom_group_numbers: Dict[str, List[int]] = None
@@ -47,7 +44,6 @@ def run_primetest_analysis(
     # Zahlengenerierung
     if variant == 1:
         print(f"Generiere eine gemeinsame Liste von {n_numbers} Zahlen vom Typ '{num_type}' im Bereich [{start}, {end}]...")
-        # Hier nochmal explizit num_type ausgeben
         if num_type.startswith("g"):
             if ":" in num_type:
                 ratio = num_type.split(":")[1]
@@ -76,13 +72,13 @@ def run_primetest_analysis(
 
         numbers_per_test = {}
 
-        # 1. Benutzerdefinierte Gruppen übernehmen
+        # Benutzerdefinierte Gruppen übernehmen
         if custom_group_numbers:
             for group_name, number_list in custom_group_numbers.items():
                 assigned = assign_custom_numbers_to_group(group_name, number_list, test_config)
                 numbers_per_test.update(assigned)
 
-        # 2. Für übrige Gruppen: automatische Generierung
+        # Für übrige Gruppen: automatische Generierung
         auto_generated = measure_section(
             "Zahlengenerierung pro Test",
             generate_numbers_per_group,
@@ -96,7 +92,7 @@ def run_primetest_analysis(
             num_type=num_type
         )
 
-        # 3. Manuelle Gruppen nicht überschreiben
+        # Manuelle Gruppen nicht überschreiben
         for test_name, number_list in auto_generated.items():
             if test_name not in numbers_per_test:
                 print(f"Test '{test_name}' wurde automatisch generiert: {len(number_list)} Zahlen")
@@ -104,11 +100,11 @@ def run_primetest_analysis(
     else:
         raise ValueError("variant muss 1 oder 2 sein")
 
-    # 3. Ausgabe der generierten Zahlen
+    # Ausgabe der generierten Zahlen
     for test_name, nums in numbers_per_test.items():
         print(f"→ {test_name}: {len(nums)} Zahlen: {nums}")
 
-    # 4. Testdaten initialisieren für alle Zahlen
+    # Testdaten initialisieren für alle Zahlen
     for test_name, numbers in numbers_per_test.items():
         measure_section(f"Initialisiere Testdaten für {test_name}", init_dictionary_fields, numbers, test_name)
 
@@ -152,7 +148,6 @@ def run_primetest_analysis(
 
     # Plotten
     if show_plot:
-        # Nur Datensätze mit mind. einem Eintrag nehmen
         valid_plot_entries = [
         (test_name, data)
         for test_name, data in datasets.items()
@@ -233,41 +228,29 @@ def run_primetest_analysis(
 
 # Hauptaufruf
 if __name__ == "__main__":
-    #custom_group_numbers = {"Probabilistische Tests": [341, 561, 645, 1105, 1729, 2047, 2465, 2701, 2821, 6601]}
-    pseudopimes = {"Probabilistische Tests": [341, 561, 645, 1105, 1387, 1729, 1905, 2047, 2465, 2701, 2821, 3277, 4033, 4369, 4371, 4681, 5461, 6601, 7957, 8321,  8481, 8911, 10261, 10585, 11305, 12801, 13741, 13747, 13981, 14491,
-        15709, 15841, 16705, 18705, 29341, 41041, 42799, 46657, 49141, 52633, 57727, 62745, 63973, 65281, 74665, 75361, 80581, 85489, 88357, 90751, 101101, 104653, 115921, 126217, 130561, 162401, 172081, 188461, 196093,
-        220729, 252601, 256999, 271951, 278545, 280601, 294409, 314821, 334153, 340561, 357761, 390937, 399001, 410041, 449065, 458989, 476971, 486737, 488881, 490841,
-        512461, 530881, 552721, 656601, 825265, 1024651, 1033669, 1045505, 1152271, 1193221, 1299961, 1487161, 1524601, 1588261, 1773289, 1857241, 1909001, 2044501, 2096125]}
-    
     h1 = 10**2
     k1 = 10**3
     k10 = 10**4
     k100 = 10**5
 
     custom_ticks = [1, h1, k1, k10, k100]
-    #run_tests2 = ["Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant"]
     run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", 
               "Initial Lucas", "Lucas", "Optimized Lucas", 
               "Wilson", "AKS10", "Pepin", 
               "Lucas-Lehmer", "Proth", "Proth Variant", 
-              "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", #"Grau", "Grau Probability"
-              "Rao", "Ramzy"]
-    #repeat_prob_tests = [1,1,1]
-    #repeat_prob_tests = [2,2,2]
+              "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"]
     repeat_prob_tests = [3,3,3]
-    #repeat_prob_tests = [4,4,4]
-    #repeat_prob_tests = [5,5,5]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Lucas":                {"n": 1, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Langsam":              {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Proth-Tests":          {"n": 1, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
-        "Pocklington-Tests":    {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Rao":                  {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Ramzy":                {"n": 1, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Fermat-Zahlen":        {"n": 1, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Mersenne-Zahlen":      {"n": 1, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
+        "Probabilistisch":      {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Lucas":                {"n": 2, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
+        "Langsam":              {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Proth-Tests":          {"n": 2, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
+        "Pocklington-Tests":    {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Rao":                  {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Ramzy":                {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Fermat-Zahlen":        {"n": 2, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
+        "Mersenne-Zahlen":      {"n": 2, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
     }
 
     run_primetest_analysis(
@@ -284,6 +267,5 @@ if __name__ == "__main__":
         show_plot=True,
         variant=2,
         allow_partial_numbers = True,
-        group_ranges=my_group_ranges,
-        #custom_group_numbers=pseudopimes
+        group_ranges=my_group_ranges
     )

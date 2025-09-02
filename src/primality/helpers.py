@@ -1,6 +1,5 @@
-import math
 from math import gcd
-from sympy import is_quad_residue, cyclotomic_poly, isprime, primefactors, perfect_power, n_order, primerange, primefactors, factorint
+from sympy import is_quad_residue, isprime, primefactors, n_order,primefactors, factorint
 
 # Helper functions for primality tests and number theory
 def divides(a: int, b: int) -> bool:

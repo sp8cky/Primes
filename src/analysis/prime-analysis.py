@@ -206,7 +206,6 @@ def run_primetest_analysis(
     # CSV-Export
     if save_results:
         filename = f"d10-testdata-seed{seed}-v{variant}.csv"
-        #filename = f"{timestamp}-test-data-seed{seed}-v{variant}.csv"
         measure_section("Exportiere CSV", lambda: export_test_data_to_csv(
             test_data,
             filename = filename,
@@ -224,6 +223,21 @@ def run_primetest_analysis(
             }
         ))
 
+    measure_section("Beamer-Plots", plot_runtime_beamer,
+        datasets=datasets,
+        figsize=(16, 9),
+        loglog=True,
+        filename_base=f"seed{seed}",
+        test_lists={
+            "Probabilistisch":  ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"],
+            "Lucas": ["Initial Lucas", "Lucas", "Optimized Lucas"],
+            "Langsam": ["Wilson", "AKS10"],
+            "Speziell": ["Pepin", "Lucas-Lehmer"],
+            "Zusammengesetzt": ["Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"],
+            "Zusammengesetzt1": ["Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington"],
+            "Zusammengesetzt2": ["Proth Variant", "Optimized Pocklington", "Rao", "Ramzy"]
+        }
+    )
     return datasets
 
 # Hauptaufruf
@@ -234,23 +248,21 @@ if __name__ == "__main__":
     k100 = 10**5
 
     custom_ticks = [1, h1, k1, k10, k100]
-    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen", 
-              "Initial Lucas", "Lucas", "Optimized Lucas", 
-              "Wilson", "AKS10", "Pepin", 
-              "Lucas-Lehmer", "Proth", "Proth Variant", 
-              "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"]
+    run_tests = ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen","Initial Lucas", "Lucas", "Optimized Lucas","Wilson", "AKS10", "Pepin","Lucas-Lehmer", "Proth", "Proth Variant", "Pocklington", "Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington", "Rao", "Ramzy"]
+    #run_tests2 = ["Optimized Pocklington", "Optimized Pocklington Variant", "Generalized Pocklington"]
+    
     repeat_prob_tests = [3,3,3]
 
     my_group_ranges={ 
-        "Probabilistisch":      {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Lucas":                {"n": 2, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Langsam":              {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Proth-Tests":          {"n": 2, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
-        "Pocklington-Tests":    {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Rao":                  {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Ramzy":                {"n": 2, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
-        "Fermat-Zahlen":        {"n": 2, "start": 1,  "end": k100,   "xticks": [1, h1, k1, k10, k100]},
-        "Mersenne-Zahlen":      {"n": 2, "start": 1,  "end": k100,  "xticks": [1, h1, k1, k10, k100]},
+        "Probabilistisch":      {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Lucas":                {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Langsam":              {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Proth-Tests":          {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Pocklington-Tests":    {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Rao":                  {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Ramzy":                {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Fermat-Zahlen":        {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
+        "Mersenne-Zahlen":      {"n": 100, "start": 1,  "end": k100,    "xticks": [1, h1, k1, k10, k100]},
     }
 
     run_primetest_analysis(
@@ -261,7 +273,7 @@ if __name__ == "__main__":
         test_repeats=10,
         include_tests=run_tests,
         prob_test_repeats=repeat_prob_tests,
-        seed=random.randint(1000, 100000),
+        seed=29453,
         protocoll=True,
         save_results=True,
         show_plot=True,

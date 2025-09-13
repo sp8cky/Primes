@@ -1,11 +1,15 @@
 import os, math, statistics
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 from collections import defaultdict
 from matplotlib.lines import Line2D
 import numpy as np
 from matplotlib.ticker import FuncFormatter, NullLocator
 from src.analysis.dataset import *
 from src.primality.test_config import *
+import re
 
 
 # Logarithmische Achsenbeschriftung für Basis 10
@@ -29,6 +33,192 @@ def format_scientific_str(x):
     if coefficient.is_integer():
         coefficient = int(coefficient)
     return fr"${coefficient}\times10^{{{exponent}}}$"
+
+
+# Logarithmische Achsenbeschriftung für Basis 10
+def log_base_10_label(x, _):
+    if x == 0:
+        return "0"
+    exp = int(np.log10(x))
+    base = round(x / (10 ** exp))
+    if base == 1:
+        return f"$10^{{{exp}}}$"
+    else:
+        return f"${base}\\times 10^{{{exp}}}$"
+
+# Wissenschaftliche Notation formatieren
+def format_scientific_str(x):
+    if x == 0:
+        return "0"
+    exponent = int(math.floor(math.log10(x)))
+    coefficient = x / (10**exponent)
+    # Falls Koeffizient ganzzahlig ist, als int formatieren
+    if coefficient.is_integer():
+        coefficient = int(coefficient)
+    return fr"${coefficient}\times10^{{{exponent}}}$"
+
+# Fügt Zeilenumbrüche in lange Legendeneinträge ein (trennt auch bei '-')
+def wrap_legend_text(text, max_length=20):
+    if len(text) <= max_length: return text
+
+    parts = re.split(r'([ -])', text)  
+    lines = []
+    current_line = ""
+
+    for part in parts:
+        if len(current_line) + len(part) <= max_length:
+            current_line += part
+        else:
+            if current_line:
+                lines.append(current_line.strip())
+            current_line = part.strip()
+    
+    if current_line:
+        lines.append(current_line.strip())
+
+    return "\n".join(lines)
+
+# Plottet die Laufzeiten und Fehlerraten für Beamer-Präsentation
+def plot_runtime_beamer(datasets, figsize=(16, 9), loglog=True, filename_base="beamer", test_lists: dict | None = None):
+    colors = plt.cm.tab10(np.arange(len(datasets)))
+
+    if test_lists is None: test_lists = {"all": list(datasets.keys())}
+
+    for list_name, test_subset in test_lists.items():
+        datasets_to_plot = {k: v for k, v in datasets.items() if k in test_subset}
+
+        # --- NUR GRAPH ---
+        fig, ax1 = plt.subplots(figsize=figsize)
+        ax2 = ax1.twinx()
+
+        # Vorbereitung der Legendeneinträge mit Umbruch
+        legend_labels = []
+        for test_name in datasets_to_plot.keys():
+            label = test_name
+            # Zusatz für die drei probabilistischen Tests
+            if test_name in ["Fermat", "Miller-Selfridge-Rabin", "Solovay-Strassen"]:
+                label += " (k=3)"
+            legend_labels.append(wrap_legend_text(label, max_length=18))
+
+        # Plot-Linien speichern für Legende
+        plot_lines = []
+        for idx, (test_name, data) in enumerate(datasets_to_plot.items()):
+            n = [entry["n"] for entry in data]
+            runtimes = [entry["avg_time"] for entry in data]
+            error_values = [entry.get("error_rate", None) for entry in data]
+            valid_errors = [e for e in error_values if e is not None]
+            avg_error = sum(valid_errors)/len(valid_errors) if valid_errors else 0
+            errors = [avg_error] * len(n)
+
+            color = colors[idx]
+
+            # Plot mit Label für Legende
+            line = ax1.plot(n, runtimes, marker="o", markersize=3, label=legend_labels[idx], color=color)
+            plot_lines.append(line[0])  # Linie für Legende speichern
+            ax2.plot(n, errors, linestyle="--", alpha=0.7, color=color)
+
+            # Durchschnittswerte als X
+            if not runtimes: continue
+
+            avg_runtime = statistics.mean(runtimes)
+            ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=2, transform=ax1.get_yaxis_transform(), clip_on=False)
+            ax2.plot(1, avg_error, 'x', markersize=16, color=color, markeredgewidth=2, transform=ax2.get_yaxis_transform(), clip_on=False)
+
+        # Skalen
+        if loglog:
+            ax1.set_xscale("log")
+            ax1.set_yscale("log")
+        ax1.set_xlim(1, 1e5)
+        ax1.set_xlabel("Testzahl n (log.)", fontsize=18)
+        ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=18)
+        ax2.set_ylabel("Fehlerrate", fontsize=18)
+        ax2.set_ylim(0, 1.0)
+
+        ticks_x = [1, 10, 100, 1000, 10000, 100000]
+        ax1.set_xticks(ticks_x)
+        ax1.set_xticklabels([log_base_10_label(x, None) for x in ticks_x], fontsize=16)
+        ax1.tick_params(axis="y", labelsize=14)
+        ax2.tick_params(axis="y", labelsize=14)
+
+        plt.subplots_adjust(right=0.7)
+
+        # Legende mit den tatsächlichen Plot-Linien
+        legend1 = ax1.legend(handles=plot_lines, labels=legend_labels, loc="upper left", bbox_to_anchor=(1.07, 1.0), fontsize=12, ncol=1, handlelength=2.0, handletextpad=0.8, columnspacing=1.0, frameon=True, framealpha=0.3)
+
+        plt.savefig(f"{list_name}-graph-{filename_base}.png", dpi=300, bbox_inches='tight')
+        plt.close()
+
+        # --- GRAPH + STATS ---
+        fig, ax1 = plt.subplots(figsize=figsize)
+        ax2 = ax1.twinx()
+
+        plot_lines_stats = []
+        for idx, (test_name, data) in enumerate(datasets_to_plot.items()):
+            n = [entry["n"] for entry in data]
+            runtimes = [entry["avg_time"] for entry in data]
+            best_times = [entry["best_time"] for entry in data]
+            worst_times = [entry["worst_time"] for entry in data]
+            std_dev = [entry["std_dev"] for entry in data]
+
+            error_values = [entry.get("error_rate", None) for entry in data]
+            valid_errors = [e for e in error_values if e is not None]
+            avg_error = sum(valid_errors)/len(valid_errors) if valid_errors else 0
+            errors = [avg_error] * len(n)
+
+            color = colors[idx]
+
+            # Plot mit Label für Legende
+            line = ax1.plot(n, runtimes, marker="o", markersize=3, label=legend_labels[idx], color=color)
+            plot_lines_stats.append(line[0])
+            ax1.fill_between(n, best_times, worst_times, alpha=0.1, color=color)
+            ax1.vlines(n, [rt-sd for rt, sd in zip(runtimes,std_dev)], [rt+sd for rt, sd in zip(runtimes,std_dev)], color=color, alpha=0.4, linewidth=0.8)
+            ax2.plot(n, errors, linestyle="--", alpha=0.7, color=color)
+
+            # Durchschnittswerte als X 
+            if not runtimes: continue 
+            
+            # Plot mit Label für Legende
+            line, = ax1.plot(n, runtimes, marker="o", markersize=3, label=legend_labels[idx], color=colors[idx])
+            plot_lines.append(line)
+            color = line.get_color()
+            ax2.plot(n, errors, linestyle="--", alpha=0.7, color=color)
+
+            avg_runtime = statistics.mean(runtimes)
+            ax1.plot(0, avg_runtime, 'x', markersize=16, color=color, markeredgewidth=2, transform=ax1.get_yaxis_transform(), clip_on=False)
+            ax2.plot(1, avg_error, 'x', markersize=16, color=color, markeredgewidth=2, transform=ax2.get_yaxis_transform(), clip_on=False)
+
+        # Skalen
+        if loglog:
+            ax1.set_xscale("log")
+            ax1.set_yscale("log")
+        ax1.set_xlim(1, 1e5)
+        ax1.set_xlabel("Testzahl n (log.)", fontsize=18)
+        ax1.set_ylabel("Laufzeit [ms] (log.)", fontsize=18)
+        ax2.set_ylabel("Fehlerrate", fontsize=18)
+        ax2.set_ylim(0, 1.0)
+
+        ax1.set_xticks(ticks_x)
+        ax1.set_xticklabels([log_base_10_label(x, None) for x in ticks_x], fontsize=16)
+        ax1.tick_params(axis="y", labelsize=14)
+        ax2.tick_params(axis="y", labelsize=14)
+
+        plt.subplots_adjust(right=0.7)
+
+        # Erste Legende 
+        legend1 = ax1.legend(handles=plot_lines_stats, labels=legend_labels, loc="upper left", bbox_to_anchor=(1.07, 1.0), fontsize=12, ncol=1, handlelength=2.0, handletextpad=0.8, columnspacing=1.0, frameon=True, framealpha=0.3)
+        ax1.add_artist(legend1)
+
+        # Zweite Legende (Statistik)
+        legend_elements = [
+            Line2D([0],[0], color="black", lw=2, label="Mittlere Kurve"),
+            Patch(facecolor="gray", alpha=0.1, label="Best/Worst Bereich"),
+            Line2D([0],[0], color="black", lw=0.8, label="Standardabweichung")
+        ]
+        ax1.legend(handles=legend_elements, loc="upper left", bbox_to_anchor=(1.07, 0.2), 
+                  fontsize=10, frameon=True, ncol=1)
+
+        plt.savefig(f"{list_name}-stats-{filename_base}.png", dpi=300, bbox_inches='tight')
+        plt.close()
 
 
 # plottet alle Tests in einem Plot
